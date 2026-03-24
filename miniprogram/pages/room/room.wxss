@@ -38,8 +38,8 @@
   padding: 24rpx 30rpx;
   font-size: 30rpx;
   color: #e0d5b0;
-  width: 100%;
-  box-sizing: border-box;
+  width: calc(100% - 60rpx);
+  box-sizing: content-box;
 }
 
 .submit-btn {
