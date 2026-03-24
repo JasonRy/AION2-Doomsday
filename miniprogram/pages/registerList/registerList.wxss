@@ -20,7 +20,7 @@
   border-radius: 30rpx;
   padding: 12rpx 20rpx;
   font-size: 24rpx;
-  color: #8888aa;
+  color: #9999bb;
   white-space: nowrap;
 }
 
@@ -89,13 +89,13 @@
   top: 12rpx;
   right: 12rpx;
   padding: 4rpx 14rpx;
-  border-radius: 20rpx;
+  border-radius: 8rpx;
   font-size: 22rpx;
 }
 
 .badge-default {
   background: #2a2a4a;
-  color: #8888aa;
+  color: #9999bb;
 }
 
 .badge-selected {
@@ -119,6 +119,10 @@
   border-color: #3a2a1a;
   opacity: 0.55;
 }
+
+/* 种族色条 */
+.race-魔族 { border-left: 4rpx solid #8b3a4a; }
+.race-天族 { border-left: 4rpx solid #3a6899; }
 
 /* 底部确认栏 */
 .confirm-bar {
@@ -196,7 +200,7 @@
 .job {
   display: block;
   font-size: 24rpx;
-  color: #8888aa;
+  color: #9999bb;
   margin-top: 6rpx;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -219,7 +223,7 @@
   margin-top: 16rpx;
   padding: 16rpx 0;
   font-size: 26rpx;
-  color: #8888aa;
+  color: #9999bb;
   background: #1a1a2e;
   border: none;
   border-top: 1rpx solid #2a2a4a;

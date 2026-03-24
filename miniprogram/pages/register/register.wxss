@@ -25,7 +25,7 @@
 .already-info {
   display: block;
   font-size: 26rpx;
-  color: #8888aa;
+  color: #9999bb;
   margin-bottom: 8rpx;
 }
 
@@ -52,14 +52,14 @@
 .label {
   display: block;
   font-size: 26rpx;
-  color: #8888aa;
+  color: #9999bb;
   margin-bottom: 10rpx;
 }
 
 .input {
   background: #1a1a2e;
   border: 1rpx solid #2a2a4a;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   padding: 20rpx 24rpx;
   font-size: 28rpx;
   color: #e0d5b0;

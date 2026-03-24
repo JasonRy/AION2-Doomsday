@@ -83,7 +83,7 @@
   <view
     wx:for="{{characters}}"
     wx:key="_id"
-    class="char-card {{mySignupMap[item.charName] ? 'card-in-team' : (selectMode ? (registerMode && item.charName === registeredCharName ? 'card-registered' : 'card-selectable') : '')}}"
+    class="char-card race-{{item.race}} {{mySignupMap[item.charName] ? 'card-in-team' : (selectMode ? (registerMode && item.charName === registeredCharName ? 'card-registered' : 'card-selectable') : '')}}"
     bindtap="selectCharacter"
     data-id="{{item._id}}"
   >

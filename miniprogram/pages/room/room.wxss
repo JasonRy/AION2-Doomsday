@@ -28,7 +28,7 @@
 .label {
   display: block;
   font-size: 26rpx;
-  color: #8888aa;
+  color: #9999bb;
   margin-bottom: 12rpx;
   letter-spacing: 2rpx;
 }

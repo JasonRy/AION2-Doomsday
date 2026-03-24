@@ -22,7 +22,7 @@
 .subtitle {
   display: block;
   font-size: 24rpx;
-  color: #8888aa;
+  color: #9999bb;
   margin-top: 10rpx;
   letter-spacing: 6rpx;
 }
@@ -66,6 +66,22 @@
   color: #666688;
   font-size: 28rpx;
   margin-top: 100rpx;
+}
+
+.empty-icon {
+  display: block;
+  font-size: 28rpx;
+  color: #3a3a5a;
+  margin-bottom: 24rpx;
+  letter-spacing: 8rpx;
+}
+
+.empty-sub {
+  display: block;
+  font-size: 22rpx;
+  color: #444466;
+  margin-top: 10rpx;
+  letter-spacing: 6rpx;
 }
 
 .room-card {
@@ -138,7 +154,7 @@
 
 .room-info text {
   font-size: 26rpx;
-  color: #8888aa;
+  color: #9999bb;
 }
 
 .room-card-expired {

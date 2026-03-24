@@ -19,7 +19,9 @@
   <!-- 房间列表 -->
   <view class="room-list">
     <view wx:if="{{rooms.length === 0}}" class="empty">
-      <text>暂无开放的副本，等待队长召集...</text>
+      <text class="empty-icon">✦  ✦  ✦</text>
+      <text>暂无开放的队伍</text>
+      <text class="empty-sub">等待队长召集</text>
     </view>
 
     <view

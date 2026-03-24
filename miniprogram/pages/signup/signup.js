@@ -122,6 +122,16 @@ Page({
       url: `/pages/registerList/registerList?select=1&roomId=${roomId}&joined=${joinedOpenids}`,
       events: {
         memberSelected: member => {
+          const duplicate = this.data.signups.find(s => s.charName === member.charName)
+          if (duplicate) {
+            wx.showModal({
+              title: '重复添加',
+              content: `${member.charName} 已在「${this.data.room.name}」队伍中。`,
+              showCancel: false,
+              confirmText: '知道了'
+            })
+            return
+          }
           db.collection('signups').add({
             data: {
               charName: member.charName,

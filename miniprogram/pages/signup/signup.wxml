@@ -99,7 +99,7 @@
   <view
     wx:for="{{signups}}"
     wx:key="_id"
-    class="signup-card"
+    class="signup-card race-{{item.race}}"
   >
     <button wx:if="{{isLeader}}" class="action-btn kick" catchtap="kickPlayer" data-id="{{item._id}}">✕</button>
     <view class="card-left">

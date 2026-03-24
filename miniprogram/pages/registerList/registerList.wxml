@@ -32,7 +32,7 @@
   <view
     wx:for="{{filteredMembers}}"
     wx:key="_id"
-    class="member-card {{signedUpRoomMap[item._openid + '|' + item.charName] ? 'card-in-team' : (selectMode ? (joinedOpenids.includes(item._openid) ? 'card-joined' : (selectedId === item._id ? 'card-selected' : 'card-normal')) : '')}}"
+    class="member-card race-{{item.race}} {{signedUpRoomMap[item._openid + '|' + item.charName] ? 'card-in-team' : (selectMode ? (joinedOpenids.includes(item._openid) ? 'card-joined' : (selectedId === item._id ? 'card-selected' : 'card-normal')) : '')}}"
     bindtap="selectMember"
     data-id="{{item._id}}"
   >

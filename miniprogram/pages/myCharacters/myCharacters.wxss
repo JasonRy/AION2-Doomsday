@@ -22,7 +22,7 @@
 .select-hint {
   text-align: center;
   font-size: 26rpx;
-  color: #8888aa;
+  color: #9999bb;
   margin-bottom: 20rpx;
 }
 
@@ -71,14 +71,14 @@
 .label {
   display: block;
   font-size: 26rpx;
-  color: #8888aa;
+  color: #9999bb;
   margin-bottom: 10rpx;
 }
 
 .input {
   background: #1a1a2e;
   border: 1rpx solid #2a2a4a;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   padding: 20rpx 24rpx;
   font-size: 28rpx;
   color: #e0d5b0;
@@ -117,7 +117,7 @@
 .cancel-form-btn {
   flex: 1;
   background: #1a1a2e;
-  color: #8888aa;
+  color: #9999bb;
   font-size: 28rpx;
   border-radius: 12rpx;
   border: 1rpx solid #2a2a4a;
@@ -156,6 +156,10 @@
   opacity: 0.45;
 }
 
+/* 种族色条 */
+.race-魔族 { border-left: 4rpx solid #8b3a4a; }
+.race-天族 { border-left: 4rpx solid #3a6899; }
+
 .card-in-team {
   border-color: #3a2a1a;
   opacity: 0.55;
@@ -174,7 +178,7 @@
 
 .registered-badge {
   font-size: 22rpx;
-  color: #8888aa;
+  color: #9999bb;
   background: #2a2a4a;
   border-radius: 8rpx;
   padding: 4rpx 12rpx;
@@ -204,7 +208,7 @@
 .char-meta {
   display: block;
   font-size: 24rpx;
-  color: #8888aa;
+  color: #9999bb;
   margin-top: 4rpx;
 }
 
@@ -254,7 +258,7 @@
 
 .unpublish-btn {
   background: transparent;
-  color: #8888aa;
+  color: #9999bb;
   font-size: 22rpx;
   border: 1rpx solid #3a3a5a;
   border-radius: 8rpx;
