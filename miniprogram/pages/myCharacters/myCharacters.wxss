@@ -152,6 +152,36 @@
   border-color: #3a3a5a;
 }
 
+.card-registered {
+  opacity: 0.45;
+}
+
+.card-in-team {
+  border-color: #3a2a1a;
+  opacity: 0.55;
+}
+
+.in-team-badge {
+  font-size: 22rpx;
+  color: #c9a84c;
+  background: #2a1a0a;
+  border: 1rpx solid #4a3a1a;
+  border-radius: 8rpx;
+  padding: 4rpx 12rpx;
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}
+
+.registered-badge {
+  font-size: 22rpx;
+  color: #8888aa;
+  background: #2a2a4a;
+  border-radius: 8rpx;
+  padding: 4rpx 12rpx;
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}
+
 .char-main {
   display: flex;
   align-items: center;
@@ -194,6 +224,42 @@
 .char-actions {
   display: flex;
   border-top: 1rpx solid #2a2a4a;
+}
+
+.publish-row {
+  border-top: 1rpx solid #2a2a4a;
+  padding: 16rpx 24rpx;
+}
+
+.publish-btn {
+  background: transparent;
+  color: #c9a84c;
+  font-size: 26rpx;
+  border: 1rpx solid #c9a84c;
+  border-radius: 10rpx;
+  padding: 14rpx 0;
+  width: 100% !important;
+}
+
+.publish-row-published {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.published-label {
+  font-size: 24rpx;
+  color: #4caf82;
+}
+
+.unpublish-btn {
+  background: transparent;
+  color: #8888aa;
+  font-size: 22rpx;
+  border: 1rpx solid #3a3a5a;
+  border-radius: 8rpx;
+  padding: 8rpx 20rpx;
+  min-width: 0 !important;
 }
 
 .edit-btn {

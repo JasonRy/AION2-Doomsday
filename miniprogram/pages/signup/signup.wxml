@@ -23,7 +23,7 @@
     </button>
     <view class="pick-row">
       <button class="pick-btn" bindtap="pickFromMyCharacters">从我的角色</button>
-      <button class="pick-btn" bindtap="pickFromList">从登记列表</button>
+      <button class="pick-btn" bindtap="pickFromList">从玩家名册</button>
     </view>
   </view>
   <view wx:else class="already-signed">

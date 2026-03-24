@@ -67,11 +67,18 @@ Page({
       confirmColor: '#cf6679',
       success: res => {
         if (!res.confirm) return
-        db.collection('rooms').doc(roomId).remove({
-          success: () => {
-            wx.showToast({ title: '已删除', icon: 'success' })
-            this.loadRooms()
-          }
+        wx.cloud.callFunction({
+          name: 'deleteRoom',
+          data: { roomId },
+          success: result => {
+            if (result.result && result.result.success) {
+              wx.showToast({ title: '已删除', icon: 'success' })
+              this.loadRooms()
+            } else {
+              wx.showToast({ title: '删除失败', icon: 'none' })
+            }
+          },
+          fail: () => wx.showToast({ title: '删除失败', icon: 'none' })
         })
       }
     })

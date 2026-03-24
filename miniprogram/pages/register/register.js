@@ -34,6 +34,27 @@ Page({
     this.loadMyRecord()
   },
 
+  pickFromMyCharacters() {
+    wx.navigateTo({
+      url: '/pages/myCharacters/myCharacters?select=1&mode=register',
+      events: {
+        characterSelected: char => {
+          this.setData({
+            'form.race': char.race,
+            'form.className': char.className,
+            'form.charName': char.charName,
+            'form.jobType': char.jobType,
+            'form.jobClass': char.jobClass,
+            'form.power': char.power,
+            'form.remark': char.remark || '',
+            currentClassOptions: this.data.classMap[char.race] || [],
+            currentJobClassOptions: this.data.jobClassMap[char.jobType] || []
+          })
+        }
+      }
+    })
+  },
+
   loadMyRecord() {
     db.collection('members').where({ _openid: '{openid}' }).get({
       success: res => {

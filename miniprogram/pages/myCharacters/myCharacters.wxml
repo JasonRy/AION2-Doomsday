@@ -83,7 +83,7 @@
   <view
     wx:for="{{characters}}"
     wx:key="_id"
-    class="char-card {{selectMode ? 'card-selectable' : ''}}"
+    class="char-card {{mySignupMap[item.charName] ? 'card-in-team' : (selectMode ? (registerMode && item.charName === registeredCharName ? 'card-registered' : 'card-selectable') : '')}}"
     bindtap="selectCharacter"
     data-id="{{item._id}}"
   >
@@ -94,11 +94,20 @@
         <text class="char-meta">{{item.jobType}} · {{item.jobClass}} · {{item.power}}</text>
         <text wx:if="{{item.remark}}" class="char-remark">💬 {{item.remark}}</text>
       </view>
-      <view wx:if="{{selectMode}}" class="select-arrow">›</view>
+      <view wx:if="{{mySignupMap[item.charName]}}" class="in-team-badge">在【{{mySignupMap[item.charName].roomName}}】中</view>
+      <view wx:elif="{{selectMode && registerMode && item.charName === registeredCharName}}" class="registered-badge">已登记</view>
+      <view wx:elif="{{selectMode}}" class="select-arrow">›</view>
     </view>
     <view wx:if="{{!selectMode}}" class="char-actions">
       <button class="edit-btn" catchtap="editCharacter" data-id="{{item._id}}">编辑</button>
       <button class="delete-btn" catchtap="deleteCharacter" data-id="{{item._id}}">删除</button>
+    </view>
+    <view wx:if="{{!selectMode}}" class="publish-row">
+      <view wx:if="{{item.charName === registeredCharName}}" class="publish-row-published">
+        <text class="published-label">✅ 已公开至玩家名册</text>
+        <button class="unpublish-btn" catchtap="unpublishCharacter">取消公开</button>
+      </view>
+      <button wx:else class="publish-btn" catchtap="publishCharacter" data-id="{{item._id}}">登记到玩家名册</button>
     </view>
   </view>
 

@@ -6,6 +6,44 @@
   width: 100%;
 }
 
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+  flex-wrap: nowrap;
+}
+
+.filter-item {
+  background: #16213e;
+  border: 1rpx solid #2a2a4a;
+  border-radius: 30rpx;
+  padding: 12rpx 20rpx;
+  font-size: 24rpx;
+  color: #8888aa;
+  white-space: nowrap;
+}
+
+.filter-active {
+  border-color: #c9a84c;
+  color: #c9a84c;
+}
+
+.filter-reset {
+  font-size: 24rpx;
+  color: #cf6679;
+  padding: 12rpx 8rpx;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.filter-count {
+  font-size: 22rpx;
+  color: #555577;
+  margin-bottom: 12rpx;
+  padding-left: 4rpx;
+}
+
 .empty {
   text-align: center;
   color: #666688;
@@ -69,6 +107,17 @@
 .badge-joined {
   background: #1a3a2a;
   color: #4caf82;
+}
+
+.badge-in-team {
+  background: #2a1a0a;
+  color: #c9a84c;
+  border: 1rpx solid #4a3a1a;
+}
+
+.card-in-team {
+  border-color: #3a2a1a;
+  opacity: 0.55;
 }
 
 /* 底部确认栏 */

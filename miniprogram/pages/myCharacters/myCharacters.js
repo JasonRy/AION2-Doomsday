@@ -20,6 +20,10 @@ Page({
       '防御': ['守护星']
     },
     currentJobClassOptions: [],
+    registerMode: false,
+    registeredCharName: '',
+    existingMemberId: '',
+    mySignupMap: {},
     useTraditional: false,
     charNameOriginal: '',
     form: {
@@ -35,16 +39,120 @@ Page({
 
   onLoad(options) {
     const selectMode = options.select === '1'
-    this.setData({ selectMode })
+    const registerMode = options.mode === 'register'
+    this.setData({ selectMode, registerMode })
     if (selectMode) {
-      wx.setNavigationBarTitle({ title: '选择角色' })
+      wx.setNavigationBarTitle({ title: registerMode ? '选择登记角色' : '选择角色' })
     }
     this.loadCharacters()
+    this.loadRegisteredInfo()
+  },
+
+  onShow() {
+    if (!this.data.selectMode) this.loadCharacters()
+  },
+
+  loadMySignups() {
+    const charNames = this.data.characters.map(c => c.charName)
+    if (charNames.length === 0) { this.setData({ mySignupMap: {} }); return }
+    const _ = db.command
+    db.collection('signups').where({ charName: _.in(charNames) }).get({
+      success: res => {
+        if (res.data.length === 0) { this.setData({ mySignupMap: {} }); return }
+        const roomIds = [...new Set(res.data.map(s => s.roomId).filter(Boolean))]
+        db.collection('rooms').where({ _id: _.in(roomIds) }).get({
+          success: roomRes => {
+            const roomNameMap = {}
+            roomRes.data.forEach(r => { roomNameMap[r._id] = r.name })
+            const map = {}
+            res.data.forEach(s => {
+              if (s.roomId && roomNameMap[s.roomId]) map[s.charName] = { roomId: s.roomId, roomName: roomNameMap[s.roomId] }
+            })
+            this.setData({ mySignupMap: map })
+          }
+        })
+      }
+    })
+  },
+
+  _promptInTeam(roomId, roomName) {
+    wx.showModal({
+      title: '角色已在队伍中',
+      content: `当前角色已在队伍「${roomName || '未知队伍'}」中，请先脱离队伍再进行此操作。是否前往所在队伍？`,
+      confirmText: '前往队伍',
+      cancelText: '取消',
+      success: res => {
+        if (res.confirm) wx.navigateTo({ url: `/pages/signup/signup?roomId=${roomId}` })
+      }
+    })
+  },
+
+  loadRegisteredInfo() {
+    db.collection('members').where({ _openid: '{openid}' }).get({
+      success: res => {
+        const record = res.data[0]
+        this.setData({
+          registeredCharName: record ? record.charName : '',
+          existingMemberId: record ? record._id : ''
+        })
+      }
+    })
+  },
+
+  publishCharacter(e) {
+    const id = e.currentTarget.dataset.id
+    const char = this.data.characters.find(c => c._id === id)
+    if (!char) return
+    const doPublish = () => {
+      db.collection('members').add({
+        data: {
+          charName: char.charName, race: char.race, className: char.className,
+          jobType: char.jobType, jobClass: char.jobClass, power: char.power,
+          remark: char.remark || '', createTime: db.serverDate()
+        },
+        success: () => {
+          wx.showToast({ title: '已公开到玩家名册', icon: 'success' })
+          this.loadRegisteredInfo()
+        }
+      })
+    }
+    if (this.data.existingMemberId) {
+      wx.showModal({
+        title: '替换登记',
+        content: `已有公开角色「${this.data.registeredCharName}」，确定替换为此角色？`,
+        confirmColor: '#c9a84c',
+        success: res => {
+          if (!res.confirm) return
+          db.collection('members').doc(this.data.existingMemberId).remove({ success: doPublish })
+        }
+      })
+    } else {
+      doPublish()
+    }
+  },
+
+  unpublishCharacter() {
+    const { existingMemberId } = this.data
+    if (!existingMemberId) return
+    wx.showModal({
+      title: '取消公开',
+      content: '确定从玩家名册中移除此角色？',
+      confirmColor: '#cf6679',
+      success: res => {
+        if (!res.confirm) return
+        db.collection('members').doc(existingMemberId).remove({
+          success: () => {
+            wx.showToast({ title: '已从名册移除', icon: 'success' })
+            this.loadRegisteredInfo()
+          }
+        })
+      }
+    })
   },
 
   loadCharacters() {
     db.collection('myCharacters').where({ _openid: '{openid}' }).orderBy('createTime', 'asc').get({
-      success: res => this.setData({ characters: res.data }),
+      success: res => this.setData({ characters: res.data }, () => this.loadMySignups()),
       fail: err => console.error('loadCharacters fail', err)
     })
   },
@@ -65,6 +173,8 @@ Page({
     const id = e.currentTarget.dataset.id
     const char = this.data.characters.find(c => c._id === id)
     if (!char) return
+    const signupInfo = this.data.mySignupMap[char.charName]
+    if (signupInfo) { this._promptInTeam(signupInfo.roomId, signupInfo.roomName); return }
     this.setData({
       showForm: true,
       editingId: id,
@@ -117,6 +227,9 @@ Page({
 
   deleteCharacter(e) {
     const id = e.currentTarget.dataset.id
+    const char = this.data.characters.find(c => c._id === id)
+    const signupInfo = char ? this.data.mySignupMap[char.charName] : null
+    if (signupInfo) { this._promptInTeam(signupInfo.roomId, signupInfo.roomName); return }
     wx.showModal({
       title: '确认删除',
       content: '删除后不可恢复，确定删除该角色？',
@@ -138,6 +251,9 @@ Page({
     const id = e.currentTarget.dataset.id
     const char = this.data.characters.find(c => c._id === id)
     if (!char) return
+    if (this.data.registerMode && char.charName === this.data.registeredCharName) return
+    const signupInfo = this.data.mySignupMap[char.charName]
+    if (signupInfo) { this._promptInTeam(signupInfo.roomId, signupInfo.roomName); return }
     const eventChannel = this.getOpenerEventChannel()
     eventChannel.emit('characterSelected', {
       charName: char.charName,

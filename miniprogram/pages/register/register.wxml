@@ -10,6 +10,8 @@
 
   <view wx:else class="form">
 
+    <button class="pick-char-btn" bindtap="pickFromMyCharacters">从我的角色选择</button>
+
     <view class="form-item">
       <view class="picker-inline-row">
         <view class="picker-inline-col col-narrow">

@@ -1,22 +1,51 @@
 <view class="container">
 
-  <view wx:if="{{members.length === 0}}" class="empty">
-    <text>暂无登记队员</text>
+  <!-- 筛选栏 -->
+  <view class="filter-bar">
+    <picker mode="selector" range="{{['全部种族', '魔族', '天族']}}" bindchange="onFilterRace">
+      <view class="filter-item {{filterRace ? 'filter-active' : ''}}">
+        {{filterRace || '种族'}} ▾
+      </view>
+    </picker>
+    <picker mode="selector" range="{{classFilterOptions}}" bindchange="onFilterClass">
+      <view class="filter-item {{filterClass ? 'filter-active' : ''}}">
+        {{filterClass || '区'}} ▾
+      </view>
+    </picker>
+    <picker mode="selector" range="{{jobClassFilterOptions}}" bindchange="onFilterJobClass">
+      <view class="filter-item {{filterJobClass ? 'filter-active' : ''}}">
+        {{filterJobClass || '职业'}} ▾
+      </view>
+    </picker>
+    <view wx:if="{{filterRace || filterClass || filterJobClass}}" class="filter-reset" bindtap="clearFilters">重置</view>
+  </view>
+
+  <!-- 结果统计 -->
+  <view class="filter-count">
+    <text>共 {{filteredMembers.length}} 名</text>
+  </view>
+
+  <view wx:if="{{filteredMembers.length === 0}}" class="empty">
+    <text>{{members.length === 0 ? '暂无登记队员' : '无匹配结果'}}</text>
   </view>
 
   <view
-    wx:for="{{members}}"
+    wx:for="{{filteredMembers}}"
     wx:key="_id"
-    class="member-card {{selectMode ? (joinedOpenids.includes(item._openid) ? 'card-joined' : (selectedId === item._id ? 'card-selected' : 'card-normal')) : ''}}"
+    class="member-card {{signedUpRoomMap[item._openid + '|' + item.charName] ? 'card-in-team' : (selectMode ? (joinedOpenids.includes(item._openid) ? 'card-joined' : (selectedId === item._id ? 'card-selected' : 'card-normal')) : '')}}"
     bindtap="selectMember"
     data-id="{{item._id}}"
   >
+    <!-- 在队中角标 -->
+    <view wx:if="{{signedUpRoomMap[item._openid + '|' + item.charName]}}" class="card-badge badge-in-team">
+      <text>在【{{signedUpRoomMap[item._openid + '|' + item.charName].roomName}}】中</text>
+    </view>
     <!-- 选择模式状态角标 -->
-    <view wx:if="{{selectMode}}" class="card-badge {{joinedOpenids.includes(item._openid) ? 'badge-joined' : (selectedId === item._id ? 'badge-selected' : 'badge-default')}}">
+    <view wx:elif="{{selectMode}}" class="card-badge {{joinedOpenids.includes(item._openid) ? 'badge-joined' : (selectedId === item._id ? 'badge-selected' : 'badge-default')}}">
       <text>{{joinedOpenids.includes(item._openid) ? '已在队' : (selectedId === item._id ? '✓' : '+')}}</text>
     </view>
 
-    <!-- 非选择模式：踢人按钮 -->
+    <!-- 非选择模式：移除按钮 -->
     <button wx:if="{{!selectMode && (isLeader || item._openid === openid)}}" class="kick-btn" catchtap="kickMember" data-id="{{item._id}}">✕</button>
 
     <view class="card-left">

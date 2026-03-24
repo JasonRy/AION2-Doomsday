@@ -1,7 +1,7 @@
 <view class="container">
 
 <view class="header">
-  <text class="title">{{mode === 'create' ? '⚔️ 创建副本' : '✏️ 编辑副本'}}</text>
+  <text class="title">{{mode === 'create' ? '创建队伍' : '编辑队伍'}}</text>
 </view>
 
 <view class="form">
@@ -49,7 +49,7 @@
   </view>
 
   <button class="submit-btn" bindtap="submitRoom">
-    {{mode === 'create' ? '创建副本' : '保存修改'}}
+    {{mode === 'create' ? '创建队伍' : '保存修改'}}
   </button>
 
 </view>
