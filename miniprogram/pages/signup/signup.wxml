@@ -1,0 +1,83 @@
+<view class="container">
+
+<!-- 房间信息 -->
+<view class="room-header">
+  <text class="room-name">{{room.name}}</text>
+  <text class="room-meta">📍 {{room.dungeonName}}</text>
+  <text class="room-meta">⏰ {{room.raidTime}}</text>
+  <text class="room-meta">👥 {{signups.length}} / {{room.maxPlayers}} 人</text>
+</view>
+
+<!-- 队长工具栏 -->
+<view wx:if="{{isLeader}}" class="leader-bar">
+  <button class="lock-btn {{room.locked ? 'unlockbtn' : 'lockbtn'}}" bindtap="toggleLock">
+    {{room.locked ? '🔓 解锁名单' : '🔒 锁定名单'}}
+  </button>
+</view>
+
+<!-- 报名按钮 -->
+<view wx:if="{{!room.locked}}" class="signup-action">
+  <view wx:if="{{!mySignup}}">
+    <button class="signup-btn" bindtap="toggleForm">
+      {{showForm ? '▲ 收起' : '⚔️ 我要报名'}}
+    </button>
+  </view>
+  <view wx:else class="already-signed">
+    <text>✅ 你已报名（{{mySignup.charName}}）</text>
+    <button class="cancel-btn" bindtap="cancelSignup">取消报名</button>
+  </view>
+</view>
+
+<!-- 报名表单 -->
+<view wx:if="{{showForm && !mySignup}}" class="form">
+  <view class="form-item">
+    <text class="label">角色名 *</text>
+    <input class="input" placeholder="输入你的角色名" data-field="charName" bindinput="onInput" value="{{form.charName}}"/>
+  </view>
+  <view class="form-item">
+    <text class="label">职业/类型 *</text>
+    <input class="input" placeholder="例如：剑刃/坦克/治疗" data-field="jobType" bindinput="onInput" value="{{form.jobType}}"/>
+  </view>
+  <view class="form-item">
+    <text class="label">战力/等级 *</text>
+    <input class="input" placeholder="例如：85级 / 战力12000" data-field="power" bindinput="onInput" value="{{form.power}}"/>
+  </view>
+  <view class="form-item">
+    <text class="label">备注</text>
+    <input class="input" placeholder="选填，例如：只能打前半段" data-field="remark" bindinput="onInput" value="{{form.remark}}"/>
+  </view>
+  <button class="submit-btn" bindtap="submitSignup">确认报名</button>
+</view>
+
+<!-- 名单列表 -->
+<view class="signup-list">
+  <text class="list-title">📋 当前名单</text>
+
+  <view wx:if="{{signups.length === 0}}" class="empty">
+    <text>暂无人报名，快来第一个！</text>
+  </view>
+
+  <view
+    wx:for="{{signups}}"
+    wx:key="_id"
+    class="signup-card"
+  >
+    <view class="card-left">
+      <text class="rank">{{index + 1}}</text>
+      <view class="card-info">
+        <text class="char-name">{{item.charName}}</text>
+        <text class="job">{{item.jobType}} · {{item.power}}</text>
+        <text wx:if="{{item.remark}}" class="remark">💬 {{item.remark}}</text>
+      </view>
+    </view>
+
+    <!-- 队长操作 -->
+    <view wx:if="{{isLeader}}" class="card-actions">
+      <button class="action-btn" bindtap="moveUp" data-index="{{index}}">↑</button>
+      <button class="action-btn" bindtap="moveDown" data-index="{{index}}">↓</button>
+      <button class="action-btn kick" bindtap="kickPlayer" data-id="{{item._id}}">✕</button>
+    </view>
+  </view>
+</view>
+
+</view>

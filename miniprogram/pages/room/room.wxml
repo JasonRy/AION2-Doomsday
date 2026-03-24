@@ -1,0 +1,60 @@
+<view class="container">
+
+<view class="header">
+  <text class="title">{{mode === 'create' ? '⚔️ 创建副本' : '✏️ 编辑副本'}}</text>
+</view>
+
+<view class="form">
+
+  <view class="form-item">
+    <text class="label">房间名称</text>
+    <input
+      class="input"
+      placeholder="例如：今晚深渊组队"
+      value="{{form.name}}"
+      data-field="name"
+      bindinput="onInput"
+    />
+  </view>
+
+  <view class="form-item">
+    <text class="label">副本名称</text>
+    <input
+      class="input"
+      placeholder="例如：混沌深渊、神圣之地"
+      value="{{form.dungeonName}}"
+      data-field="dungeonName"
+      bindinput="onInput"
+    />
+  </view>
+
+  <view class="form-item">
+    <text class="label">开团时间</text>
+    <input
+      class="input"
+      placeholder="例如：今晚 21:00"
+      value="{{form.raidTime}}"
+      data-field="raidTime"
+      bindinput="onInput"
+    />
+  </view>
+
+  <view class="form-item">
+    <text class="label">人数上限</text>
+    <input
+      class="input"
+      type="number"
+      placeholder="例如：8"
+      value="{{form.maxPlayers}}"
+      data-field="maxPlayers"
+      bindinput="onInput"
+    />
+  </view>
+
+  <button class="submit-btn" bindtap="submitRoom">
+    {{mode === 'create' ? '创建副本' : '保存修改'}}
+  </button>
+
+</view>
+
+</view>

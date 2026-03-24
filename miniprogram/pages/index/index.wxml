@@ -1,0 +1,40 @@
+<view class="container">
+  
+  <view class="header">
+    <text class="title">⚔️ AION2-未日基地</text>
+    <text class="subtitle">深渊征召令</text>
+  </view>
+
+  <!-- 队长才能看到创建按钮 -->
+  <view wx:if="{{isLeader}}" class="create-btn-wrap">
+    <button class="create-btn" bindtap="createRoom">+ 创建新副本</button>
+  </view>
+
+  <!-- 房间列表 -->
+  <view class="room-list">
+    <view wx:if="{{rooms.length === 0}}" class="empty">
+      <text>暂无开放的副本，等待队长召集...</text>
+    </view>
+
+    <view 
+      wx:for="{{rooms}}" 
+      wx:key="_id"
+      class="room-card"
+      bindtap="enterRoom"
+      data-id="{{item._id}}"
+    >
+      <view class="room-top">
+        <text class="room-name">{{item.name}}</text>
+        <text class="room-status {{item.locked ? 'locked' : 'open'}}">
+          {{item.locked ? '🔒 已锁定' : '✅ 报名中'}}
+        </text>
+      </view>
+      <view class="room-info">
+        <text>副本：{{item.dungeonName}}</text>
+        <text>开团时间：{{item.raidTime}}</text>
+        <text>人数上限：{{item.maxPlayers}}人</text>
+      </view>
+    </view>
+  </view>
+
+</view>
