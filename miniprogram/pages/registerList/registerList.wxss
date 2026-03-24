@@ -223,7 +223,7 @@
   margin-top: 16rpx;
   padding: 16rpx 0;
   font-size: 26rpx;
-  color: #9999bb;
+  color: #c9a84c;
   background: #0d1628;
   border: none;
   border-top: 1rpx solid #2a2a4a;
