@@ -13,6 +13,7 @@
   <button class="lock-btn {{room.locked ? 'unlockbtn' : 'lockbtn'}}" bindtap="toggleLock">
     {{room.locked ? '🔓 解锁名单' : '🔒 锁定名单'}}
   </button>
+  <button class="end-btn" bindtap="endRoom">结束本次</button>
 </view>
 
 <!-- 报名按钮 -->

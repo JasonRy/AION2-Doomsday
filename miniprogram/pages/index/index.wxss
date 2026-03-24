@@ -140,3 +140,12 @@
   font-size: 26rpx;
   color: #8888aa;
 }
+
+.room-card-expired {
+  opacity: 0.5;
+}
+
+.expired {
+  background: #2a2a3a;
+  color: #666688;
+}

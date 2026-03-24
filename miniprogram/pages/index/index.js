@@ -30,7 +30,12 @@ Page({
   loadRooms() {
     db.collection('rooms').orderBy('createTime', 'desc').get({
       success: res => {
-        this.setData({ rooms: res.data })
+        const now = Date.now()
+        const rooms = res.data.map(r => {
+          const raidMs = r.raidTime ? new Date(r.raidTime.replace(' ', 'T')).getTime() : 0
+          return { ...r, expired: raidMs > 0 && raidMs + 6 * 3600 * 1000 < now }
+        })
+        this.setData({ rooms })
       }
     })
   },

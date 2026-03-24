@@ -242,6 +242,27 @@ Page({
     })
   },
 
+  endRoom() {
+    wx.showModal({
+      title: '结束本次',
+      content: '将删除队伍及所有报名记录，不可恢复。确认结束？',
+      confirmText: '确认结束',
+      confirmColor: '#cf6679',
+      success: res => {
+        if (!res.confirm) return
+        wx.cloud.callFunction({
+          name: 'deleteRoom',
+          data: { roomId: this.data.roomId },
+          success: () => {
+            wx.showToast({ title: '已结束', icon: 'success' })
+            setTimeout(() => wx.navigateBack(), 1500)
+          },
+          fail: () => wx.showToast({ title: '操作失败', icon: 'none' })
+        })
+      }
+    })
+  },
+
   copyName(e) {
     const { name, server } = e.currentTarget.dataset
     const serverAbbr = (server || '').substring(0, 2)

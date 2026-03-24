@@ -25,7 +25,7 @@
     <view
       wx:for="{{rooms}}"
       wx:key="_id"
-      class="room-card"
+      class="room-card {{item.expired ? 'room-card-expired' : ''}}"
       bindtap="enterRoom"
       data-id="{{item._id}}"
     >
@@ -33,8 +33,8 @@
         <text class="room-name">{{item.name}}</text>
         <view wx:if="{{item.creatorOpenid === openid || item._openid === openid}}" class="delete-btn" catchtap="deleteRoom" data-id="{{item._id}}">✕</view>
       </view>
-      <view class="room-status {{item.locked ? 'locked' : 'open'}}">
-        <text>{{item.locked ? '🔒 已锁定' : '✅ 报名中'}}</text>
+      <view class="room-status {{item.expired ? 'expired' : (item.locked ? 'locked' : 'open')}}">
+        <text>{{item.expired ? '⌛ 已过期' : (item.locked ? '🔒 已锁定' : '✅ 报名中')}}</text>
       </view>
       <view class="room-info">
         <text>副本：{{item.dungeonName}}</text>

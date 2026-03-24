@@ -62,11 +62,17 @@ Page({
         const roomIds = [...new Set(res.data.map(s => s.roomId).filter(Boolean))]
         db.collection('rooms').where({ _id: _.in(roomIds) }).get({
           success: roomRes => {
-            const roomNameMap = {}
-            roomRes.data.forEach(r => { roomNameMap[r._id] = r.name })
+            const roomMap = {}
+            roomRes.data.forEach(r => { roomMap[r._id] = { name: r.name, raidTime: r.raidTime } })
             const map = {}
+            const now = Date.now()
             res.data.forEach(s => {
-              if (s.roomId && roomNameMap[s.roomId]) map[s.charName] = { roomId: s.roomId, roomName: roomNameMap[s.roomId] }
+              if (!s.roomId) return
+              const room = roomMap[s.roomId]
+              if (!room) return
+              const raidMs = room.raidTime ? new Date(room.raidTime.replace(' ', 'T')).getTime() : 0
+              if (raidMs > 0 && raidMs + 6 * 3600 * 1000 < now) return
+              map[s.charName] = { roomId: s.roomId, roomName: room.name }
             })
             this.setData({ mySignupMap: map })
           }
