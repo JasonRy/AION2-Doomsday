@@ -33,7 +33,8 @@ Page({
         const now = Date.now()
         const rooms = res.data.map(r => {
           const raidMs = r.raidTime ? new Date(r.raidTime.replace(' ', 'T')).getTime() : 0
-          return { ...r, expired: raidMs > 0 && raidMs + 6 * 3600 * 1000 < now }
+          r.expired = raidMs > 0 && raidMs + 6 * 3600 * 1000 < now
+          return r
         })
         this.setData({ rooms })
       }

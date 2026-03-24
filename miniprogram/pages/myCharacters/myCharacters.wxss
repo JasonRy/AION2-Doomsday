@@ -157,8 +157,8 @@
 }
 
 /* 种族色条 */
-.race-魔族 { border-left: 4rpx solid #8b3a4a; }
-.race-天族 { border-left: 4rpx solid #3a6899; }
+.race-demon { border-left: 4rpx solid #8b3a4a; }
+.race-angel { border-left: 4rpx solid #3a6899; }
 
 .card-in-team {
   border-color: #3a2a1a;
