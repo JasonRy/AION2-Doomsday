@@ -6,6 +6,7 @@ Page({
     mode: 'create',
     raidDate: '',
     raidHour: '20:00',
+    dungeonOptions: ['深淵重鑄：盧德萊', '侵蝕淨化所'],
     form: {
       name: '',
       dungeonName: '',
@@ -40,6 +41,11 @@ Page({
     const field = e.currentTarget.dataset.field
     const value = field === 'maxPlayers' ? parseInt(e.detail.value) : e.detail.value
     this.setData({ [`form.${field}`]: value })
+  },
+
+  onDungeonChange(e) {
+    const name = this.data.dungeonOptions[e.detail.value]
+    this.setData({ 'form.dungeonName': name })
   },
 
   onDateChange(e) {

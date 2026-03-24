@@ -49,5 +49,24 @@ Page({
   enterRoom(e) {
     const roomId = e.currentTarget.dataset.id
     wx.navigateTo({ url: `/pages/signup/signup?roomId=${roomId}` })
+  },
+
+  // 删除队伍（队长专用）
+  deleteRoom(e) {
+    const roomId = e.currentTarget.dataset.id
+    wx.showModal({
+      title: '确认删除',
+      content: '删除后数据不可恢复，确定删除该队伍？',
+      confirmColor: '#cf6679',
+      success: res => {
+        if (!res.confirm) return
+        db.collection('rooms').doc(roomId).remove({
+          success: () => {
+            wx.showToast({ title: '已删除', icon: 'success' })
+            this.loadRooms()
+          }
+        })
+      }
+    })
   }
 })

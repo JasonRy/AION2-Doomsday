@@ -8,9 +8,25 @@ Page({
     mySignup: null,
     isLeader: false,
     openid: '',
+    jobTypeOptions: ['输出', '辅助', '防御'],
+    jobClassMap: {
+      '输出': ['剑星', '弓星', '杀星', '魔道星', '精灵星'],
+      '辅助': ['治愈星', '护法星'],
+      '防御': ['守护星']
+    },
+    currentJobClassOptions: [],
+    raceOptions: ['天族', '魔族'],
+    classMap: {
+      '魔族': ['伊斯拉佩爾', '吉凱爾', '崔妮爾', '露梅爾', '瑪爾庫坦', '阿斯佩爾', '艾萊修奇卡', '布里特拉', '奈蒙', '哈達爾', '盧德萊', '鄔爾古倫', '默尼', '奧達爾', '简卡卡', '克羅梅德', '奎靈', '巴巴隆'],
+      '天族': ['希埃爾', '奈薩肯', '白傑爾', '凱西內爾', '尤斯迪埃', '艾瑞爾', '普雷奇翁', '梅斯蘭泰達', '希塔尼耶', '納尼亞', '塔哈巴達', '路特斯', '韮爾诺斯', '達彌努', '卡薩卡', '巴克爾摩', '天加隆', '巴卡爾摩']
+    },
+    currentClassOptions: [],
     form: {
+      race: '',
+      className: '',
       charName: '',
       jobType: '',
+      jobClass: '',
       power: '',
       remark: ''
     },
@@ -72,9 +88,37 @@ Page({
     this.setData({ [`form.${field}`]: e.detail.value })
   },
 
+  onJobTypeChange(e) {
+    const value = this.data.jobTypeOptions[e.detail.value]
+    this.setData({
+      'form.jobType': value,
+      'form.jobClass': '',
+      currentJobClassOptions: this.data.jobClassMap[value]
+    })
+  },
+
+  onJobClassChange(e) {
+    const value = this.data.currentJobClassOptions[e.detail.value]
+    this.setData({ 'form.jobClass': value })
+  },
+
+  onRaceChange(e) {
+    const race = this.data.raceOptions[e.detail.value]
+    this.setData({
+      'form.race': race,
+      'form.className': '',
+      currentClassOptions: this.data.classMap[race]
+    })
+  },
+
+  onClassChange(e) {
+    const value = this.data.currentClassOptions[e.detail.value]
+    this.setData({ 'form.className': value })
+  },
+
   submitSignup() {
     const { form, roomId, mySignup } = this.data
-    if (!form.charName || !form.jobType || !form.power) {
+    if (!form.race || !form.className || !form.charName || !form.jobType || !form.jobClass || !form.power) {
       wx.showToast({ title: '请填写必填信息', icon: 'none' })
       return
     }
@@ -116,6 +160,16 @@ Page({
           })
         }
       }
+    })
+  },
+
+  copyName(e) {
+    const { name, server } = e.currentTarget.dataset
+    const serverAbbr = (server || '').substring(0, 2)
+    const text = `${name}[${serverAbbr}]`
+    wx.setClipboardData({
+      data: text,
+      success: () => wx.showToast({ title: `已复制：${text}`, icon: 'none' })
     })
   },
 

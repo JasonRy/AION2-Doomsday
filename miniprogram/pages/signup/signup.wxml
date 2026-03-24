@@ -31,20 +31,48 @@
 <!-- 报名表单 -->
 <view wx:if="{{showForm && !mySignup}}" class="form">
   <view class="form-item">
+    <view class="picker-inline-row">
+      <view class="picker-inline-col col-narrow">
+        <text class="label">种族 *</text>
+        <picker mode="selector" range="{{raceOptions}}" bindchange="onRaceChange">
+          <view class="input picker-select">{{form.race || '请选择种族'}}</view>
+        </picker>
+      </view>
+      <view class="picker-inline-col col-wide">
+        <text class="label">服务器 *</text>
+        <picker mode="selector" range="{{currentClassOptions}}" bindchange="onClassChange" disabled="{{!form.race}}">
+          <view class="input picker-select {{!form.race ? 'picker-disabled' : ''}}">{{form.className || (form.race ? '请选择服务器' : '请选择种族')}}</view>
+        </picker>
+      </view>
+    </view>
+  </view>
+  <view class="form-item">
     <text class="label">角色名 *</text>
     <input class="input" placeholder="输入你的角色名" data-field="charName" bindinput="onInput" value="{{form.charName}}"/>
   </view>
   <view class="form-item">
-    <text class="label">职业/类型 *</text>
-    <input class="input" placeholder="例如：剑刃/坦克/治疗" data-field="jobType" bindinput="onInput" value="{{form.jobType}}"/>
+    <view class="picker-inline-row">
+      <view class="picker-inline-col">
+        <text class="label">类型 *</text>
+        <picker mode="selector" range="{{jobTypeOptions}}" bindchange="onJobTypeChange">
+          <view class="input picker-select">{{form.jobType || '请选择类型'}}</view>
+        </picker>
+      </view>
+      <view class="picker-inline-col">
+        <text class="label">职业 *</text>
+        <picker mode="selector" range="{{currentJobClassOptions}}" bindchange="onJobClassChange" disabled="{{!form.jobType}}">
+          <view class="input picker-select {{!form.jobType ? 'picker-disabled' : ''}}">{{form.jobClass || (form.jobType ? '请选择职业' : '请选择职业')}}</view>
+        </picker>
+      </view>
+    </view>
   </view>
   <view class="form-item">
-    <text class="label">战力/等级 *</text>
-    <input class="input" placeholder="例如：85级 / 战力12000" data-field="power" bindinput="onInput" value="{{form.power}}"/>
+    <text class="label">装等 *</text>
+    <input class="input" placeholder="例如：3000" data-field="power" bindinput="onInput" value="{{form.power}}"/>
   </view>
   <view class="form-item">
     <text class="label">备注</text>
-    <input class="input" placeholder="选填，例如：只能打前半段" data-field="remark" bindinput="onInput" value="{{form.remark}}"/>
+    <input class="input" placeholder="选填" data-field="remark" bindinput="onInput" value="{{form.remark}}"/>
   </view>
   <button class="submit-btn" bindtap="submitSignup">确认报名</button>
 </view>
@@ -62,21 +90,17 @@
     wx:key="_id"
     class="signup-card"
   >
+    <button wx:if="{{isLeader}}" class="action-btn kick" catchtap="kickPlayer" data-id="{{item._id}}">✕</button>
     <view class="card-left">
       <text class="rank">{{index + 1}}</text>
       <view class="card-info">
         <text class="char-name">{{item.charName}}</text>
-        <text class="job">{{item.jobType}} · {{item.power}}</text>
+        <text class="job">{{item.race}} · {{item.className}}</text>
+        <text class="job">{{item.jobType}} · {{item.jobClass}} · {{item.power}}</text>
         <text wx:if="{{item.remark}}" class="remark">💬 {{item.remark}}</text>
       </view>
     </view>
-
-    <!-- 队长操作 -->
-    <view wx:if="{{isLeader}}" class="card-actions">
-      <button class="action-btn" bindtap="moveUp" data-index="{{index}}">↑</button>
-      <button class="action-btn" bindtap="moveDown" data-index="{{index}}">↓</button>
-      <button class="action-btn kick" bindtap="kickPlayer" data-id="{{item._id}}">✕</button>
-    </view>
+    <button class="copy-btn" catchtap="copyName" data-name="{{item.charName}}" data-server="{{item.className}}">复制名称</button>
   </view>
 </view>
 

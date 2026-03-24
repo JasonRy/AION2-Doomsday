@@ -1,7 +1,9 @@
 .container {
   min-height: 100vh;
   background: #1a1a2e;
-  padding: 30rpx;
+  padding: 12rpx;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .header {
@@ -56,6 +58,15 @@
   font-size: 30rpx;
   color: #e0d5b0;
   text-align: center;
+  box-sizing: border-box;
+}
+
+.picker-left {
+  text-align: left;
+}
+
+.picker-full {
+  width: 100%;
 }
 
 .submit-btn {

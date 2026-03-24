@@ -7,7 +7,7 @@
 <view class="form">
 
   <view class="form-item">
-    <text class="label">房间名称</text>
+    <text class="label">队伍名称</text>
     <input
       class="input"
       placeholder="例如：今晚深渊组队"
@@ -18,21 +18,17 @@
   </view>
 
   <view class="form-item">
-    <text class="label">副本名称</text>
-    <input
-      class="input"
-      placeholder="例如：混沌深渊、神圣之地"
-      value="{{form.dungeonName}}"
-      data-field="dungeonName"
-      bindinput="onInput"
-    />
+    <text class="label">副本选择</text>
+    <picker mode="selector" range="{{dungeonOptions}}" bindchange="onDungeonChange">
+      <view class="picker-box picker-left picker-full">{{form.dungeonName || '请选择副本'}}</view>
+    </picker>
   </view>
 
   <view class="form-item">
     <text class="label">开团时间</text>
     <view class="picker-row">
       <picker mode="date" value="{{raidDate}}" bindchange="onDateChange">
-        <view class="picker-box">{{raidDate}}</view>
+        <view class="picker-box picker-full">{{raidDate}}</view>
       </picker>
       <picker mode="time" value="{{raidHour}}" bindchange="onTimeChange">
         <view class="picker-box">{{raidHour}}</view>

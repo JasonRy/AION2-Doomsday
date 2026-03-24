@@ -16,14 +16,17 @@
       <text>暂无开放的副本，等待队长召集...</text>
     </view>
 
-    <view 
-      wx:for="{{rooms}}" 
+    <view
+      wx:for="{{rooms}}"
       wx:key="_id"
       class="room-card"
       bindtap="enterRoom"
       data-id="{{item._id}}"
     >
-      <text class="room-name">{{item.name}}</text>
+      <view class="room-card-top">
+        <text class="room-name">{{item.name}}</text>
+        <view wx:if="{{isLeader}}" class="delete-btn" catchtap="deleteRoom" data-id="{{item._id}}">✕</view>
+      </view>
       <view class="room-status {{item.locked ? 'locked' : 'open'}}">
         <text>{{item.locked ? '🔒 已锁定' : '✅ 报名中'}}</text>
       </view>
