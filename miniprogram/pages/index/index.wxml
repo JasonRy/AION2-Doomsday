@@ -23,11 +23,9 @@
       bindtap="enterRoom"
       data-id="{{item._id}}"
     >
-      <view class="room-top">
-        <text class="room-name">{{item.name}}</text>
-        <text class="room-status {{item.locked ? 'locked' : 'open'}}">
-          {{item.locked ? '🔒 已锁定' : '✅ 报名中'}}
-        </text>
+      <text class="room-name">{{item.name}}</text>
+      <view class="room-status {{item.locked ? 'locked' : 'open'}}">
+        <text>{{item.locked ? '🔒 已锁定' : '✅ 报名中'}}</text>
       </view>
       <view class="room-info">
         <text>副本：{{item.dungeonName}}</text>

@@ -4,6 +4,8 @@ Page({
   data: {
     roomId: '',
     mode: 'create',
+    raidDate: '',
+    raidHour: '20:00',
     form: {
       name: '',
       dungeonName: '',
@@ -13,7 +15,13 @@ Page({
   },
 
   onLoad(options) {
-    this.setData({ mode: options.mode })
+    const now = new Date()
+    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    this.setData({
+      mode: options.mode,
+      raidDate: date,
+      'form.raidTime': `${date} 20:00`
+    })
     if (options.roomId) {
       this.setData({ roomId: options.roomId })
       this.loadRoom(options.roomId)
@@ -32,6 +40,22 @@ Page({
     const field = e.currentTarget.dataset.field
     const value = field === 'maxPlayers' ? parseInt(e.detail.value) : e.detail.value
     this.setData({ [`form.${field}`]: value })
+  },
+
+  onDateChange(e) {
+    const date = e.detail.value
+    this.setData({
+      raidDate: date,
+      'form.raidTime': `${date} ${this.data.raidHour}`
+    })
+  },
+
+  onTimeChange(e) {
+    const hour = e.detail.value
+    this.setData({
+      raidHour: hour,
+      'form.raidTime': `${this.data.raidDate} ${hour}`
+    })
   },
 
   submitRoom() {

@@ -57,33 +57,25 @@
   margin-bottom: 24rpx;
 }
 
-.room-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20rpx;
-  padding-bottom: 20rpx;
-  border-bottom: 1rpx solid #2a2a4a;
-}
-
 .room-name {
-  flex: 1;
-  min-width: 0;
+  display: block;
   font-size: 34rpx;
   font-weight: bold;
   color: #e0d5b0;
-  margin-right: 20rpx;
+  margin-bottom: 12rpx;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .room-status {
-  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 24rpx;
   padding: 6rpx 16rpx;
   border-radius: 20rpx;
-  line-height: 1.4;
+  margin-bottom: 20rpx;
 }
 
 .open {
@@ -100,6 +92,8 @@
   display: flex;
   flex-direction: column;
   gap: 8rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #2a2a4a;
 }
 
 .room-info text {

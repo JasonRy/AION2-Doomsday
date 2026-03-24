@@ -30,13 +30,14 @@
 
   <view class="form-item">
     <text class="label">开团时间</text>
-    <input
-      class="input"
-      placeholder="例如：今晚 21:00"
-      value="{{form.raidTime}}"
-      data-field="raidTime"
-      bindinput="onInput"
-    />
+    <view class="picker-row">
+      <picker mode="date" value="{{raidDate}}" bindchange="onDateChange">
+        <view class="picker-box">{{raidDate}}</view>
+      </picker>
+      <picker mode="time" value="{{raidHour}}" bindchange="onTimeChange">
+        <view class="picker-box">{{raidHour}}</view>
+      </picker>
+    </view>
   </view>
 
   <view class="form-item">
