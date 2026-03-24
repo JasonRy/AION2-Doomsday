@@ -21,6 +21,10 @@
     <button class="signup-btn" bindtap="toggleForm">
       {{showForm ? '▲ 收起' : '⚔️ 我要报名'}}
     </button>
+    <view class="pick-row">
+      <button class="pick-btn" bindtap="pickFromMyCharacters">从我的角色</button>
+      <button class="pick-btn" bindtap="pickFromList">从登记列表</button>
+    </view>
   </view>
   <view wx:else class="already-signed">
     <text>✅ 你已报名（{{mySignup.charName}}）</text>
@@ -47,7 +51,13 @@
     </view>
   </view>
   <view class="form-item">
-    <text class="label">角色名 *</text>
+    <view class="label-row">
+      <text class="label">角色名 *</text>
+      <view class="trad-toggle">
+        <text class="trad-label">{{useTraditional ? '繁' : '简'}}</text>
+        <switch checked="{{useTraditional}}" bindchange="onToggleTraditional" color="#c9a84c" style="transform:scale(0.7);transform-origin:right center;"/>
+      </view>
+    </view>
     <input class="input" placeholder="输入你的角色名" data-field="charName" bindinput="onInput" value="{{form.charName}}"/>
   </view>
   <view class="form-item">

@@ -1,4 +1,5 @@
 const db = wx.cloud.database()
+const { toTraditional } = require('../../utils/s2t')
 
 Page({
   data: {
@@ -30,7 +31,9 @@ Page({
       power: '',
       remark: ''
     },
-    showForm: false
+    showForm: false,
+    useTraditional: false,
+    charNameOriginal: ''
   },
 
   onLoad(options) {
@@ -41,7 +44,7 @@ Page({
   },
 
   onShow() {
-    this.loadSignups()
+    setTimeout(() => this.loadSignups(), 500)
   },
 
   getOpenid() {
@@ -50,17 +53,24 @@ Page({
       success: res => {
         const openid = res.result.openid
         this.setData({ openid })
-        if (openid ==='owXNx3XHEEADIqgsjda2ce1l3LZY') {
-          this.setData({ isLeader: true })
-        }
+        this.updateLeaderStatus()
       }
     })
+  },
+
+  updateLeaderStatus() {
+    const { openid, room } = this.data
+    if (openid && room.creatorOpenid) {
+      this.setData({ isLeader: openid === room.creatorOpenid })
+    }
   },
 
   loadRoom() {
     db.collection('rooms').doc(this.data.roomId).get({
       success: res => {
-        this.setData({ room: res.data })
+        this.setData({ room: res.data }, () => {
+          this.updateLeaderStatus()
+        })
       }
     })
   },
@@ -83,9 +93,78 @@ Page({
     this.setData({ showForm: !this.data.showForm })
   },
 
+  pickFromMyCharacters() {
+    wx.navigateTo({
+      url: '/pages/myCharacters/myCharacters?select=1',
+      events: {
+        characterSelected: char => {
+          this.setData({
+            showForm: true,
+            'form.race': char.race,
+            'form.className': char.className,
+            'form.charName': char.charName,
+            'form.jobType': char.jobType,
+            'form.jobClass': char.jobClass,
+            'form.power': char.power,
+            'form.remark': char.remark || '',
+            currentClassOptions: this.data.classMap[char.race] || [],
+            currentJobClassOptions: this.data.jobClassMap[char.jobType] || []
+          })
+        }
+      }
+    })
+  },
+
+  pickFromList() {
+    const { roomId, signups } = this.data
+    const joinedOpenids = signups.map(s => s._openid).join(',')
+    wx.navigateTo({
+      url: `/pages/registerList/registerList?select=1&roomId=${roomId}&joined=${joinedOpenids}`,
+      events: {
+        memberSelected: member => {
+          db.collection('signups').add({
+            data: {
+              charName: member.charName,
+              race: member.race,
+              className: member.className,
+              jobType: member.jobType,
+              jobClass: member.jobClass,
+              power: member.power,
+              remark: member.remark || '',
+              roomId,
+              order: 999,
+              createTime: db.serverDate()
+            },
+            success: () => {
+              wx.showToast({ title: '加入成功！', icon: 'success' })
+              setTimeout(() => this.loadSignups(), 300)
+            },
+            fail: err => {
+              console.error('pickFromList add fail', err)
+              wx.showToast({ title: '加入失败，请重试', icon: 'none' })
+            }
+          })
+        }
+      }
+    })
+  },
+
   onInput(e) {
     const field = e.currentTarget.dataset.field
-    this.setData({ [`form.${field}`]: e.detail.value })
+    let value = e.detail.value
+    if (field === 'charName' && this.data.useTraditional) {
+      value = toTraditional(value)
+    }
+    this.setData({ [`form.${field}`]: value })
+  },
+
+  onToggleTraditional(e) {
+    const useTraditional = e.detail.value
+    if (useTraditional) {
+      this.setData({ useTraditional, charNameOriginal: this.data.form.charName, 'form.charName': toTraditional(this.data.form.charName) })
+    } else {
+      this.setData({ useTraditional, 'form.charName': this.data.charNameOriginal, charNameOriginal: '' })
+    }
   },
 
   onJobTypeChange(e) {

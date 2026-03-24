@@ -54,6 +54,17 @@
   margin-bottom: 24rpx;
 }
 
+.signup-btn-row {
+  display: flex;
+  gap: 16rpx;
+}
+
+.pick-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 12rpx;
+}
+
 .signup-btn {
   background: linear-gradient(135deg, #c9a84c, #a0722a);
   color: #1a1a2e;
@@ -61,6 +72,16 @@
   font-size: 32rpx;
   border-radius: 12rpx;
   border: none;
+  margin-bottom: 0;
+}
+
+.pick-btn {
+  flex: 1;
+  background: #16213e;
+  color: #c9a84c;
+  font-size: 28rpx;
+  border-radius: 12rpx;
+  border: 1rpx solid #c9a84c;
 }
 
 .already-signed {
@@ -97,6 +118,28 @@
 
 .form-item {
   margin-bottom: 24rpx;
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10rpx;
+}
+
+.label-row .label {
+  margin-bottom: 0;
+}
+
+.trad-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.trad-label {
+  font-size: 24rpx;
+  color: #c9a84c;
+  margin-right: -8rpx;
 }
 
 .label {

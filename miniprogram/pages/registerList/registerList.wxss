@@ -1,0 +1,182 @@
+.container {
+  min-height: 100vh;
+  background: #1a1a2e;
+  padding: 12rpx 12rpx 140rpx;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.empty {
+  text-align: center;
+  color: #666688;
+  font-size: 28rpx;
+  margin-top: 100rpx;
+}
+
+.member-card {
+  background: #16213e;
+  border: 1rpx solid #2a2a4a;
+  border-radius: 12rpx;
+  padding: 20rpx 16rpx 0;
+  margin-bottom: 12rpx;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.card-normal,
+.card-selected,
+.card-joined {
+  padding-bottom: 20rpx;
+}
+
+/* 选择模式三态 */
+.card-normal {
+  border-color: #2a2a4a;
+}
+
+.card-selected {
+  border: 2rpx solid #c9a84c;
+  background: #1e1a0e;
+}
+
+.card-joined {
+  border-color: #2a2a4a;
+  opacity: 0.45;
+}
+
+/* 角标 */
+.card-badge {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+}
+
+.badge-default {
+  background: #2a2a4a;
+  color: #8888aa;
+}
+
+.badge-selected {
+  background: #c9a84c;
+  color: #1a1a2e;
+  font-weight: bold;
+}
+
+.badge-joined {
+  background: #1a3a2a;
+  color: #4caf82;
+}
+
+/* 底部确认栏 */
+.confirm-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16rpx;
+  background: #1a1a2e;
+  border-top: 1rpx solid #2a2a4a;
+}
+
+.confirm-btn {
+  background: linear-gradient(135deg, #c9a84c, #a0722a);
+  color: #1a1a2e;
+  font-weight: bold;
+  font-size: 30rpx;
+  border-radius: 12rpx;
+  border: none;
+}
+
+.confirm-disabled {
+  background: #2a2a4a;
+  color: #666688;
+}
+
+.kick-btn {
+  position: absolute;
+  top: 16rpx;
+  right: 16rpx;
+  background: #3a1a1a;
+  color: #cf6679;
+  font-size: 22rpx;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  min-width: 0 !important;
+  width: 48rpx !important;
+  height: 48rpx;
+  line-height: 48rpx;
+}
+
+.card-left {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.rank {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #c9a84c;
+  width: 50rpx;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.char-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #e0d5b0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.job {
+  display: block;
+  font-size: 24rpx;
+  color: #8888aa;
+  margin-top: 6rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remark {
+  display: block;
+  font-size: 22rpx;
+  color: #666688;
+  margin-top: 6rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copy-btn {
+  display: block;
+  width: 100% !important;
+  margin-top: 16rpx;
+  padding: 16rpx 0;
+  font-size: 26rpx;
+  color: #8888aa;
+  background: #1a1a2e;
+  border: none;
+  border-top: 1rpx solid #2a2a4a;
+  border-radius: 0;
+  min-width: 0 !important;
+  line-height: 1.6;
+  text-align: center;
+  box-sizing: border-box;
+}

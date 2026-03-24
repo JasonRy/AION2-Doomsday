@@ -3,7 +3,11 @@
   "compileType": "miniprogram",
   "libVersion": "3.2.4",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      {
+        "type": "folder",
+        "value": "cloudfunctions"
+      }],
     "include": []
   },
   "setting": {

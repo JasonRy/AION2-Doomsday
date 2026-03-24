@@ -21,12 +21,7 @@ Page({
     wx.cloud.callFunction({
       name: 'getOpenid',
       success: res => {
-        const openid = res.result.openid
-        this.setData({ openid })
-        // 队长openid写死，你自己的openid
-        if (openid ==='owXNx3XHEEADIqgsjda2ce1l3LZY') {
-          this.setData({ isLeader: true })
-        }
+        this.setData({ openid: res.result.openid })
       }
     })
   },
@@ -49,6 +44,18 @@ Page({
   enterRoom(e) {
     const roomId = e.currentTarget.dataset.id
     wx.navigateTo({ url: `/pages/signup/signup?roomId=${roomId}` })
+  },
+
+  goRegister() {
+    wx.navigateTo({ url: '/pages/register/register' })
+  },
+
+  goRegisterList() {
+    wx.navigateTo({ url: '/pages/registerList/registerList' })
+  },
+
+  goMyCharacters() {
+    wx.navigateTo({ url: '/pages/myCharacters/myCharacters' })
   },
 
   // 删除队伍（队长专用）

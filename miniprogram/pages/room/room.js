@@ -73,15 +73,21 @@ Page({
     }
 
     if (mode === 'create') {
-      db.collection('rooms').add({
-        data: {
-          ...form,
-          locked: false,
-          createTime: db.serverDate()
-        },
-        success: () => {
-          wx.showToast({ title: '创建成功！' })
-          setTimeout(() => wx.navigateBack(), 1500)
+      wx.cloud.callFunction({
+        name: 'getOpenid',
+        success: res => {
+          db.collection('rooms').add({
+            data: {
+              ...form,
+              locked: false,
+              creatorOpenid: res.result.openid,
+              createTime: db.serverDate()
+            },
+            success: () => {
+              wx.showToast({ title: '创建成功！' })
+              setTimeout(() => wx.navigateBack(), 1500)
+            }
+          })
         }
       })
     } else {

@@ -1,0 +1,42 @@
+<view class="container">
+
+  <view wx:if="{{members.length === 0}}" class="empty">
+    <text>暂无登记队员</text>
+  </view>
+
+  <view
+    wx:for="{{members}}"
+    wx:key="_id"
+    class="member-card {{selectMode ? (joinedOpenids.includes(item._openid) ? 'card-joined' : (selectedId === item._id ? 'card-selected' : 'card-normal')) : ''}}"
+    bindtap="selectMember"
+    data-id="{{item._id}}"
+  >
+    <!-- 选择模式状态角标 -->
+    <view wx:if="{{selectMode}}" class="card-badge {{joinedOpenids.includes(item._openid) ? 'badge-joined' : (selectedId === item._id ? 'badge-selected' : 'badge-default')}}">
+      <text>{{joinedOpenids.includes(item._openid) ? '已在队' : (selectedId === item._id ? '✓' : '+')}}</text>
+    </view>
+
+    <!-- 非选择模式：踢人按钮 -->
+    <button wx:if="{{!selectMode && (isLeader || item._openid === openid)}}" class="kick-btn" catchtap="kickMember" data-id="{{item._id}}">✕</button>
+
+    <view class="card-left">
+      <text class="rank">{{index + 1}}</text>
+      <view class="card-info">
+        <text class="char-name">{{item.charName}}</text>
+        <text class="job">{{item.race}} · {{item.className}}</text>
+        <text class="job">{{item.jobType}} · {{item.jobClass}} · {{item.power}}</text>
+        <text wx:if="{{item.remark}}" class="remark">💬 {{item.remark}}</text>
+      </view>
+    </view>
+
+    <button wx:if="{{!selectMode}}" class="copy-btn" catchtap="copyName" data-name="{{item.charName}}" data-server="{{item.className}}">复制名称</button>
+  </view>
+
+  <!-- 选择模式确认栏 -->
+  <view wx:if="{{selectMode}}" class="confirm-bar">
+    <button class="confirm-btn {{selectedId ? '' : 'confirm-disabled'}}" bindtap="confirmSelect">
+      {{selectedId ? '确认加入队伍' : '请选择一名队员'}}
+    </button>
+  </view>
+
+</view>

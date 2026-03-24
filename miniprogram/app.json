@@ -2,7 +2,10 @@
   "pages": [
     "pages/index/index",
     "pages/room/room",
-    "pages/signup/signup"
+    "pages/signup/signup",
+    "pages/register/register",
+    "pages/registerList/registerList",
+    "pages/myCharacters/myCharacters"
   ],
   "window": {
     "backgroundTextStyle": "dark",

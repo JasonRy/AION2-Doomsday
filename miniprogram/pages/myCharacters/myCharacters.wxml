@@ -1,0 +1,105 @@
+<view class="container">
+
+  <!-- 添加按钮（非选择模式） -->
+  <view wx:if="{{!selectMode}}" class="add-btn-wrap">
+    <button class="add-btn" bindtap="showAddForm">+ 添加角色</button>
+  </view>
+
+  <!-- 选择模式提示 -->
+  <view wx:if="{{selectMode}}" class="select-hint">
+    <text>点击角色卡片快速填入报名信息</text>
+  </view>
+
+  <!-- 添加/编辑表单 -->
+  <view wx:if="{{showForm}}" class="form">
+    <text class="form-title">{{editingId ? '编辑角色' : '添加角色'}}</text>
+
+    <view class="form-item">
+      <view class="picker-inline-row">
+        <view class="picker-inline-col col-narrow">
+          <text class="label">种族 *</text>
+          <picker mode="selector" range="{{raceOptions}}" bindchange="onRaceChange">
+            <view class="input picker-select">{{form.race || '请选择种族'}}</view>
+          </picker>
+        </view>
+        <view class="picker-inline-col col-wide">
+          <text class="label">服务器 *</text>
+          <picker mode="selector" range="{{currentClassOptions}}" bindchange="onClassChange" disabled="{{!form.race}}">
+            <view class="input picker-select {{!form.race ? 'picker-disabled' : ''}}">{{form.className || (form.race ? '请选择服务器' : '请先选种族')}}</view>
+          </picker>
+        </view>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <view class="label-row">
+        <text class="label">角色名 *</text>
+        <view class="trad-toggle">
+          <text class="trad-label">{{useTraditional ? '繁' : '简'}}</text>
+          <switch checked="{{useTraditional}}" bindchange="onToggleTraditional" color="#c9a84c" style="transform:scale(0.7);transform-origin:right center;"/>
+        </view>
+      </view>
+      <input class="input" placeholder="输入你的角色名" data-field="charName" bindinput="onInput" value="{{form.charName}}"/>
+    </view>
+
+    <view class="form-item">
+      <view class="picker-inline-row">
+        <view class="picker-inline-col">
+          <text class="label">类型 *</text>
+          <picker mode="selector" range="{{jobTypeOptions}}" bindchange="onJobTypeChange">
+            <view class="input picker-select">{{form.jobType || '请选择类型'}}</view>
+          </picker>
+        </view>
+        <view class="picker-inline-col">
+          <text class="label">职业 *</text>
+          <picker mode="selector" range="{{currentJobClassOptions}}" bindchange="onJobClassChange" disabled="{{!form.jobType}}">
+            <view class="input picker-select {{!form.jobType ? 'picker-disabled' : ''}}">{{form.jobClass || '请选择职业'}}</view>
+          </picker>
+        </view>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <text class="label">装等 *</text>
+      <input class="input" type="number" placeholder="例如：3000" data-field="power" bindinput="onInput" value="{{form.power}}"/>
+    </view>
+
+    <view class="form-item">
+      <text class="label">备注</text>
+      <input class="input" placeholder="选填" data-field="remark" bindinput="onInput" value="{{form.remark}}"/>
+    </view>
+
+    <view class="form-btns">
+      <button class="cancel-form-btn" bindtap="cancelForm">取消</button>
+      <button class="submit-btn" bindtap="submitForm">{{editingId ? '保存修改' : '确认添加'}}</button>
+    </view>
+  </view>
+
+  <!-- 角色列表 -->
+  <view wx:if="{{characters.length === 0}}" class="empty">
+    <text>暂无角色，点击上方添加</text>
+  </view>
+
+  <view
+    wx:for="{{characters}}"
+    wx:key="_id"
+    class="char-card {{selectMode ? 'card-selectable' : ''}}"
+    bindtap="selectCharacter"
+    data-id="{{item._id}}"
+  >
+    <view class="char-main">
+      <view class="char-info">
+        <text class="char-name">{{item.charName}}</text>
+        <text class="char-meta">{{item.race}} · {{item.className}}</text>
+        <text class="char-meta">{{item.jobType}} · {{item.jobClass}} · {{item.power}}</text>
+        <text wx:if="{{item.remark}}" class="char-remark">💬 {{item.remark}}</text>
+      </view>
+      <view wx:if="{{selectMode}}" class="select-arrow">›</view>
+    </view>
+    <view wx:if="{{!selectMode}}" class="char-actions">
+      <button class="edit-btn" catchtap="editCharacter" data-id="{{item._id}}">编辑</button>
+      <button class="delete-btn" catchtap="deleteCharacter" data-id="{{item._id}}">删除</button>
+    </view>
+  </view>
+
+</view>
