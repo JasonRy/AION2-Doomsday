@@ -1,0 +1,444 @@
+<view class="page-wrap">
+
+  <!-- 搜索区 -->
+  <view class="search-box">
+
+    <!-- 第一行：种族筛选 -->
+    <view class="race-filter">
+      <view wx:for="{{raceOptions}}" wx:key="value"
+        class="race-tag {{selectedRace === item.value ? 'race-tag-active' : ''}}"
+        bindtap="onRaceTap" data-value="{{item.value}}">
+        {{item.label}}
+      </view>
+    </view>
+
+    <!-- 第二行：服务器 + 角色名 + 简繁toggle -->
+    <view class="search-row">
+      <picker class="server-picker" mode="selector"
+        range="{{servers}}" range-key="serverName"
+        value="{{serverIndex}}" bindchange="onServerChange">
+        <view class="picker-btn">
+          <text>{{servers[serverIndex].serverName || '选择服务器'}}</text>
+          <text class="picker-arrow">▾</text>
+        </view>
+      </picker>
+      <input class="search-input" placeholder="角色名"
+        value="{{keyword}}" bindinput="onKeywordInput"
+        confirm-type="search" bindconfirm="onSearch" />
+      <view class="convert-toggle" bindtap="onToggleConvert">
+        <view class="toggle-track {{autoConvert ? 'toggle-on' : ''}}">
+          <view class="toggle-thumb"></view>
+        </view>
+        <text class="toggle-label">{{autoConvert ? '繁' : '简'}}</text>
+      </view>
+    </view>
+
+    <!-- 第三行：查询按钮 -->
+    <button class="search-btn" bindtap="onSearch" loading="{{loading}}">查询角色</button>
+
+  </view>
+
+  <!-- 历史记录 -->
+  <view class="history-section" wx:if="{{historyList.length > 0 && !loading}}">
+    <view class="history-header" bindtap="onToggleHistory">
+      <text class="history-title">最近查詢</text>
+      <text class="history-toggle">{{showHistory ? '▴' : '▾'}}</text>
+    </view>
+    <view wx:if="{{showHistory}}" class="history-list">
+      <view wx:for="{{historyList}}" wx:key="characterId"
+            class="history-card {{item.race == 1 ? 'race-angel' : item.race == 2 ? 'race-demon' : ''}}"
+            bindtap="onHistoryTap" data-item="{{item}}">
+        <image class="history-avatar" src="{{item.profileImage}}" mode="aspectFill" />
+        <view class="history-info">
+          <text class="history-name">{{item.characterName}}</text>
+          <view class="history-meta-row">
+            <text class="history-server">{{item.serverName}}</text>
+            <text class="history-sep">·</text>
+            <text class="history-class">{{item.className}}</text>
+          </view>
+          <text class="history-cp">{{item.combatPower}}</text>
+          <view class="history-level-row">
+            <text class="history-level">Lv.{{item.level}}</text>
+            <text class="history-sep" wx:if="{{item.itemLevel > 0}}">·</text>
+            <text class="history-il" wx:if="{{item.itemLevel > 0}}">道具 {{item.itemLevel}}</text>
+          </view>
+        </view>
+        <view class="history-actions">
+          <text class="history-del-btn"
+                catchtap="onHistoryRemove" data-id="{{item.characterId}}">✕</text>
+          <text class="history-fav-btn {{item.isFavorite ? 'fav-active' : ''}}"
+                catchtap="onHistoryFavorite" data-id="{{item.characterId}}">★</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 结果列表 -->
+  <view wx:if="{{!loading}}">
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{searched && results.length === 0}}">
+      <text class="empty-icon">✦ ✦ ✦</text>
+      <text class="empty-sub">未找到匹配角色</text>
+    </view>
+
+    <!-- 搜索结果 -->
+    <view wx:if="{{results.length > 0}}">
+      <view class="history-header">
+        <text class="history-title">搜索結果</text>
+      </view>
+      <view class="history-list">
+        <view wx:for="{{results}}" wx:key="characterId"
+          class="history-card {{item.race == 1 ? 'race-angel' : item.race == 2 ? 'race-demon' : ''}}"
+          bindtap="onCharTap" data-char="{{item}}" data-index="{{index}}">
+          <view class="history-avatar result-avatar {{item.race == 1 ? 'result-avatar-angel' : item.race == 2 ? 'result-avatar-demon' : ''}}"></view>
+          <view class="history-info">
+            <text class="history-name">{{item.characterName}}</text>
+            <view class="history-meta-row">
+              <text class="history-server">{{item.serverName}}</text>
+              <text class="history-sep">·</text>
+              <text class="history-class">{{item.className}}</text>
+            </view>
+            <text class="history-level">Lv.{{item.level}}</text>
+          </view>
+          <text class="char-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <text>查询中...</text>
+  </view>
+
+  <!-- 详情弹层 -->
+  <view class="detail-mask" wx:if="{{showDetail}}">
+    <view class="detail-panel" catchtap="">
+
+      <!-- 固定关闭按钮 -->
+      <view class="detail-close-row">
+        <text class="detail-close-btn" bindtap="onCloseDetail">✕</text>
+      </view>
+
+      <!-- 加载中 -->
+      <view class="detail-loading" wx:if="{{detailLoading}}">
+        <text>加载中...</text>
+      </view>
+
+      <!-- 无数据 -->
+      <view class="detail-error" wx:if="{{!detailLoading && (!detailInfo || !detailInfo.profile)}}">
+        <text>暂无详细数据</text>
+      </view>
+
+      <block wx:if="{{!detailLoading && detailInfo && detailInfo.profile}}">
+
+        <!-- Profile 卡片 -->
+        <view class="profile-card {{detailInfo.profile.raceId == 1 ? 'profile-angel' : 'profile-demon'}}">
+          <view class="profile-left">
+
+            <!-- 第一行：服务器 · 种族 · #序号 · 职业 -->
+            <view class="profile-meta-row">
+              <text class="p-server">{{detailInfo.profile.serverName}}</text>
+              <text class="p-dot">·</text>
+              <text class="p-race {{detailInfo.profile.raceId == 1 ? 'race-angel-text' : 'race-demon-text'}}">{{detailInfo.profile.raceName}}</text>
+              <text class="p-dot">·</text>
+              <text class="p-rank">{{detailInfo.profile.raceId == 1 ? '天' : '魔'}}{{detailServerNum}}</text>
+            </view>
+            <text class="p-class">{{detailInfo.profile.className}}</text>
+
+            <!-- 名称 -->
+            <text class="p-name">{{detailInfo.profile.characterName}}</text>
+
+            <!-- 称号 -->
+            <text class="p-title grade-text-{{detailInfo.profile.titleGrade}}">{{detailInfo.profile.titleName}}</text>
+
+            <!-- 数值 -->
+            <view class="p-stats">
+              <view class="p-stat-row">
+                <text class="p-stat-lbl">戰力</text>
+                <text class="p-stat-val gold">{{detailInfo.profile.combatPower}}</text>
+              </view>
+              <view class="p-stat-row">
+                <text class="p-stat-lbl">道具等級</text>
+                <text class="p-stat-val">{{detailItemLevel}}</text>
+                <text class="p-stat-sep"> · </text>
+                <text class="p-stat-lbl">角色等級</text>
+                <text class="p-stat-val">{{detailInfo.profile.characterLevel}}</text>
+              </view>
+            </view>
+
+          </view>
+
+          <!-- 头像 -->
+          <view class="profile-right">
+            <image class="profile-avatar" src="{{detailInfo.profile.profileImage}}" mode="aspectFill" />
+          </view>
+        </view>
+
+        <!-- 装备列表 -->
+        <view class="equip-section">
+          <text class="section-ttl">装备</text>
+          <view class="equip-detail-loading" wx:if="{{detailEquipLoading}}"><text>装备加载中...</text></view>
+          <view wx:if="{{!detailEquipLoading}}" class="equip-list">
+            <view wx:for="{{detailEquipItems}}" wx:key="slotPos" class="equip-item-wrap">
+
+              <view class="equip-row">
+                <!-- 左列：装备图标 + 神石图标 -->
+                <view class="equip-icon-col">
+                  <view class="equip-cell border-{{item.grade}}">
+                    <image class="equip-icon" src="{{item.icon}}" mode="aspectFit" />
+                  </view>
+                  <view wx:if="{{item.godStoneStat && item.godStoneStat.icon}}"
+                        class="godstone-btn"
+                        hover-class="godstone-active"
+                        hover-stay-time="1500">
+                    <image class="godstone-icon" src="{{item.godStoneStat.icon}}" mode="aspectFit" />
+                    <view class="godstone-popup">
+                      <text class="godstone-popup-name">{{item.godStoneStat.name}}</text>
+                      <view wx:for="{{item.godStoneStat.statList}}" wx:for-item="gs" wx:key="index" class="godstone-popup-row">
+                        <text class="godstone-popup-stat">{{gs.desc || gs.name}}</text>
+                        <text class="godstone-popup-val" wx:if="{{gs.value}}">{{gs.value}}</text>
+                      </view>
+                    </view>
+                  </view>
+                </view>
+
+                <!-- 右侧：属性 -->
+                <view class="equip-stats">
+                  <!-- 名称行：+强化 突破 名称 -->
+                  <view class="equip-name-row">
+                    <text class="equip-enchant-tag" wx:if="{{item.enchantLevel > 0}}">+{{item.enchantLevel}}</text>
+                    <text class="equip-exceed-tag" wx:if="{{item.exceedLevel > 0}}">{{item.exceedLevel}}</text>
+                    <text class="equip-item-name grade-text-{{item.grade}}">{{item.name}}</text>
+                  </view>
+                  <text class="equip-slot-name">{{item.slotPosName}}</text>
+
+                  <!-- 双栏：左=主副属性+灵魂刻印+获得処，右=魔石 -->
+                  <view class="equip-stats-cols">
+                    <view class="equip-stats-left">
+
+                      <view wx:for="{{item.mainStatsNormal}}" wx:for-item="stat" wx:key="id" class="eq-stat-row main-stat">
+                        <text class="stat-name">{{stat.name}}</text>
+                        <text class="stat-value-main">{{stat.value}}<text class="stat-extra" wx:if="{{stat.extra && stat.extra !== '0'}}"> (+{{stat.extra}})</text></text>
+                      </view>
+                      <!-- 突破属性 -->
+                      <view wx:if="{{item.mainStatsExceed && item.mainStatsExceed.length}}" class="exceed-header">
+                        <text class="exceed-label">突破</text>
+                      </view>
+                      <view wx:for="{{item.mainStatsExceed}}" wx:for-item="stat" wx:key="id" class="eq-stat-row exceed-stat">
+                        <text class="stat-name-exceed">{{stat.name}}</text>
+                        <text class="stat-extra-exceed">+{{stat.extra}}</text>
+                      </view>
+
+                      <!-- 副属性 -->
+                      <view wx:if="{{item.subStats && item.subStats.length}}" class="stat-divider"></view>
+                      <view wx:for="{{item.subStats}}" wx:for-item="stat" wx:key="id" class="eq-stat-row sub-stat">
+                        <text class="stat-name">{{stat.name}}</text>
+                        <text class="stat-value-sub">{{stat.value}}</text>
+                      </view>
+
+                      <!-- 獲得處 -->
+                      <view wx:if="{{item.sourcesText}}" class="sources-row">
+                        <text class="sources-label">獲得處</text>
+                        <text class="sources-val">{{item.sourcesText}}</text>
+                      </view>
+
+                    </view>
+
+                    <!-- 魔石 -->
+                    <view class="equip-stats-right" wx:if="{{item.magicStoneStat && item.magicStoneStat.length}}">
+                      <text class="magic-stone-ttl">魔石</text>
+                      <view wx:for="{{item.magicStoneStat}}" wx:for-item="ms" wx:key="index" class="eq-stat-row sub-stat">
+                        <text class="stat-name">{{ms.name}}</text>
+                        <text class="stat-value-sub">{{ms.value}}</text>
+                      </view>
+                    </view>
+                  </view>
+                </view>
+              </view>
+
+            </view>
+          </view>
+        </view>
+
+        <!-- 能力值 -->
+        <view class="detail-section" wx:if="{{detailStatBasic.length}}">
+          <text class="detail-section-ttl">能力值</text>
+          <view class="stat-basic-grid">
+            <view wx:for="{{detailStatBasic}}" wx:key="type"
+                  class="stat-basic-item"
+                  hover-class="stat-item-active"
+                  hover-stay-time="1500">
+              <text class="stat-basic-type">{{item.name}}</text>
+              <text class="stat-basic-val">{{item.value}}</text>
+              <view class="stat-popup" wx:if="{{item.statSecondList && item.statSecondList.length}}">
+                <text wx:for="{{item.statSecondList}}" wx:for-item="s" wx:key="index" class="stat-popup-line">{{s}}</text>
+              </view>
+            </view>
+          </view>
+          <view class="stat-secondary-grid" wx:if="{{detailStatSecondary.length}}">
+            <view wx:for="{{detailStatSecondary}}" wx:key="type"
+                  class="stat-sec-item"
+                  hover-class="stat-item-active"
+                  hover-stay-time="1500">
+              <text class="stat-sec-name">{{item.name}}</text>
+              <text class="stat-sec-val">{{item.value}}</text>
+              <view class="stat-popup" wx:if="{{item.statSecondList && item.statSecondList.length}}">
+                <text wx:for="{{item.statSecondList}}" wx:for-item="s" wx:key="index" class="stat-popup-line">{{s}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 守护力 -->
+        <view class="detail-section" wx:if="{{detailInfo.daevanion && detailInfo.daevanion.boardList.length}}">
+          <text class="detail-section-ttl">守護力</text>
+          <view class="daev-list">
+            <view wx:for="{{detailInfo.daevanion.boardList}}" wx:key="id" class="daev-item">
+              <image class="daev-icon" src="{{item.icon}}" mode="aspectFit" />
+              <view class="daev-info">
+                <view class="daev-top">
+                  <text class="daev-name">{{item.name}}</text>
+                  <text class="daev-count">{{item.openNodeCount}}/{{item.totalNodeCount}} ({{item.openPercent}}%)</text>
+                </view>
+                <view class="daev-bar-wrap">
+                  <view class="daev-bar-fill" style="width:{{item.openPercent}}%"></view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 称号 -->
+        <view class="detail-section" wx:if="{{detailTitleGroups.length}}">
+          <view class="detail-section-head">
+            <text class="detail-section-ttl">称号</text>
+            <text class="detail-section-sub">{{detailInfo.title.ownedCount}}/{{detailInfo.title.totalCount}}</text>
+          </view>
+          <view wx:for="{{detailTitleGroups}}" wx:key="category" class="title-group">
+            <text class="title-group-label">{{item.label}}</text>
+            <view class="title-list">
+              <view wx:for="{{item.items}}" wx:for-item="t" wx:key="id"
+                    class="title-item"
+                    hover-class="title-item-active"
+                    hover-stay-time="1500">
+                <text class="title-name title-grade-{{t.grade}}">{{t.name}}</text>
+                <text class="title-owned">{{t.ownedCount}}/{{t.totalCount}}</text>
+                <view class="title-popup">
+                  <text wx:for="{{t.equipStatList}}" wx:for-item="es" wx:key="index" class="title-popup-stat">{{es.desc}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 技能 -->
+        <view class="detail-section" wx:if="{{detailSkillActive.length || detailSkillPassive.length || detailSkillDp.length}}">
+          <text class="detail-section-ttl">技能</text>
+          <view wx:if="{{detailSkillActive.length}}">
+            <text class="skill-group-ttl">主動</text>
+            <view class="skill-grid">
+              <view wx:for="{{detailSkillActive}}" wx:key="id" class="skill-item">
+                <image class="skill-icon" src="{{item.icon}}" mode="aspectFit" />
+                <text class="skill-name">{{item.name}}</text>
+                <text class="skill-level">Lv.{{item.skillLevel}}</text>
+              </view>
+            </view>
+          </view>
+          <view wx:if="{{detailSkillPassive.length}}">
+            <text class="skill-group-ttl">被動</text>
+            <view class="skill-grid">
+              <view wx:for="{{detailSkillPassive}}" wx:key="id" class="skill-item">
+                <image class="skill-icon" src="{{item.icon}}" mode="aspectFit" />
+                <text class="skill-name">{{item.name}}</text>
+                <text class="skill-level">Lv.{{item.skillLevel}}</text>
+              </view>
+            </view>
+          </view>
+          <view wx:if="{{detailSkillDp.length}}">
+            <text class="skill-group-ttl">烙印</text>
+            <view class="skill-grid">
+              <view wx:for="{{detailSkillDp}}" wx:key="id" class="skill-item">
+                <image class="skill-icon" src="{{item.icon}}" mode="aspectFit" />
+                <text class="skill-name">{{item.name}}</text>
+                <text class="skill-level">Lv.{{item.skillLevel}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 攻擊力分析 summary card -->
+        <view class="detail-section" wx:if="{{atkBreakdown && atkBreakdown.hasData}}">
+          <view class="atk-card" bindtap="onShowAtkDetail">
+            <view class="atk-card-hd">
+              <text class="detail-section-ttl" style="margin:0">攻擊力分析</text>
+              <text class="atk-card-hint">詳情 ›</text>
+            </view>
+            <view class="atk-card-body">
+              <view class="atk-card-item">
+                <text class="atk-card-lbl">固定攻擊力</text>
+                <text class="atk-card-num">{{atkBreakdown.flatTotal}}</text>
+              </view>
+              <text class="atk-card-op">× (1 + {{atkBreakdown.pctTotal}}%)</text>
+              <text class="atk-card-eq">=</text>
+              <view class="atk-card-item">
+                <text class="atk-card-lbl">最終攻擊力</text>
+                <text class="atk-card-num atk-card-gold">{{atkBreakdown.result}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+      </block>
+
+    </view>
+
+    <!-- 攻擊力詳情疊層 -->
+    <view class="atk-overlay" wx:if="{{showAtkDetail && atkBreakdown}}" catchtap="">
+      <view class="atk-ov-hd">
+        <text class="atk-ov-back" bindtap="onCloseAtkDetail">‹ 返回</text>
+        <text class="atk-ov-title">攻擊力分析</text>
+        <view class="atk-ov-hd-r"></view>
+      </view>
+      <view class="atk-ov-sum">
+        <view class="atk-os-item">
+          <text class="atk-os-lbl">固定合計</text>
+          <text class="atk-os-val">{{atkBreakdown.flatTotal}}</text>
+        </view>
+        <text class="atk-os-op">× (1 + {{atkBreakdown.pctTotal}}%)</text>
+        <text class="atk-os-eq"> = </text>
+        <view class="atk-os-item">
+          <text class="atk-os-lbl">最終攻擊力</text>
+          <text class="atk-os-val atk-os-gold">{{atkBreakdown.result}}</text>
+        </view>
+      </view>
+      <scroll-view class="atk-ov-scroll" scroll-y>
+        <view wx:for="{{atkBreakdown.groups}}" wx:key="key" class="atk-group">
+          <view class="atk-group-hd" bindtap="onToggleAtkGroup" data-index="{{index}}">
+            <view class="atk-group-info">
+              <text class="atk-group-lbl">{{item.label}}</text>
+              <text class="atk-group-item" wx:if="{{item.itemName}}">{{item.itemName}}</text>
+            </view>
+            <view class="atk-group-subs">
+              <text class="atk-group-sub-flat" wx:if="{{item.flatSub}}">{{item.flatSub}}</text>
+              <text class="atk-group-sub-pct" wx:if="{{item.pctSub}}">+{{item.pctSub}}%</text>
+            </view>
+            <text class="atk-group-arrow">{{item.expanded ? '▴' : '▾'}}</text>
+          </view>
+          <view wx:if="{{item.expanded}}" class="atk-group-body">
+            <view wx:for="{{item.entries}}" wx:for-item="entry" wx:key="index" class="atk-entry">
+              <text class="atk-entry-lbl">{{entry.label}}</text>
+              <text class="atk-entry-val {{entry.isPct ? 'atk-entry-pct' : ''}}">+{{entry.value}}{{entry.isPct ? '%' : ''}}</text>
+            </view>
+          </view>
+        </view>
+        <view class="atk-ov-pad"></view>
+      </scroll-view>
+    </view>
+
+  </view>
+
+
+</view>
