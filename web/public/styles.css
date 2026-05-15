@@ -768,6 +768,10 @@ body.light .primary-button {
   background: var(--panel-2);
   overflow: hidden;
 }
+.attr-card--empty {
+  opacity: 0.38;
+  pointer-events: none;
+}
 
 .attr-card summary {
   display: grid;

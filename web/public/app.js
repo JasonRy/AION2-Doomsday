@@ -86,6 +86,34 @@ const PRIMARY_STAT_DEFS = [
   { key: "combatSpeed", label: "戰鬥速度", names: ["戰鬥速度", "战斗速度"], ids: ["CombatSpeed"] },
   { key: "moveSpeed", label: "移動速度", names: ["移動速度", "移动速度"], ids: ["MoveSpeed"] },
 ];
+const PCT_STAT_DEFS = [
+  { key: "pAttack",     label: "攻擊力增加",   names: ["攻擊力增加", "攻击力增加"],             ids: ["DamageRatio", "AttackRatio"] },
+  { key: "pDefense",    label: "防禦力增加",   names: ["防禦力增加", "防御力增加"],             ids: ["DefenseRatio"] },
+  { key: "pHit",        label: "命中增加",     names: ["命中增加"],                             ids: ["HitRateRatio", "AccuracyRatio"] },
+  { key: "pEvasion",    label: "迴避增加",     names: ["迴避增加", "回避增加"],                 ids: ["EvasionRatio"] },
+  { key: "pCritical",   label: "暴擊增加",     names: ["暴擊增加", "暴击增加"],                 ids: ["CriticalRatio"] },
+  { key: "pCritResist", label: "暴擊抵抗增加", names: ["暴擊抵抗增加", "暴击抵抗增加"],         ids: ["CriticalResistRatio"] },
+  { key: "pBlockPen",   label: "格擋貫穿增加", names: ["格擋貫穿增加", "格挡贯穿增加"],         ids: ["BlockPenetration"] },
+  { key: "pBlock",      label: "格擋增加",     names: ["格擋增加", "格挡增加"],                 ids: ["BlockRate", "Block"] },
+  { key: "pHp",         label: "生命力增加",   names: ["生命力增加", "HP增加"],                 ids: ["HPRatio"] },
+  { key: "pMp",         label: "精神力增加",   names: ["精神力增加", "MP增加"],                 ids: ["MPRatio"] },
+];
+const OTHER_STAT_DEFS = [
+  { key: "multiHit",          label: "多段打擊擊中",   names: ["多段打擊擊中", "多段打击击中"],         ids: ["MultiHit", "MultipleHit"],             isPct: true  },
+  { key: "multiHitResist",    label: "多段打擊抵抗",   names: ["多段打擊抵抗", "多段打击抵抗"],         ids: ["MultiHitResist", "MultipleHitResist"],  isPct: true  },
+  { key: "ironWallPen",       label: "鐵壁貫穿",       names: ["鐵壁貫穿", "铁壁贯穿"],                 ids: ["IronWallPenetration", "IronWallBreak"],  isPct: true  },
+  { key: "ironWall",          label: "鐵壁",           names: ["鐵壁", "铁壁"],                         ids: ["IronWall", "IronWallRate"],             isPct: true  },
+  { key: "regenPen",          label: "再生貫穿",       names: ["再生貫穿", "再生贯穿"],                 ids: ["RegenerationPenetration", "RegenBreak"], isPct: true  },
+  { key: "regen",             label: "再生",           names: ["再生"],                                 ids: ["Regeneration", "Regen"],               isPct: true  },
+  { key: "perfect",           label: "完美",           names: ["完美"],                                 ids: ["Perfect", "PerfectAttack"],            isPct: true  },
+  { key: "perfectResist",     label: "完美抵抗",       names: ["完美抵抗"],                             ids: ["PerfectResist", "PerfectDefense"],      isPct: true  },
+  { key: "powerStrike",       label: "強擊",           names: ["強擊", "强击"],                         ids: ["PowerStrike", "StrongAttack"],          isPct: true  },
+  { key: "powerStrikeResist", label: "強擊抵抗",       names: ["強擊抵抗", "强击抵抗"],                 ids: ["PowerStrikeResist", "StrongAttackResist"], isPct: true },
+  { key: "backCrit",          label: "後方暴擊",       names: ["後方暴擊", "后方暴击"],                 ids: ["BackCritical", "BackCrit"],             isPct: false },
+  { key: "backCritResist",    label: "後方暴擊抵抗",   names: ["後方暴擊抵抗", "后方暴击抵抗"],         ids: ["BackCriticalResist", "BackCritResist"],  isPct: true  },
+  { key: "blockPen",          label: "格擋貫穿",       names: ["格擋貫穿", "格挡贯穿"],                 ids: ["BlockPenetration", "BlockBreak"],       isPct: false },
+  { key: "block",             label: "格擋",           names: ["格擋", "格挡"],                         ids: ["Block", "BlockRate"],                  isPct: false },
+];
 const HISTORY_KEY = "aion2-query-history";
 const EQUIP_SLOT_ORDER = [
   "MainHand", "SubHand",
@@ -511,7 +539,7 @@ async function loadDaevanionEntries(info, char) {
     if (!data || !Array.isArray(data.openStatEffectList)) return;
     data.openStatEffectList.forEach((effect) => {
       const desc = String(effect.desc || "");
-      const match = desc.match(/(?:額外攻擊力|额外攻击力|PVE攻擊力|PVE攻击力|首領攻擊力|首领攻击力|額外防禦力|额外防御力|額外命中|额外命中|額外迴避|额外回避|暴擊抵抗|暴击抵抗|暴擊|暴击|生命力|精神力|戰鬥速度|战斗速度|移動速度|移动速度|HP|MP)\s*\+?([\d.]+)/);
+      const match = desc.match(/(?:攻擊力增加|攻击力增加|防禦力增加|防御力增加|命中增加|迴避增加|回避增加|暴擊抵抗增加|暴击抵抗增加|暴擊增加|暴击增加|格擋貫穿增加|格挡贯穿增加|格擋增加|格挡增加|生命力增加|精神力增加|HP增加|MP增加|多段打擊擊中|多段打击击中|多段打擊抵抗|多段打击抵抗|鐵壁貫穿|铁壁贯穿|鐵壁|铁壁|再生貫穿|再生贯穿|再生|完美抵抗|完美|強擊抵抗|強擊|强击抵抗|强击|後方暴擊抵抗|後方暴擊|后方暴击抵抗|后方暴击|格擋貫穿|格挡贯穿|格擋|格挡|額外攻擊力|额外攻击力|PVE攻擊力|PVE攻击力|首領攻擊力|首领攻击力|額外防禦力|额外防御力|額外命中|额外命中|額外迴避|额外回避|暴擊抵抗|暴击抵抗|暴擊|暴击|生命力|精神力|戰鬥速度|战斗速度|移動速度|移动速度|HP|MP)\s*\+?([\d.]+%?)/);
       if (match) {
         const value = toNum(match[1]);
         if (value > 0) entries.push({ boardName: board.name || board.id, desc, value });
@@ -669,6 +697,8 @@ function calcAttack(detail) {
 
 function calcAttributes(detail) {
   const values = Object.fromEntries(PRIMARY_STAT_DEFS.map((def) => [def.key, { ...def, flat: 0, pct: 0, count: 0, sources: [] }]));
+  const pctValues = Object.fromEntries(PCT_STAT_DEFS.map((def) => [def.key, { ...def, flat: 0, pct: 0, count: 0, sources: [] }]));
+  const otherValues = Object.fromEntries(OTHER_STAT_DEFS.map((def) => [def.key, { ...def, flat: 0, pct: 0, count: 0, sources: [] }]));
 
   function findSource(target, sourceLabel) {
     let source = target.sources.find((item) => item.label === sourceLabel);
@@ -682,7 +712,8 @@ function calcAttributes(detail) {
   function addValue(key, value, isPct, sourceLabel = "其他來源", detailLabel = "能力值") {
     const target = values[key];
     const parsed = toNum(value);
-    if (!target || !Number.isFinite(parsed) || parsed === 0 || isPct) return;
+    const allowPct = key === "combatSpeed" || key === "moveSpeed";
+    if (!target || !Number.isFinite(parsed) || parsed === 0 || (isPct && !allowPct)) return;
     if (isPct) target.pct += parsed;
     else target.flat += parsed;
     target.count += 1;
@@ -718,14 +749,83 @@ function calcAttributes(detail) {
     return nameDef;
   }
 
-  function addStat(stat, sourceLabel = "其他來源", detailKind = "能力值", sourceType = "") {
+  function matchPctMetric(stat) {
+    const id = String(stat.id || "");
+    const name = String(stat.name || stat.desc || "");
+    if (/PVP|PvP/.test(name)) return null;
+    const exact = PCT_STAT_DEFS.find((def) => def.ids.includes(id));
+    if (exact) return exact;
+    return PCT_STAT_DEFS.find((def) => def.names.some((n) => name.includes(n))) || null;
+  }
+
+  function matchOtherMetric(stat) {
+    const id = String(stat.id || "");
+    const name = String(stat.name || stat.desc || "");
+    if (/PVP|PvP/.test(name)) return null;
+    const exact = OTHER_STAT_DEFS.find((def) => def.ids.includes(id));
+    if (exact) return exact;
+    return OTHER_STAT_DEFS.find((def) => def.names.some((n) => {
+      if ((n === "格擋" || n === "格挡") && /貫穿|贯穿/.test(name)) return false;
+      if ((n === "鐵壁" || n === "铁壁") && /貫穿|贯穿/.test(name)) return false;
+      if (n === "再生" && /貫穿|贯穿/.test(name)) return false;
+      if (n === "完美" && name.includes("抵抗")) return false;
+      if ((n === "強擊" || n === "强击") && name.includes("抵抗")) return false;
+      if ((n === "後方暴擊" || n === "后方暴击") && name.includes("抵抗")) return false;
+      return name.includes(n);
+    })) || null;
+  }
+
+  function addOtherStat(stat, sourceLabel, detailKind) {
+    if (!stat) return;
+    const def = matchOtherMetric(stat);
+    if (!def) return;
+    const name = String(stat.name || stat.desc || "");
+    const rawVal = String(stat.value ?? "");
+    const rawExtra = String(stat.extra ?? "");
+    const apiHasPct = rawVal.includes("%") || rawExtra.includes("%");
+    const usePct = apiHasPct || def.isPct;
+    const num = toNum(rawVal.replace("%", "")) + toNum(rawExtra.replace("%", ""));
+    if (!Number.isFinite(num) || num === 0) return;
+    const target = otherValues[def.key];
+    if (usePct) target.pct += num; else target.flat += num;
+    target.count += 1;
+    const source = findSource(target, sourceLabel);
+    if (usePct) source.pct += num; else source.flat += num;
+    source.details.push({ label: `${detailKind} · ${name}`, value: num, isPct: usePct });
+  }
+
+  function addPctStat(stat, sourceLabel, detailKind, cap = Infinity) {
+    if (!stat) return;
+    const def = matchPctMetric(stat);
+    if (!def) return;
+    const name = String(stat.name || stat.desc || "");
+    const num = toNum(String(stat.value ?? "").replace("%", "")) + toNum(String(stat.extra ?? "").replace("%", ""));
+    if (!Number.isFinite(num) || num === 0) return;
+    const target = pctValues[def.key];
+    const source = findSource(target, sourceLabel);
+    const allowed = isFinite(cap) ? Math.min(num, Math.max(0, cap - source.pct)) : num;
+    if (allowed === 0) return;
+    target.pct += allowed;
+    target.count += 1;
+    source.pct += allowed;
+    source.details.push({ label: `${detailKind} · ${name}`, value: allowed, isPct: true });
+  }
+
+  function addStat(stat, sourceLabel = "其他來源", detailKind = "能力值", sourceType = "", cap = Infinity) {
     if (!stat) return;
     const name = String(stat.name || stat.desc || "");
     const value = stat.value ?? "";
     const extra = stat.extra ?? "";
     const isPct = String(value).includes("%") || String(extra).includes("%") || name.includes("增加");
+    if (isPct && matchPctMetric(stat)) {
+      addPctStat(stat, sourceLabel, detailKind, cap);
+      return;
+    }
     const metric = matchMetric(stat, sourceType);
-    if (!metric) return;
+    if (!metric) {
+      addOtherStat(stat, sourceLabel, detailKind);
+      return;
+    }
     if (stat.id === "WeaponFixingDamage" && stat.minValue && stat.value) {
       const base = Math.round((toNum(stat.minValue) + toNum(stat.value)) / 2) + toNum(stat.extra);
       addValue(metric.key, base, false, sourceLabel, `${detailKind} · ${name}`);
@@ -735,11 +835,11 @@ function calcAttributes(detail) {
     addValue(metric.key, total, isPct, sourceLabel, `${detailKind} · ${name}`);
   }
 
-  function addDesc(desc, sourceLabel = "其他來源", detailKind = "能力值", sourceType = "") {
+  function addDesc(desc, sourceLabel = "其他來源", detailKind = "能力值", sourceType = "", cap = Infinity) {
     if (!desc || typeof desc !== "string") return;
     const match = desc.match(/^(.+?)\s*([+-]?[\d.]+%?)/);
     if (!match) return;
-    addStat({ name: match[1].trim(), value: match[2].trim() }, sourceLabel, detailKind, sourceType);
+    addStat({ name: match[1].trim(), value: match[2].trim() }, sourceLabel, detailKind, sourceType, cap);
   }
 
   function itemSourceLabel(item) {
@@ -761,7 +861,17 @@ function calcAttributes(detail) {
     }
   });
 
-  detail.detailStatBasic.concat(detail.detailStatSecondary).forEach((stat) => {
+  detail.detailStatBasic.forEach((stat) => {
+    const sourceLabel = `能力值 · ${stat.name || stat.type}`;
+    (stat.statSecondList || []).forEach((item) => {
+      if (item && typeof item === "object") {
+        addStat({ id: item.id || item.type || "", name: item.name || item.desc || "", value: item.value, extra: item.extra }, sourceLabel, "派生能力", "", 20);
+      } else {
+        addDesc(String(item), sourceLabel, "派生能力", "", 20);
+      }
+    });
+  });
+  detail.detailStatSecondary.forEach((stat) => {
     const sourceLabel = `能力值 · ${stat.name || stat.type}`;
     (stat.statSecondList || []).forEach((item) => {
       if (item && typeof item === "object") {
@@ -792,6 +902,8 @@ function calcAttributes(detail) {
 
   return {
     primaryStats: PRIMARY_STAT_DEFS.map((def) => values[def.key]),
+    pctStats: PCT_STAT_DEFS.map((def) => pctValues[def.key]),
+    otherStats: OTHER_STAT_DEFS.map((def) => otherValues[def.key]),
   };
 }
 
@@ -891,6 +1003,9 @@ function renderDetail(detail, analysis) {
 }
 
 function renderAttributeAnalysis(analysis) {
+  const activePctStats = analysis.pctStats.filter((s) => s.count > 0);
+  const activeOtherStats = analysis.otherStats.filter((s) => s.count > 0);
+  const allOtherStats = analysis.otherStats;
   return `
     <section class="detail-section">
       <div class="block-stack">
@@ -902,6 +1017,40 @@ function renderAttributeAnalysis(analysis) {
           <div class="attr-grid">
             ${analysis.primaryStats.map((stat) => `
               <details class="attr-card">
+                <summary>
+                  <span>${html(stat.label)}</span>
+                  <strong>${html(formatAttrValue(stat))}</strong>
+                </summary>
+                ${renderAttrSources(stat)}
+              </details>
+            `).join("")}
+          </div>
+        </section>
+        <section class="info-block">
+          <div class="block-head">
+            <h4 class="section-title">百分比增加</h4>
+            <span>${activePctStats.length} 項</span>
+          </div>
+          <div class="attr-grid">
+            ${activePctStats.length ? activePctStats.map((stat) => `
+              <details class="attr-card">
+                <summary>
+                  <span>${html(stat.label)}</span>
+                  <strong>${html(formatAttrValue(stat))}</strong>
+                </summary>
+                ${renderAttrSources(stat)}
+              </details>
+            `).join("") : `<p class="attr-empty">暫無百分比增加數值</p>`}
+          </div>
+        </section>
+        <section class="info-block">
+          <div class="block-head">
+            <h4 class="section-title">其他手段</h4>
+            <span>${activeOtherStats.length} 項</span>
+          </div>
+          <div class="attr-grid">
+            ${allOtherStats.map((stat) => `
+              <details class="attr-card${stat.count === 0 ? " attr-card--empty" : ""}">
                 <summary>
                   <span>${html(stat.label)}</span>
                   <strong>${html(formatAttrValue(stat))}</strong>
