@@ -511,7 +511,7 @@ async function loadDaevanionEntries(info, char) {
     if (!data || !Array.isArray(data.openStatEffectList)) return;
     data.openStatEffectList.forEach((effect) => {
       const desc = String(effect.desc || "");
-      const match = desc.match(/(?:額外攻擊力|额外攻击力|PVE攻擊力|PVE攻击力|首領攻擊力|首领攻击力)\s*\+?([\d.]+)/);
+      const match = desc.match(/(?:額外攻擊力|额外攻击力|PVE攻擊力|PVE攻击力|首領攻擊力|首领攻击力|額外防禦力|额外防御力|額外命中|额外命中|額外迴避|额外回避|暴擊抵抗|暴击抵抗|暴擊|暴击|生命力|精神力|戰鬥速度|战斗速度|移動速度|移动速度|HP|MP)\s*\+?([\d.]+)/);
       if (match) {
         const value = toNum(match[1]);
         if (value > 0) entries.push({ boardName: board.name || board.id, desc, value });
@@ -697,17 +697,25 @@ function calcAttributes(detail) {
     const name = String(stat.name || stat.desc || "");
     if (/暴擊攻擊力|暴击攻击力|暴擊傷害|暴击伤害|傷害增幅|伤害增幅|攻擊力增加|攻击力增加/.test(name)) return null;
     const exact = PRIMARY_STAT_DEFS.find((def) => def.ids.includes(id));
-    if (exact) return exact;
-    if (/PVE攻擊力|PVE攻击力|首領攻擊力|首领攻击力/.test(name)) return null;
+    if (exact) {
+      if (sourceType === "magicstone" && exact.key === "hit") return PRIMARY_STAT_DEFS.find((d) => d.key === "extraHit");
+      if (sourceType === "magicstone" && exact.key === "evasion") return PRIMARY_STAT_DEFS.find((d) => d.key === "extraEvasion");
+      return exact;
+    }
+    if (/PVE攻擊力|PVE攻击力|首領攻擊力|首领攻击力|PVP|PvP/.test(name)) return null;
     if (/額外攻擊力|额外攻击力/.test(name)) return values.extraAttack;
-    return PRIMARY_STAT_DEFS.find((def) => def.names.some((candidate) => {
+    const nameDef = PRIMARY_STAT_DEFS.find((def) => def.names.some((candidate) => {
       if (candidate === "命中" && name.includes("額外命中")) return false;
       if ((candidate === "迴避" || candidate === "回避") && (name.includes("額外迴避") || name.includes("迴避增加") || name.includes("回避增加"))) return false;
       if ((candidate === "攻擊力" || candidate === "攻击力") && /增加|額外|额外|PVE|首領|首领/.test(name)) return false;
-      if (candidate === "防禦力" && name.includes("增加")) return false;
+      if ((candidate === "防禦力" || candidate === "防御力") && /增加|額外|额外/.test(name)) return false;
       if (candidate === "暴擊" && name.includes("暴擊抵抗")) return false;
+      if ((candidate === "生命力" || candidate === "HP") && name.includes("恢復")) return false;
+      if ((candidate === "精神力" || candidate === "MP") && /恢復|消耗/.test(name)) return false;
       return name.includes(candidate);
     }));
+    if (nameDef && sourceType === "magicstone" && nameDef.key === "evasion") return PRIMARY_STAT_DEFS.find((d) => d.key === "extraEvasion");
+    return nameDef;
   }
 
   function addStat(stat, sourceLabel = "其他來源", detailKind = "能力值", sourceType = "") {
@@ -715,7 +723,7 @@ function calcAttributes(detail) {
     const name = String(stat.name || stat.desc || "");
     const value = stat.value ?? "";
     const extra = stat.extra ?? "";
-    const isPct = String(value).includes("%") || String(extra).includes("%") || name.includes("增加") || name.includes("速度");
+    const isPct = String(value).includes("%") || String(extra).includes("%") || name.includes("增加");
     const metric = matchMetric(stat, sourceType);
     if (!metric) return;
     if (stat.id === "WeaponFixingDamage" && stat.minValue && stat.value) {
@@ -747,14 +755,27 @@ function calcAttributes(detail) {
       .concat(item.mainStatsExceed || [])
       .forEach((stat) => addStat(stat, sourceLabel, "基礎能力值"));
     (item.subStats || []).forEach((stat) => addStat(stat, sourceLabel, "靈魂刻印"));
-    (item.magicStoneStat || []).forEach((stat) => addStat(stat, sourceLabel, "魔石"));
+    (item.magicStoneStat || []).forEach((stat) => addStat(stat, sourceLabel, "魔石", "magicstone"));
     if (item.godStoneStat && item.godStoneStat.statList) {
       item.godStoneStat.statList.forEach((stat) => addDesc(stat.desc || stat.name || "", sourceLabel, "靈石"));
     }
   });
 
   detail.detailStatBasic.concat(detail.detailStatSecondary).forEach((stat) => {
-    (stat.statSecondList || []).forEach((desc) => addDesc(desc, `能力值 · ${stat.name || stat.type}`, "派生能力"));
+    const sourceLabel = `能力值 · ${stat.name || stat.type}`;
+    (stat.statSecondList || []).forEach((item) => {
+      if (item && typeof item === "object") {
+        addStat({ id: item.id || item.type || "", name: item.name || item.desc || "", value: item.value, extra: item.extra }, sourceLabel, "派生能力");
+      } else {
+        addDesc(String(item), sourceLabel, "派生能力");
+      }
+    });
+  });
+  detail.detailStatSecondary.forEach((stat) => {
+    const def = PRIMARY_STAT_DEFS.find((d) => d.ids.includes(stat.type || ""));
+    if (!def || !["combatSpeed", "moveSpeed"].includes(def.key)) return;
+    const value = toNum(stat.value);
+    if (value > 0) addValue(def.key, value, false, "角色轉換", `屬性轉換 · ${stat.name || stat.type}`);
   });
   detail.detailTitleGroups.forEach((group) => {
     group.items.forEach((title) => (title.equipStatList || []).forEach((stat) => addDesc(stat.desc || "", `稱號 · ${title.name || "稱號"}`, "稱號")));
@@ -766,6 +787,8 @@ function calcAttributes(detail) {
   });
   const level = toNum((detail.profile || {}).characterLevel);
   if (level === 45) addValue("extraAttack", 61, false, "角色等級", "基礎能力值 · Lv.45");
+  if (level === 45) addValue("extraDefense", 450, false, "角色等級", "基礎能力值 · Lv.45");
+  if (level === 45) addValue("hp", 4702, false, "角色等級", "基礎能力值 · Lv.45");
 
   return {
     primaryStats: PRIMARY_STAT_DEFS.map((def) => values[def.key]),
