@@ -4,6 +4,9 @@ Page({
   data: {
     roomId: '',
     mode: 'create',
+    raidDate: '',
+    raidHour: '20:00',
+    dungeonOptions: ['深淵重鑄：盧德萊', '侵蝕淨化所'],
     form: {
       name: '',
       dungeonName: '',
@@ -13,7 +16,13 @@ Page({
   },
 
   onLoad(options) {
-    this.setData({ mode: options.mode })
+    const now = new Date()
+    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    this.setData({
+      mode: options.mode,
+      raidDate: date,
+      'form.raidTime': `${date} 20:00`
+    })
     if (options.roomId) {
       this.setData({ roomId: options.roomId })
       this.loadRoom(options.roomId)
@@ -34,6 +43,27 @@ Page({
     this.setData({ [`form.${field}`]: value })
   },
 
+  onDungeonChange(e) {
+    const name = this.data.dungeonOptions[e.detail.value]
+    this.setData({ 'form.dungeonName': name })
+  },
+
+  onDateChange(e) {
+    const date = e.detail.value
+    this.setData({
+      raidDate: date,
+      'form.raidTime': `${date} ${this.data.raidHour}`
+    })
+  },
+
+  onTimeChange(e) {
+    const hour = e.detail.value
+    this.setData({
+      raidHour: hour,
+      'form.raidTime': `${this.data.raidDate} ${hour}`
+    })
+  },
+
   submitRoom() {
     const { form, mode, roomId } = this.data
 
@@ -43,15 +73,21 @@ Page({
     }
 
     if (mode === 'create') {
-      db.collection('rooms').add({
-        data: {
-          ...form,
-          locked: false,
-          createTime: db.serverDate()
-        },
-        success: () => {
-          wx.showToast({ title: '创建成功！' })
-          setTimeout(() => wx.navigateBack(), 1500)
+      wx.cloud.callFunction({
+        name: 'getOpenid',
+        success: res => {
+          db.collection('rooms').add({
+            data: {
+              ...form,
+              locked: false,
+              creatorOpenid: res.result.openid,
+              createTime: db.serverDate()
+            },
+            success: () => {
+              wx.showToast({ title: '创建成功！' })
+              setTimeout(() => wx.navigateBack(), 1500)
+            }
+          })
         }
       })
     } else {

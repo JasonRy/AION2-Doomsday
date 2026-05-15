@@ -1,33 +1,42 @@
 <view class="container">
   
   <view class="header">
-    <text class="title">⚔️ AION2-未日基地</text>
-    <text class="subtitle">深渊征召令</text>
+    <text class="title">AION2-末日基地</text>
+    <text class="subtitle">圣域征召令</text>
   </view>
 
-  <!-- 队长才能看到创建按钮 -->
-  <view wx:if="{{isLeader}}" class="create-btn-wrap">
-    <button class="create-btn" bindtap="createRoom">+ 创建新副本</button>
+  <!-- 所有人均可创建队伍 -->
+  <view class="create-btn-wrap">
+    <button class="create-btn" bindtap="createRoom">+ 创建新队伍</button>
+  </view>
+
+  <!-- 功能入口 -->
+  <view class="action-row">
+    <button class="action-entry" bindtap="goMyCharacters">⚔️ 我的角色</button>
+    <button class="action-entry" bindtap="goRegisterList">📋 玩家名册</button>
   </view>
 
   <!-- 房间列表 -->
   <view class="room-list">
     <view wx:if="{{rooms.length === 0}}" class="empty">
-      <text>暂无开放的副本，等待队长召集...</text>
+      <text class="empty-icon">✦  ✦  ✦</text>
+      <text>暂无开放的队伍</text>
+      <text class="empty-sub">等待队长召集</text>
     </view>
 
-    <view 
-      wx:for="{{rooms}}" 
+    <view
+      wx:for="{{rooms}}"
       wx:key="_id"
-      class="room-card"
+      class="room-card {{item.expired ? 'room-card-expired' : ''}}"
       bindtap="enterRoom"
       data-id="{{item._id}}"
     >
-      <view class="room-top">
+      <view class="room-card-top">
         <text class="room-name">{{item.name}}</text>
-        <text class="room-status {{item.locked ? 'locked' : 'open'}}">
-          {{item.locked ? '🔒 已锁定' : '✅ 报名中'}}
-        </text>
+        <view wx:if="{{item.creatorOpenid === openid || item._openid === openid}}" class="delete-btn" catchtap="deleteRoom" data-id="{{item._id}}">✕</view>
+      </view>
+      <view class="room-status {{item.expired ? 'expired' : (item.locked ? 'locked' : 'open')}}">
+        <text>{{item.expired ? '⌛ 已过期' : (item.locked ? '🔒 已锁定' : '✅ 报名中')}}</text>
       </view>
       <view class="room-info">
         <text>副本：{{item.dungeonName}}</text>

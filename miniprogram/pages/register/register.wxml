@@ -1,0 +1,74 @@
+<view class="container">
+
+  <view wx:if="{{myRecord}}" class="already-card">
+    <text class="already-title">✅ 你已登记</text>
+    <text class="already-info">{{myRecord.charName}}（{{myRecord.race}} · {{myRecord.className}}）</text>
+    <text class="already-info">{{myRecord.jobType}} · {{myRecord.jobClass}} · {{myRecord.power}}</text>
+    <text wx:if="{{myRecord.remark}}" class="already-info">💬 {{myRecord.remark}}</text>
+    <button class="cancel-btn" bindtap="cancelRegister">取消登记</button>
+  </view>
+
+  <view wx:else class="form">
+
+    <button class="pick-char-btn" bindtap="pickFromMyCharacters">从我的角色选择</button>
+
+    <view class="form-item">
+      <view class="picker-inline-row">
+        <view class="picker-inline-col col-narrow">
+          <text class="label">种族 *</text>
+          <picker mode="selector" range="{{raceOptions}}" bindchange="onRaceChange">
+            <view class="input picker-select">{{form.race || '请选择种族'}}</view>
+          </picker>
+        </view>
+        <view class="picker-inline-col col-wide">
+          <text class="label">服务器 *</text>
+          <picker mode="selector" range="{{currentClassOptions}}" bindchange="onClassChange" disabled="{{!form.race}}">
+            <view class="input picker-select {{!form.race ? 'picker-disabled' : ''}}">{{form.className || (form.race ? '请选择服务器' : '请选择种族')}}</view>
+          </picker>
+        </view>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <view class="label-row">
+        <text class="label">角色名 *</text>
+        <view class="trad-toggle">
+          <text class="trad-label">{{useTraditional ? '繁' : '简'}}</text>
+          <switch checked="{{useTraditional}}" bindchange="onToggleTraditional" color="#c9a84c" style="transform:scale(0.7);transform-origin:right center;"/>
+        </view>
+      </view>
+      <input class="input" placeholder="输入你的角色名" data-field="charName" bindinput="onInput" bindblur="onCharNameBlur" value="{{form.charName}}"/>
+    </view>
+
+    <view class="form-item">
+      <view class="picker-inline-row">
+        <view class="picker-inline-col">
+          <text class="label">类型 *</text>
+          <picker mode="selector" range="{{jobTypeOptions}}" bindchange="onJobTypeChange">
+            <view class="input picker-select">{{form.jobType || '请选择类型'}}</view>
+          </picker>
+        </view>
+        <view class="picker-inline-col">
+          <text class="label">职业 *</text>
+          <picker mode="selector" range="{{currentJobClassOptions}}" bindchange="onJobClassChange" disabled="{{!form.jobType}}">
+            <view class="input picker-select {{!form.jobType ? 'picker-disabled' : ''}}">{{form.jobClass || (form.jobType ? '请选择职业' : '请选择职业')}}</view>
+          </picker>
+        </view>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <text class="label">装等 *</text>
+      <input class="input" type="number" placeholder="例如：3000" data-field="power" bindinput="onInput" value="{{form.power}}"/>
+    </view>
+
+    <view class="form-item">
+      <text class="label">备注</text>
+      <input class="input" placeholder="选填" data-field="remark" bindinput="onInput" value="{{form.remark}}"/>
+    </view>
+
+    <button class="submit-btn" bindtap="submitRegister">确认登记</button>
+
+  </view>
+
+</view>

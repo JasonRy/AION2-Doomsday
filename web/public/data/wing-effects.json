@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "source": "manual",
+  "effectsByWingId": {
+    "40101100": {
+      "id": 40101100,
+      "name": "空虛塔里斯拉翅膀",
+      "effectStats": [
+        {
+          "id": "AdditionalWeaponFixingDamage",
+          "name": "額外攻擊力",
+          "value": "60"
+        },
+        {
+          "id": "AdditionalDefense",
+          "name": "額外防禦力",
+          "value": "400"
+        },
+        {
+          "id": "Accuracy",
+          "name": "額外命中",
+          "value": "35"
+        },
+        {
+          "id": "CoolTimeReduce",
+          "name": "冷卻時間減少",
+          "value": "4%"
+        }
+      ]
+    }
+  }
+}

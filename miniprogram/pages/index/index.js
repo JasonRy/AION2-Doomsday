@@ -21,12 +21,7 @@ Page({
     wx.cloud.callFunction({
       name: 'getOpenid',
       success: res => {
-        const openid = res.result.openid
-        this.setData({ openid })
-        // 队长openid写死，你自己的openid
-        if (openid ==='owXNx3XHEEADIqgsjda2ce1l3LZY') {
-          this.setData({ isLeader: true })
-        }
+        this.setData({ openid: res.result.openid })
       }
     })
   },
@@ -35,7 +30,13 @@ Page({
   loadRooms() {
     db.collection('rooms').orderBy('createTime', 'desc').get({
       success: res => {
-        this.setData({ rooms: res.data })
+        const now = Date.now()
+        const rooms = res.data.map(r => {
+          const raidMs = r.raidTime ? new Date(r.raidTime.replace(' ', 'T')).getTime() : 0
+          r.expired = raidMs > 0 && raidMs + 6 * 3600 * 1000 < now
+          return r
+        })
+        this.setData({ rooms })
       }
     })
   },
@@ -49,5 +50,43 @@ Page({
   enterRoom(e) {
     const roomId = e.currentTarget.dataset.id
     wx.navigateTo({ url: `/pages/signup/signup?roomId=${roomId}` })
+  },
+
+  goRegister() {
+    wx.navigateTo({ url: '/pages/register/register' })
+  },
+
+  goRegisterList() {
+    wx.navigateTo({ url: '/pages/registerList/registerList' })
+  },
+
+  goMyCharacters() {
+    wx.switchTab({ url: '/pages/myCharacters/myCharacters' })
+  },
+
+  // 删除队伍（队长专用）
+  deleteRoom(e) {
+    const roomId = e.currentTarget.dataset.id
+    wx.showModal({
+      title: '确认删除',
+      content: '删除后数据不可恢复，确定删除该队伍？',
+      confirmColor: '#cf6679',
+      success: res => {
+        if (!res.confirm) return
+        wx.cloud.callFunction({
+          name: 'deleteRoom',
+          data: { roomId },
+          success: result => {
+            if (result.result && result.result.success) {
+              wx.showToast({ title: '已删除', icon: 'success' })
+              this.loadRooms()
+            } else {
+              wx.showToast({ title: '删除失败', icon: 'none' })
+            }
+          },
+          fail: () => wx.showToast({ title: '删除失败', icon: 'none' })
+        })
+      }
+    })
   }
 })
