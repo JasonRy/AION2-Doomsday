@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AION2 角色查詢</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">A2</div>
+          <div>
+            <h1>AION2</h1>
+            <p>角色查詢控制台</p>
+          </div>
+        </div>
+
+        <nav class="side-nav">
+          <a class="active" href="/">角色查詢</a>
+          <button id="themeToggle" class="icon-button" type="button" title="切換明暗主題">
+            <span id="themeIcon">☾</span>
+            <span id="themeLabel">深色</span>
+          </button>
+        </nav>
+
+        <div class="side-note">
+          <strong>資料來源</strong>
+          <span>透過本地代理讀取 NCSoft 公開 API，查詢速度取決於官方回應。</span>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Character Search</p>
+            <h2>角色查詢</h2>
+          </div>
+          <div id="statusText" class="status-pill">待查詢</div>
+        </header>
+
+        <section class="search-panel">
+          <div class="search-layout">
+            <fieldset class="race-field">
+              <legend>種族</legend>
+              <div class="segmented" id="raceTabs">
+                <button type="button" class="active" data-race="0">全部</button>
+                <button type="button" data-race="1">天族</button>
+                <button type="button" data-race="2">魔族</button>
+              </div>
+            </fieldset>
+
+            <label class="server-field">
+              <span>伺服器</span>
+              <select id="serverSelect"></select>
+            </label>
+
+            <label class="keyword-field">
+              <span>角色名</span>
+              <div class="keyword-control">
+                <input id="keywordInput" type="search" placeholder="輸入角色名" autocomplete="off" />
+                <button id="convertButton" class="convert-button" type="button" title="轉換輸入框文字為繁體">繁</button>
+              </div>
+            </label>
+
+            <button id="searchButton" class="primary-button" type="button">查詢角色</button>
+          </div>
+        </section>
+
+        <section class="content-grid">
+          <section class="results-panel">
+            <div class="panel-head">
+              <h3>搜索結果</h3>
+              <span id="resultCount">0 筆</span>
+            </div>
+            <div id="historyPanel" class="history-panel"></div>
+            <div id="resultsList" class="results-list">
+              <div class="empty-state">
+                <div class="empty-mark">✦</div>
+                <p>輸入角色名稱後開始查詢</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="detail-panel" id="detailPanel">
+            <div class="detail-placeholder">
+              <div class="empty-mark">◇</div>
+              <h3>尚未選擇角色</h3>
+              <p>點擊搜索結果後，這裡會展示角色詳情、裝備與攻擊力分析。</p>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

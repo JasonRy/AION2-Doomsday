@@ -61,7 +61,7 @@ Page({
   },
 
   goMyCharacters() {
-    wx.navigateTo({ url: '/pages/myCharacters/myCharacters' })
+    wx.switchTab({ url: '/pages/myCharacters/myCharacters' })
   },
 
   // 删除队伍（队长专用）

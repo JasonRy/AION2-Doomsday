@@ -1,16 +1,43 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/charSearch/charSearch",
+    "pages/myCharacters/myCharacters",
     "pages/room/room",
     "pages/signup/signup",
     "pages/register/register",
-    "pages/registerList/registerList",
-    "pages/myCharacters/myCharacters"
+    "pages/registerList/registerList"
   ],
+  "tabBar": {
+    "color": "#6666aa",
+    "selectedColor": "#c9a84c",
+    "backgroundColor": "#0f1522",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "images/icons/home.png",
+        "selectedIconPath": "images/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/charSearch/charSearch",
+        "text": "角色查询",
+        "iconPath": "images/icons/examples.png",
+        "selectedIconPath": "images/icons/examples-active.png"
+      },
+      {
+        "pagePath": "pages/myCharacters/myCharacters",
+        "text": "我的角色",
+        "iconPath": "images/icons/usercenter.png",
+        "selectedIconPath": "images/icons/usercenter-active.png"
+      }
+    ]
+  },
   "window": {
     "backgroundTextStyle": "dark",
     "navigationBarBackgroundColor": "#1a1a2e",
-    "navigationBarTitleText": "AION2-未日基地",
+    "navigationBarTitleText": "AION2-末日基地",
     "navigationBarTextStyle": "white",
     "backgroundColor": "#1a1a2e"
   },

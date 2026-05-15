@@ -55,7 +55,7 @@
   background: #16213e;
   border: 1rpx solid #2a2a4a;
   border-radius: 12rpx;
-  padding: 20rpx 16rpx 0;
+  padding: 20rpx 16rpx 14rpx;
   margin-bottom: 12rpx;
   position: relative;
   overflow: hidden;
@@ -224,7 +224,7 @@
   padding: 16rpx 0;
   font-size: 26rpx;
   color: #c9a84c;
-  background: #0d1628;
+  background: linear-gradient(180deg, #111d33 0%, #0a1422 100%);
   border: none;
   border-top: 1rpx solid #2a2a4a;
   border-radius: 0;
@@ -232,4 +232,5 @@
   line-height: 1.6;
   text-align: center;
   box-sizing: border-box;
+  box-shadow: inset 0 1rpx 0 rgba(201, 168, 76, 0.15);
 }
