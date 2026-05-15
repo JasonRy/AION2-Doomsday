@@ -407,7 +407,7 @@ async function loadDetail(char) {
     ]);
 
     const statList = (info.stat && info.stat.statList) || [];
-    const itemLevel = (statList.find((stat) => stat.type === "ItemLevel") || {}).value || 0;
+    const itemLevel = statList.filter((stat) => stat.type === "ItemLevel").reduce((sum, stat) => sum + (Number(stat.value) || 0), 0);
     const equipList = (equipment.equipment && equipment.equipment.equipmentList) || [];
     const [detailEquipItems, daevanionEntries, wingEffects] = await Promise.all([
       enrichEquipment(equipList, char),
