@@ -635,9 +635,11 @@ async function enrichEquipment(equipList, char) {
         subStats: detail.subStats || [],
         soulBindRate: detail.soulBindRate ?? 0,
         soulBindStats: normalizeSoulBindStats(detail),
+        growthStats: normalizeGrowthStats(detail),
         magicStoneStat: Array.isArray(detail.magicStoneStat) ? detail.magicStoneStat : (detail.magicStoneStat ? [detail.magicStoneStat] : []),
         subSkills: Array.isArray(detail.subSkills) ? detail.subSkills : [],
         set: detail.set || null,
+        categoryName: detail.categoryName || item.categoryName || "",
         godStoneStat: godStone ? {
           icon: godStone.icon || "",
           name: godStone.name || "",
@@ -656,9 +658,11 @@ async function enrichEquipment(equipList, char) {
         mainStatsExceed: [],
         subStats: [],
         soulBindStats: [],
+        growthStats: [],
         magicStoneStat: [],
         subSkills: [],
         set: null,
+        categoryName: item.categoryName || "",
         godStoneStat: null,
         sourcesText: "",
       };
@@ -695,6 +699,16 @@ function normalizeGodStoneStats(godStone) {
   const list = Array.isArray(godStone.statList) ? godStone.statList : (Array.isArray(godStone.stats) ? godStone.stats : []);
   if (list.length) return list;
   return godStone.desc ? [{ name: godStone.desc, value: "", grade: godStone.grade }] : [];
+}
+
+function normalizeGrowthStats(detail) {
+  return []
+    .concat(Array.isArray(detail.growthStats) ? detail.growthStats : [])
+    .concat(Array.isArray(detail.growthStat) ? detail.growthStat : (detail.growthStat ? [detail.growthStat] : []))
+    .concat(Array.isArray(detail.growthStatList) ? detail.growthStatList : [])
+    .concat(Array.isArray(detail.growthOptions) ? detail.growthOptions : [])
+    .concat(Array.isArray(detail.growthOptionStats) ? detail.growthOptionStats : [])
+    .concat(Array.isArray(detail.enhanceGrowthStats) ? detail.enhanceGrowthStats : []);
 }
 
 async function loadDaevanionEntries(info, char) {
@@ -1037,6 +1051,10 @@ function calcAttributes(detail) {
     return ENV_COMBAT_AMP_STAT_DEFS.find((def) => def.names.some((n) => name.includes(n))) || null;
   }
 
+  function usesStonePointAmp(sourceType) {
+    return sourceType === "magicstone" || sourceType === "godstone";
+  }
+
   function addEnvCombatAmpStat(stat, sourceLabel, detailKind, sourceType = "") {
     if (!stat) return false;
     const def = matchEnvCombatAmpMetric(stat);
@@ -1045,7 +1063,7 @@ function calcAttributes(detail) {
     const rawVal = String(stat.value ?? "");
     const rawExtra = String(stat.extra ?? "");
     let num = toNum(rawVal.replace("%", "")) + toNum(rawExtra.replace("%", ""));
-    if (sourceType === "magicstone" && def.isPct && !rawVal.includes("%") && !rawExtra.includes("%")) {
+    if (usesStonePointAmp(sourceType) && def.isPct && !rawVal.includes("%") && !rawExtra.includes("%")) {
       num = num / 100;
     }
     if (!Number.isFinite(num) || num === 0) return true;
@@ -1066,7 +1084,7 @@ function calcAttributes(detail) {
     const rawVal = String(stat.value ?? "");
     const rawExtra = String(stat.extra ?? "");
     let num = toNum(rawVal.replace("%", "")) + toNum(rawExtra.replace("%", ""));
-    if (sourceType === "magicstone" && !rawVal.includes("%") && !rawExtra.includes("%")) {
+    if (usesStonePointAmp(sourceType) && !rawVal.includes("%") && !rawExtra.includes("%")) {
       num = num / 100;
     }
     if (!Number.isFinite(num) || num === 0) return true;
@@ -1201,19 +1219,20 @@ function calcAttributes(detail) {
     addStat({ name, value }, sourceLabel, `${detailKind}${condition}`, sourceType, cap);
   }
 
-  function addCardSetBonuses() {
+  function addActiveSetBonuses() {
     const seen = new Set();
-    (detail.detailEquipItems || []).filter(isCardItem).forEach((item) => {
+    (detail.detailEquipItems || []).forEach((item) => {
       const set = item.set;
       const key = set && (set.id || set.name);
       if (!set || seen.has(key)) return;
       seen.add(key);
       const equippedCount = toNum(set.equippedCount);
+      const setType = isCardItem(item) ? "卡牌套裝" : "裝備套裝";
       (set.bonuses || []).forEach((bonus) => {
         const degree = toNum(bonus.degree);
         if (!degree || equippedCount < degree) return;
         (bonus.descriptions || []).forEach((desc) => {
-          addDesc(String(desc), `卡牌套裝 · ${set.name || "套裝"}`, `${degree}件效果`);
+          addDesc(String(desc), `${setType} · ${set.name || "套裝"}`, `${degree}件效果`);
         });
       });
     });
@@ -1232,12 +1251,16 @@ function calcAttributes(detail) {
       .concat(item.mainStatsExceed || [])
       .forEach((stat) => addStat(stat, sourceLabel, "基礎能力值"));
     (item.subStats || []).forEach((stat) => addStat(stat, sourceLabel, "靈魂刻印"));
+    (item.growthStats || []).forEach((stat) => addStat(stat, sourceLabel, "成長"));
     (item.magicStoneStat || []).forEach((stat) => addStat(stat, sourceLabel, "魔石", "magicstone"));
     if (item.godStoneStat && item.godStoneStat.statList) {
-      item.godStoneStat.statList.forEach((stat) => addDesc(stat.desc || stat.name || "", sourceLabel, "靈石"));
+      item.godStoneStat.statList.forEach((stat) => {
+        if (stat.value || stat.extra) addStat(stat, sourceLabel, "靈石", "godstone");
+        else addDesc(stat.desc || stat.name || "", sourceLabel, "靈石", "godstone");
+      });
     }
   });
-  addCardSetBonuses();
+  addActiveSetBonuses();
 
   detail.detailStatBasic.forEach((stat) => {
     const sourceLabel = `能力值 · ${stat.name || stat.type}`;
@@ -1360,22 +1383,43 @@ function renderCombatPanel(analysis) {
   const pct = (k) => gs(analysis.pctStats, k);
   const env = (k) => gs(analysis.envCombatAmpStats, k);
   const amp = (k) => gs(analysis.basicCombatAmpStats, k);
+  const other = (k) => gs(analysis.otherStats, k);
 
   const attack   = Math.round((pri("attack").flat + pri("extraAttack").flat) * (1 + pct("pAttack").pct / 100));
   const defense  = Math.round((pri("defense").flat + pri("extraDefense").flat) * (1 + pct("pDefense").pct / 100));
   const envHit   = isPvp ? env("pvpHit").flat : env("pveHit").flat;
   const hit      = Math.round((pri("hit").flat + pri("extraHit").flat) * (1 + pct("pHit").pct / 100)) + envHit;
+  const envEvasion = isPvp ? env("pvpEvasion").flat : env("pveEvasion").flat;
+  const evasion = Math.round((pri("evasion").flat + pri("extraEvasion").flat) * (1 + pct("pEvasion").pct / 100)) + envEvasion;
   const envCrit  = isPvp ? env("pvpCritical").flat : 0;
   const critical = Math.round(pri("critical").flat * (1 + pct("pCritical").pct / 100)) + envCrit;
+  const envCritResist = isPvp ? env("pvpCriticalResist").flat : 0;
+  const criticalResist = Math.round(pri("criticalResist").flat * (1 + pct("pCritResist").pct / 100)) + envCritResist;
+  const hp = Math.round(pri("hp").flat * (1 + pct("pHp").pct / 100));
+  const mp = Math.round(pri("mp").flat * (1 + pct("pMp").pct / 100));
   const damageAmp    = isPvp ? env("pvpDamageAmp").pct    : env("pveDamageAmp").pct;
   const damageResist = isPvp ? env("pvpDamageResist").pct : env("pveDamageResist").pct;
   const weaponAmp = amp("weaponDamageAmp").pct;
+  const weaponResist = amp("weaponDamageResist").pct;
   const critAmp   = amp("critDamageAmp").pct;
+  const critResist = amp("critDamageResist").pct;
+  const multiHit = other("multiHit").pct;
+  const multiHitResist = other("multiHitResist").pct;
+  const powerStrike = other("powerStrike").pct;
+  const powerStrikeResist = other("powerStrikeResist").pct;
+  const ironWall = other("ironWall").pct;
+  const ironWallPen = other("ironWallPen").pct;
   const csFlat = pri("combatSpeed").flat, csPct = pri("combatSpeed").pct;
   const msFlat = pri("moveSpeed").flat,   msPct = pri("moveSpeed").pct;
 
   const fi = (v) => v ? String(Math.round(v)) : "—";
   const fp = (v) => v ? `${Math.round(v * 10) / 10}%` : "—";
+  const fnum = (v) => Math.round(v * 10) / 10;
+  const hasTipValue = (value) => value !== undefined && value !== null && value !== "" && value !== "—" && value !== "0" && value !== "0%";
+  const statParts = (items) => items.filter((item) => hasTipValue(item.value)).map((item) => `${item.label} ${item.value}`);
+  const tip = (formula, items) => [formula].concat(statParts(items)).join("\n");
+  const envCritLabel = isPvp ? "PVP暴擊" : "專項暴擊";
+  const envCritResistLabel = isPvp ? "PVP暴擊抵抗" : "專項暴擊抵抗";
   const fspd = (f, p) => {
     const parts = [];
     if (f) parts.push(String(Math.round(f)));
@@ -1384,16 +1428,66 @@ function renderCombatPanel(analysis) {
   };
 
   const stats = [
-    { label: "攻擊力",                    value: fi(attack),        gold: true },
-    { label: "防禦力",                    value: fi(defense) },
-    { label: "命中",                      value: fi(hit) },
-    { label: "暴擊",                      value: fi(critical) },
-    { label: isPvp ? "PVP增幅" : "PVE增幅",   value: fp(damageAmp) },
-    { label: isPvp ? "PVP耐性" : "PVE耐性",   value: fp(damageResist) },
-    { label: "武器傷害增幅",              value: fp(weaponAmp) },
-    { label: "暴擊傷害增幅",              value: fp(critAmp) },
-    { label: "戰鬥速度",                  value: fspd(csFlat, csPct) },
-    { label: "移動速度",                  value: fspd(msFlat, msPct) },
+    { label: "攻擊力", value: fi(attack), gold: true, tooltip: tip("(攻擊力 + 額外攻擊力) × 攻擊力增加%", [
+      { label: "攻擊力", value: fi(pri("attack").flat) },
+      { label: "額外攻擊力", value: fi(pri("extraAttack").flat) },
+      { label: "攻擊力增加", value: fp(pct("pAttack").pct) },
+    ]) },
+    { label: "防禦力", value: fi(defense), tooltip: tip("(防禦力 + 額外防禦力) × 防禦力增加%", [
+      { label: "防禦力", value: fi(pri("defense").flat) },
+      { label: "額外防禦力", value: fi(pri("extraDefense").flat) },
+      { label: "防禦力增加", value: fp(pct("pDefense").pct) },
+    ]) },
+    { label: "多段打擊擊中", value: fp(multiHit), tooltip: tip("其他手段：多段打擊擊中", [{ label: "多段打擊擊中", value: fp(multiHit) }]) },
+    { label: "多段打擊抵抗", value: fp(multiHitResist), tooltip: tip("其他手段：多段打擊抵抗", [{ label: "多段打擊抵抗", value: fp(multiHitResist) }]) },
+    { label: isPvp ? "PVP命中" : "命中", value: fi(hit), tooltip: tip("(命中 + 額外命中) × 命中增加% + 專項命中", [
+      { label: "命中", value: fi(pri("hit").flat) },
+      { label: "額外命中", value: fi(pri("extraHit").flat) },
+      { label: "命中增加", value: fp(pct("pHit").pct) },
+      { label: isPvp ? "PVP命中" : "PVE命中", value: fi(envHit) },
+    ]) },
+    { label: "迴避", value: fi(evasion), tooltip: tip("(迴避 + 額外迴避) × 迴避增加% + 專項迴避", [
+      { label: "迴避", value: fi(pri("evasion").flat) },
+      { label: "額外迴避", value: fi(pri("extraEvasion").flat) },
+      { label: "迴避增加", value: fp(pct("pEvasion").pct) },
+      { label: isPvp ? "PVP迴避" : "PVE迴避", value: fi(envEvasion) },
+    ]) },
+    { label: isPvp ? "PVP暴擊" : "暴擊", value: fi(critical), tooltip: tip("暴擊 × 暴擊增加% + 專項暴擊", [
+      { label: "暴擊", value: fi(pri("critical").flat) },
+      { label: "暴擊增加", value: fp(pct("pCritical").pct) },
+      { label: envCritLabel, value: fi(envCrit) },
+    ]) },
+    { label: "暴擊抵抗", value: fi(criticalResist), tooltip: tip("暴擊抵抗 × 暴擊抵抗增加% + 專項暴擊抵抗", [
+      { label: "暴擊抵抗", value: fi(pri("criticalResist").flat) },
+      { label: "暴擊抵抗增加", value: fp(pct("pCritResist").pct) },
+      { label: envCritResistLabel, value: fi(envCritResist) },
+    ]) },
+    { label: isPvp ? "PVP增幅" : "PVE增幅", value: fp(damageAmp), tooltip: tip(isPvp ? "PVP相關增幅：PVP傷害增幅" : "PVE相關增幅：PVE傷害增幅", [{ label: isPvp ? "PVP傷害增幅" : "PVE傷害增幅", value: fp(damageAmp) }]) },
+    { label: isPvp ? "PVP耐性" : "PVE耐性", value: fp(damageResist), tooltip: tip(isPvp ? "PVP相關增幅：PVP傷害耐性" : "PVE相關增幅：PVE傷害耐性", [{ label: isPvp ? "PVP傷害耐性" : "PVE傷害耐性", value: fp(damageResist) }]) },
+    { label: "武器傷害增幅", value: fp(weaponAmp), tooltip: tip("基礎戰鬥增幅：武器傷害增幅", [{ label: "武器傷害增幅", value: fp(weaponAmp) }]) },
+    { label: "武器傷害耐性", value: fp(weaponResist), tooltip: tip("基礎戰鬥增幅：武器傷害耐性", [{ label: "武器傷害耐性", value: fp(weaponResist) }]) },
+    { label: "暴擊傷害增幅", value: fp(critAmp), tooltip: tip("基礎戰鬥增幅：暴擊傷害增幅", [{ label: "暴擊傷害增幅", value: fp(critAmp) }]) },
+    { label: "暴擊傷害耐性", value: fp(critResist), tooltip: tip("基礎戰鬥增幅：暴擊傷害耐性", [{ label: "暴擊傷害耐性", value: fp(critResist) }]) },
+    { label: "強擊", value: fp(powerStrike), tooltip: tip("其他手段：強擊", [{ label: "強擊", value: fp(powerStrike) }]) },
+    { label: "強擊抵抗", value: fp(powerStrikeResist), tooltip: tip("其他手段：強擊抵抗", [{ label: "強擊抵抗", value: fp(powerStrikeResist) }]) },
+    { label: "鐵壁貫穿", value: fp(ironWallPen), tooltip: tip("其他手段：鐵壁貫穿", [{ label: "鐵壁貫穿", value: fp(ironWallPen) }]) },
+    { label: "鐵壁", value: fp(ironWall), tooltip: tip("其他手段：鐵壁", [{ label: "鐵壁", value: fp(ironWall) }]) },
+    { label: "生命力", value: fi(hp), tooltip: tip("生命力 × 生命力增加%", [
+      { label: "生命力", value: fi(pri("hp").flat) },
+      { label: "生命力增加", value: fp(pct("pHp").pct) },
+    ]) },
+    { label: "精神力", value: fi(mp), tooltip: tip("精神力 × 精神力增加%", [
+      { label: "精神力", value: fi(pri("mp").flat) },
+      { label: "精神力增加", value: fp(pct("pMp").pct) },
+    ]) },
+    { label: "戰鬥速度", value: fspd(csFlat, csPct), tooltip: tip("戰鬥速度：固定值 / 百分比", [
+      { label: "固定值", value: csFlat ? String(fnum(csFlat)) : "" },
+      { label: "百分比", value: csPct ? fp(csPct) : "" },
+    ]) },
+    { label: "移動速度", value: fspd(msFlat, msPct), tooltip: tip("移動速度：固定值 / 百分比", [
+      { label: "固定值", value: msFlat ? String(fnum(msFlat)) : "" },
+      { label: "百分比", value: msPct ? fp(msPct) : "" },
+    ]) },
   ];
 
   return `
@@ -1403,9 +1497,72 @@ function renderCombatPanel(analysis) {
       </div>
       <div class="combat-grid">
         ${stats.map((s) => `
-          <div class="combat-stat">
+          <div class="combat-stat${s.tooltip ? " has-tooltip" : ""}" ${s.tooltip ? `data-tooltip="${html(s.tooltip)}"` : ""}>
             <span class="combat-label">${html(s.label)}</span>
             <strong class="combat-value${s.gold ? " gold" : ""}">${html(s.value)}</strong>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+const BASIC_PANEL_ORDER = [
+  { type: "STR", label: "威力" },
+  { type: "DEX", label: "敏捷" },
+  { type: "AGI", label: "精確" },
+  { type: "WIS", label: "意志" },
+  { type: "INT", label: "知識" },
+  { type: "CON", label: "體力" },
+];
+
+const SECONDARY_PANEL_ORDER = ["正義", "自由", "幻象", "生命", "時間", "破壞", "死亡", "智慧", "命運", "空間"];
+
+function renderSidePanels(detail, analysis) {
+  return `
+    ${renderCombatPanel(analysis)}
+    ${renderStatOverviewPanel("基礎能力", BASIC_PANEL_ORDER.map((def) => {
+      const stat = (detail.detailStatBasic || []).find((item) => item.type === def.type || item.name === def.label);
+      return statOverviewItem(def.label, stat);
+    }), "basic")}
+    ${renderStatOverviewPanel("屬性轉換", SECONDARY_PANEL_ORDER.map((label) => {
+      const stat = findSecondaryStat(detail.detailStatSecondary || [], label);
+      return statOverviewItem(label, stat);
+    }), "secondary")}
+  `;
+}
+
+function findSecondaryStat(stats, label) {
+  return stats.find((stat) => stat.name === label);
+}
+
+function statOverviewItem(label, stat) {
+  const value = stat ? (stat.value ?? stat.statValue ?? stat.totalValue ?? "-") : "-";
+  const tooltip = statTooltip(stat);
+  return { label, value: value || "-", tooltip };
+}
+
+function statTooltip(stat) {
+  if (!stat || !Array.isArray(stat.statSecondList) || !stat.statSecondList.length) return "";
+  return stat.statSecondList.map((item) => {
+    if (item && typeof item === "object") {
+      const name = item.name || item.desc || item.type || item.id || "轉化";
+      const value = [item.value, item.extra].filter((v) => v !== undefined && v !== null && v !== "" && v !== "0" && v !== "0%").join(" / ");
+      return value ? `${name} ${value}` : String(name);
+    }
+    return String(item);
+  }).filter(Boolean).join("\n");
+}
+
+function renderStatOverviewPanel(title, items, mode) {
+  return `
+    <div class="side-stat-panel side-stat-panel--${html(mode)}">
+      <div class="side-stat-head">${html(title)}</div>
+      <div class="side-stat-grid">
+        ${items.map((item) => `
+          <div class="side-stat-cell${item.tooltip ? " has-tooltip" : ""}" ${item.tooltip ? `data-tooltip="${html(item.tooltip)}"` : ""}>
+            <span>${html(item.label)}</span>
+            <strong>${html(item.value)}</strong>
           </div>
         `).join("")}
       </div>
@@ -1460,7 +1617,7 @@ function renderDetail(detail, analysis) {
           </div>
         </div>
         <div class="detail-side${resultsCollapsed ? " visible" : ""}">
-          ${renderCombatPanel(analysis)}
+          ${renderSidePanels(detail, analysis)}
         </div>
       </div>
     </article>
@@ -1673,12 +1830,23 @@ function isCardItem(item) {
 }
 
 function slotLabel(item) {
-  return SLOT_CN[item.slotPosName] || item.slotPosName || "";
+  const base = SLOT_CN[item.slotPosName] || item.slotPosName || "";
+  const category = equipmentCategoryLabel(item);
+  return category ? `${base}-${category}` : base;
+}
+
+function equipmentCategoryLabel(item) {
+  if (!["MainHand", "SubHand"].includes(item.slotPosName)) return "";
+  const category = String(item.categoryName || "").trim();
+  if (!category || category === "Equip" || category === "裝備" || category === "装备") return "";
+  return category;
 }
 
 function renderCompactEquipItem(item) {
   const soulBlock = renderSoulBindLines(item);
+  const growthBlock = renderGrowthLines(item);
   const magicBlock = renderMagicStoneLines(item);
+  const wordBlocks = [soulBlock, growthBlock, magicBlock].filter(Boolean).join("");
   return `
     <article class="compact-equip-item">
       <div class="equip-card-main">
@@ -1693,10 +1861,7 @@ function renderCompactEquipItem(item) {
             <strong class="grade-${html(item.grade)}">${html(item.name || "未知裝備")}</strong>
           </div>
           <div class="equip-grade-line">${html(item.grade || "")}</div>
-          <div class="equip-word-cols ${magicBlock ? "" : "single"}">
-            ${soulBlock}
-            ${magicBlock}
-          </div>
+          ${wordBlocks ? `<div class="equip-word-cols ${[soulBlock, growthBlock, magicBlock].filter(Boolean).length === 1 ? "single" : ""}">${wordBlocks}</div>` : ""}
           ${item.sourcesText ? `<div class="equip-source">${html(item.sourcesText)}</div>` : ""}
         </div>
       </div>
@@ -1706,15 +1871,20 @@ function renderCompactEquipItem(item) {
 
 function renderSoulBindLines(item) {
   const stats = Array.isArray(item.soulBindStats) ? item.soulBindStats : [];
-  const rateLine = item.soulBindRate
-    ? `<div class="equip-word-line soul-word"><span>刻印率</span><strong>${html(item.soulBindRate)}%</strong></div>`
+  const skills = Array.isArray(item.subSkills) ? item.subSkills : [];
+  if (!stats.length && !skills.length) return "";
+  const rateText = item.soulBindRate
+    ? `${html(item.soulBindRate)}%`
     : "";
   const statLines = stats.map(renderSoulWordLine).join("");
-  const lines = `${rateLine}${statLines}` || `<div class="equip-word-empty">暫無詞條</div>`;
+  const skillLines = skills.map(renderSoulSkillLine).join("");
   return `
     <section class="equip-word-block soul-block">
-      <h5>靈魂刻印</h5>
-      ${lines}
+      <div class="equip-word-head">
+        <h5>靈魂刻印</h5>
+        ${rateText ? `<strong class="soul-rate">${rateText}</strong>` : ""}
+      </div>
+      ${statLines}${skillLines}
     </section>
   `;
 }
@@ -1727,6 +1897,27 @@ function renderSoulWordLine(stat) {
       <span>${html(name)}</span>
       ${value ? `<strong>${html(value)}</strong>` : ""}
     </div>
+  `;
+}
+
+function renderSoulSkillLine(skill) {
+  const level = skill.level ?? skill.skillLevel ?? "";
+  return `
+    <div class="equip-word-line soul-word soul-skill-word">
+      <span>${html(skill.name || "技能刻印")}</span>
+      ${level !== "" ? `<strong>Lv.${html(level)}</strong>` : ""}
+    </div>
+  `;
+}
+
+function renderGrowthLines(item) {
+  const stats = Array.isArray(item.growthStats) ? item.growthStats : [];
+  if (!stats.length) return "";
+  return `
+    <section class="equip-word-block growth-block">
+      <h5>成長</h5>
+      ${stats.map((stat) => renderEquipWordLine(stat, stat.grade || stat.gradeName || item.grade)).join("")}
+    </section>
   `;
 }
 
