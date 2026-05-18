@@ -1575,7 +1575,7 @@ function renderDetail(detail, analysis) {
   els.detailPanel.innerHTML = `
     <article>
       <section class="profile-card race-${profile.raceId || profile.race || ""}">
-        <div>
+        <div class="profile-text">
           <div class="profile-meta">
             <span>${html(profile.serverName || serverName(profile.serverId))}</span>
             <span>·</span>
@@ -1584,11 +1584,11 @@ function renderDetail(detail, analysis) {
             <span>${html(profile.className || "")}</span>
           </div>
           <h3 class="profile-name">${html(profile.characterName || "未知角色")}</h3>
+          ${profile.characterLevel ? `<div class="profile-level">LV${html(profile.characterLevel)}</div>` : ""}
           <div class="profile-title">${html(profile.titleName || "未裝備称号")}</div>
           <div class="profile-stats">
             <div class="stat-chip"><span>戰力</span><strong class="gold">${html(profile.combatPower || "-")}</strong></div>
             <div class="stat-chip"><span>道具等級</span><strong>${html(detail.itemLevel || "-")}</strong></div>
-            <div class="stat-chip"><span>角色等級</span><strong>${html(profile.characterLevel || "-")}</strong></div>
           </div>
         </div>
         ${profile.profileImage ? `<img class="profile-avatar" src="${html(profile.profileImage)}" alt="${html(profile.characterName)}" />` : `<div class="profile-avatar"></div>`}
@@ -1852,7 +1852,6 @@ function renderCompactEquipItem(item) {
       <div class="equip-card-main">
         <div class="equip-icon-stack">
           ${item.icon ? `<img class="equip-icon grade-${html(item.grade)}" src="${html(item.icon)}" alt="" />` : `<div class="equip-icon grade-${html(item.grade)}"></div>`}
-          <span class="slot-ribbon">${html(slotLabel(item))}</span>
         </div>
         <div class="compact-equip-body">
           <div class="equip-title">
@@ -1860,11 +1859,11 @@ function renderCompactEquipItem(item) {
             ${item.enchantLevel ? `<span class="tag">+${html(item.enchantLevel)}</span>` : ""}
             <strong class="grade-${html(item.grade)}">${html(item.name || "未知裝備")}</strong>
           </div>
-          <div class="equip-grade-line">${html(item.grade || "")}</div>
-          ${wordBlocks ? `<div class="equip-word-cols ${[soulBlock, growthBlock, magicBlock].filter(Boolean).length === 1 ? "single" : ""}">${wordBlocks}</div>` : ""}
+          <div class="equip-grade-line">${[item.grade, slotLabel(item)].filter(Boolean).join(" · ")}</div>
           ${item.sourcesText ? `<div class="equip-source">${html(item.sourcesText)}</div>` : ""}
         </div>
       </div>
+      ${wordBlocks ? `<div class="equip-word-rows">${wordBlocks}</div>` : ""}
     </article>
   `;
 }

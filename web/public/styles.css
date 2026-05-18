@@ -935,6 +935,14 @@ body.light .primary-button {
   line-height: 1.1;
 }
 
+.profile-level {
+  margin: 2px 0 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
 .profile-title {
   color: var(--gold);
 }
@@ -1367,6 +1375,13 @@ body.light .primary-button {
   grid-template-columns: 1fr;
 }
 
+.equip-word-rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
 .equip-word-block {
   display: grid;
   align-content: start;
@@ -1412,7 +1427,7 @@ body.light .primary-button {
 .equip-word-line {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 7px;
+  gap: 4px;
   align-items: baseline;
   min-width: 0;
   color: var(--muted);
@@ -1824,7 +1839,8 @@ body.light .primary-button {
     flex-direction: column;
   }
 
-  .results-panel {
+  .results-panel,
+  .detail-panel {
     width: 100% !important;
   }
 
@@ -1860,16 +1876,30 @@ body.light .primary-button {
   }
 
   .profile-card {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 100px;
+    gap: 14px;
+    padding: 16px;
+    align-items: start;
   }
 
   .profile-avatar {
-    width: 132px;
-    height: 132px;
+    width: 100px;
+    height: 100px;
   }
 
   .profile-name {
-    font-size: 28px;
+    font-size: 24px;
+    margin: 6px 0 2px;
+  }
+
+  .stat-chip {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 10px;
+  }
+
+  .stat-chip strong {
+    font-size: 17px;
   }
 
   .compact-equip-grid,
@@ -1878,7 +1908,38 @@ body.light .primary-button {
     grid-template-columns: 1fr;
   }
 
-  .equip-word-cols {
+  .equip-word-cols,
+  .equip-word-rows {
+    gap: 6px;
+  }
+
+  .equip-word-block {
+    padding: 6px;
+  }
+
+  .skill-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .skill-item {
     grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 5px;
+    padding: 6px 4px;
+    text-align: center;
+  }
+
+  .skill-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .skill-item strong {
+    font-size: 11px;
+  }
+
+  .skill-item span {
+    font-size: 11px;
+    margin-top: 1px;
   }
 }
