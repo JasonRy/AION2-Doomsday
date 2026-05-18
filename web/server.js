@@ -9,6 +9,26 @@ const PUBLIC_DIR = path.join(__dirname, "public");
 const NC_HOST = "tw.ncsoft.com";
 const { toTraditional } = require(path.join(__dirname, "..", "miniprogram", "utils", "s2t.js"));
 
+const rateStore = new Map();
+const RATE_LIMIT = 60;
+const RATE_WINDOW_MS = 60_000;
+
+function checkRate(ip) {
+  const now = Date.now();
+  let e = rateStore.get(ip);
+  if (!e || now >= e.resetAt) {
+    e = { count: 0, resetAt: now + RATE_WINDOW_MS };
+    rateStore.set(ip, e);
+  }
+  e.count++;
+  return e.count > RATE_LIMIT ? Math.ceil((e.resetAt - now) / 1000) : 0;
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, e] of rateStore) if (now >= e.resetAt) rateStore.delete(ip);
+}, 300_000).unref();
+
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -117,6 +137,19 @@ function ncPathFromRoute(url) {
 }
 
 async function handleApi(req, res, url) {
+  if (url.pathname !== "/api/convert") {
+    const ip = ((req.headers["x-forwarded-for"] || "").split(",")[0].trim()) || req.socket.remoteAddress || "unknown";
+    const wait = checkRate(ip);
+    if (wait > 0) {
+      send(res, 429, JSON.stringify({ success: false, error: `請求過於頻繁，請 ${wait} 秒後再試` }), {
+        "Content-Type": "application/json; charset=utf-8",
+        "Retry-After": String(wait),
+        "Cache-Control": "no-store",
+      });
+      return;
+    }
+  }
+
   if (url.pathname === "/api/convert") {
     const text = url.searchParams.get("text") || "";
     send(res, 200, JSON.stringify({ result: toTraditional(text) }), {

@@ -235,6 +235,7 @@ const state = {
   serverId: 0,
   results: [],
   selectedId: "",
+  selectedChar: null,
   selectedDetail: null,
   selectedAttack: null,
   detailTab: "equipment",
@@ -247,6 +248,8 @@ const state = {
 
 let wingEffectCatalogPromise = null;
 let resultsCollapsed = false;
+let lastDetailLoadTime = 0;
+const DETAIL_COOLDOWN_MS = 5000;
 
 function setResultsCollapsed(collapse) {
   if (collapse === resultsCollapsed) return;
@@ -457,6 +460,12 @@ async function getJson(path, timeoutMs = 25000) {
   } catch (error) {
     throw new Error(text.slice(0, 180) || error.message);
   }
+  if (response.status === 429) {
+    const retryAfter = Number(response.headers.get("Retry-After") || "60");
+    const err = new Error(`請求過於頻繁，請 ${retryAfter} 秒後再試`);
+    err.status = 429;
+    throw err;
+  }
   if (!response.ok) {
     throw new Error(data.error || `HTTP ${response.status}`);
   }
@@ -567,6 +576,38 @@ function currentViewAnalysis() {
 }
 
 async function loadDetail(char) {
+  state.selectedChar = char;
+  const SNAP_TTL_MS = 30 * 60 * 1000;
+  const cached = loadSnapshots(char.characterId);
+  const freshSnap = Object.values(cached).find((s) => s && Date.now() - (s.savedAt || 0) < SNAP_TTL_MS);
+  if (freshSnap && !char._forceRefresh) {
+    // 快照未过期，直接渲染不请求 API
+    state.selectedId = char.characterId;
+    state.detailTab = "equipment";
+    state.detailLoading = false;
+    state.snapshots = cached;
+    state.snapshotTab = cached.pvp ? "pvp" : "pve";
+    state.selectedDetail = (cached[state.snapshotTab] || {}).detail || null;
+    state.selectedAttack = (cached[state.snapshotTab] || {}).analysis || null;
+    renderResults();
+    renderDetail(currentViewDetail(), currentViewAnalysis());
+    if (window.innerWidth > 980) setResultsCollapsed(true);
+    setStatus("已顯示快照");
+    return;
+  }
+
+  // 无快照或快照过期时，限制请求频率
+  const hasSnap = !!(cached.pve || cached.pvp);
+  if (!hasSnap) {
+    const now = Date.now();
+    if (lastDetailLoadTime > 0 && now - lastDetailLoadTime < DETAIL_COOLDOWN_MS) {
+      const wait = Math.ceil((DETAIL_COOLDOWN_MS - (now - lastDetailLoadTime)) / 1000);
+      setStatus(`請稍候 ${wait} 秒`);
+      return;
+    }
+    lastDetailLoadTime = now;
+  }
+
   state.selectedId = char.characterId;
   state.detailTab = "equipment";
   state.detailLoading = true;
@@ -609,6 +650,20 @@ async function loadDetail(char) {
     });
     setStatus("詳情已載入");
   } catch (error) {
+    if (error.status === 429) {
+      const fallback = loadSnapshots(char.characterId);
+      const snap = fallback.pvp || fallback.pve;
+      if (snap) {
+        state.snapshots = fallback;
+        state.snapshotTab = fallback.pvp ? "pvp" : "pve";
+        state.selectedDetail = snap.detail;
+        state.selectedAttack = snap.analysis;
+        renderDetail(currentViewDetail(), currentViewAnalysis());
+        if (window.innerWidth > 980) setResultsCollapsed(true);
+        setStatus("已顯示快照（請求受限）");
+        return;
+      }
+    }
     els.detailPanel.innerHTML = `<div class="error-box">詳情載入失敗：${html(error.message)}</div>`;
     setStatus("詳情失敗");
   } finally {
@@ -1604,6 +1659,7 @@ function renderDetail(detail, analysis) {
           }
           return `<button type="button" class="snapshot-tab snapshot-tab--empty" disabled>${html(label)}<span class="snap-time">—</span></button>`;
         }).join("")}
+        <button type="button" class="snap-refresh-btn" data-refresh-detail title="刷新角色數據">↺</button>
       </nav>
 
       <div class="detail-body">
@@ -2233,6 +2289,11 @@ function bindEvents() {
   });
 
   els.detailPanel.addEventListener("click", (event) => {
+    if (event.target.closest("[data-refresh-detail]")) {
+      if (!state.selectedChar) return;
+      loadDetail({ ...state.selectedChar, _forceRefresh: true });
+      return;
+    }
     const snapButton = event.target.closest("[data-snapshot-tab]");
     if (snapButton) {
       const snapType = snapButton.dataset.snapshotTab;

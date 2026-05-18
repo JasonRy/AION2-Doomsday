@@ -1034,6 +1034,24 @@ body.light .primary-button {
   opacity: 0.65;
 }
 
+.snap-refresh-btn {
+  margin-left: auto;
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.snap-refresh-btn:hover {
+  color: var(--text);
+  border-color: var(--blue);
+}
+
 .detail-tabs {
   display: flex;
   gap: 8px;
