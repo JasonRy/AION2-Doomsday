@@ -1037,6 +1037,7 @@ body.light .primary-button {
 .detail-tabs button {
   min-height: 40px;
   padding: 0 16px;
+  white-space: nowrap;
   border: 1px solid var(--border);
   border-bottom: 0;
   border-radius: 8px 8px 0 0;
@@ -1382,6 +1383,7 @@ body.light .primary-button {
   color: var(--faint);
   font-size: 12px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .equip-word-head {
@@ -1824,6 +1826,22 @@ body.light .primary-button {
 
   .results-panel {
     width: 100% !important;
+  }
+
+  .panel-collapse-btn {
+    display: none;
+  }
+
+  .detail-side {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 1;
+    padding: 0;
+  }
+
+  .content-grid.results-collapsed .detail-body {
+    grid-template-columns: 1fr;
   }
 }
 

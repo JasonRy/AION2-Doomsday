@@ -597,7 +597,7 @@ async function loadDetail(char) {
     state.snapshots = saveSnapshot(char.characterId, snapType, detail, attributes);
     state.snapshotTab = snapType;
     renderDetail(currentViewDetail(), currentViewAnalysis());
-    setResultsCollapsed(true);
+    if (window.innerWidth > 980) setResultsCollapsed(true);
     pushHistory({
       ...char,
       characterName: detail.profile.characterName || char.characterName,
