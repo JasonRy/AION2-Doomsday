@@ -10,7 +10,7 @@ const NC_HOST = "tw.ncsoft.com";
 const { toTraditional } = require(path.join(__dirname, "..", "miniprogram", "utils", "s2t.js"));
 
 const rateStore = new Map();
-const RATE_LIMIT = 60;
+const RATE_LIMIT = 30;
 const RATE_WINDOW_MS = 60_000;
 
 function checkRate(ip) {
