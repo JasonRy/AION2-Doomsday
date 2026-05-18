@@ -1,0 +1,8 @@
+{
+  "name": "aion2",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node web/server.js"
+  }
+}
