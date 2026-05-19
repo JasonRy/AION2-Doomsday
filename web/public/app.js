@@ -1960,7 +1960,7 @@ function renderSidePanels(detail, analysis) {
     ${state.petSimulator.enabled ? renderPetSimulatorEditor() : ""}
     ${renderStatOverviewPanel("基礎能力", BASIC_PANEL_ORDER.map((def) => {
       const stat = (detail.detailStatBasic || []).find((item) => item.type === def.type || item.name === def.label);
-      return statOverviewItem(def.label, stat);
+      return statOverviewItem(def.label, stat, true);
     }), "basic")}
     ${renderStatOverviewPanel("屬性轉換", SECONDARY_PANEL_ORDER.map((label) => {
       const stat = findSecondaryStat(detail.detailStatSecondary || [], label);
@@ -2066,13 +2066,13 @@ function findSecondaryStat(stats, label) {
   return stats.find((stat) => stat.name === label);
 }
 
-function statOverviewItem(label, stat) {
+function statOverviewItem(label, stat, applyCap = false) {
   const value = stat ? (stat.value ?? stat.statValue ?? stat.totalValue ?? "-") : "-";
-  const popHtml = statTooltipHtml(stat);
+  const popHtml = statTooltipHtml(stat, applyCap);
   return { label, value: value || "-", popHtml };
 }
 
-function statTooltipHtml(stat) {
+function statTooltipHtml(stat, applyCap = false) {
   if (!stat || !Array.isArray(stat.statSecondList) || !stat.statSecondList.length) return "";
   const PCT_CAP = 20;
   return stat.statSecondList.map((item) => {
@@ -2085,7 +2085,7 @@ function statTooltipHtml(stat) {
       text = String(item);
     }
     const pctMatch = text.match(/([+-]?)([\d.]+)%/);
-    if (pctMatch) {
+    if (applyCap && pctMatch) {
       const abs = parseFloat(pctMatch[2]);
       if (Number.isFinite(abs) && abs > PCT_CAP) {
         const sign = pctMatch[1];
