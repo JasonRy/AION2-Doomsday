@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: aion2-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aion2
+      POSTGRES_PASSWORD: aion2_dev_password
+      POSTGRES_DB: aion2
+    ports:
+      - "54329:5432"
+    volumes:
+      - aion2_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aion2 -d aion2"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  aion2_postgres_data:
