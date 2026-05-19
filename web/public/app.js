@@ -1597,7 +1597,8 @@ function calcAttributes(detail) {
     const isPct = String(value).includes("%") || String(extra).includes("%") || name.includes("增加");
     if (addEnvCombatAmpStat(stat, sourceLabel, detailKind, sourceType)) return;
     if (addAbnormalStat(stat, sourceLabel, detailKind)) return;
-    if (isPct && matchPctMetric(stat)) {
+    const pctDef = matchPctMetric(stat);
+    if (pctDef && (isPct || !matchOtherMetric(stat))) {
       addPctStat(stat, sourceLabel, detailKind, cap);
       return;
     }
@@ -1624,7 +1625,7 @@ function calcAttributes(detail) {
       text.split(/[，,、]/).forEach((part) => addDesc(part.trim(), sourceLabel, detailKind, sourceType, cap));
       return;
     }
-    const match = text.match(/^(?:(.+?時)[，,]?)?(.+?)\s*([+-]?[\d.]+%?)$/);
+    const match = text.match(/^(?:(.+?時)[，,])?(.+?)\s*([+-]?[\d.]+%?)$/);
     if (!match) return;
     const condition = match[1] ? `（${match[1].trim()}）` : "";
     let name = match[2].trim();
@@ -1709,8 +1710,18 @@ function calcAttributes(detail) {
     const value = toNum(stat.value);
     if (value > 0) addValue(def.key, value, false, "角色轉換", `屬性轉換 · ${stat.name || stat.type}`);
   });
+  detail.detailStatSecondary.forEach((stat) => {
+    const pctDef = PCT_STAT_DEFS.find((d) => d.ids.includes(stat.type || ""));
+    if (!pctDef) return;
+    if ((stat.statSecondList || []).length > 0) return;
+    addPctStat({ id: stat.type, name: stat.name, value: stat.value }, "角色轉換", `屬性轉換 · ${stat.name || stat.type}`);
+  });
   detail.detailTitleGroups.forEach((group) => {
-    group.items.forEach((title) => (title.equipStatList || []).forEach((stat) => addDerivedStatItem(stat, `稱號 · ${title.name || "稱號"}`, "稱號")));
+    group.items.forEach((title) => {
+      const titleLabel = `稱號 · ${title.name || "稱號"}`;
+      (title.statList || []).forEach((stat) => addDerivedStatItem(stat, titleLabel, "稱號"));
+      (title.equipStatList || []).forEach((stat) => addDerivedStatItem(stat, titleLabel, "稱號"));
+    });
   });
   detail.detailDaevanionEntries.forEach((entry) => addDesc(entry.desc || `額外攻擊力 +${entry.value}`, "守護力", entry.boardName || "守護力", "daevanion"));
   extractWingStats(detail).forEach((stat) => {
