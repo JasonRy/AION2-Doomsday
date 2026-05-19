@@ -993,6 +993,24 @@ body.light .primary-button {
   font-weight: 800;
 }
 
+.side-cap-hint {
+  display: none;
+  color: var(--accent);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.side-stat-cell--capped:hover strong {
+  opacity: 0.35;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.side-stat-cell--capped:hover .side-cap-hint {
+  display: block;
+}
+
 .panel-head {
   display: flex;
   justify-content: space-between;

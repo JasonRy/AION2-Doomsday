@@ -1960,7 +1960,7 @@ function renderSidePanels(detail, analysis) {
     ${state.petSimulator.enabled ? renderPetSimulatorEditor() : ""}
     ${renderStatOverviewPanel("基礎能力", BASIC_PANEL_ORDER.map((def) => {
       const stat = (detail.detailStatBasic || []).find((item) => item.type === def.type || item.name === def.label);
-      return statOverviewItem(def.label, stat);
+      return statOverviewItem(def.label, stat, true);
     }), "basic")}
     ${renderStatOverviewPanel("屬性轉換", SECONDARY_PANEL_ORDER.map((label) => {
       const stat = findSecondaryStat(detail.detailStatSecondary || [], label);
@@ -2066,9 +2066,14 @@ function findSecondaryStat(stats, label) {
   return stats.find((stat) => stat.name === label);
 }
 
-function statOverviewItem(label, stat) {
+function statOverviewItem(label, stat, capAt200 = false) {
   const value = stat ? (stat.value ?? stat.statValue ?? stat.totalValue ?? "-") : "-";
   const tooltip = statTooltip(stat);
+  const num = parseFloat(String(value));
+  if (capAt200 && Number.isFinite(num) && num > 200) {
+    const effective = Math.round((200 + (num - 200) * 0.2) * 10) / 10;
+    return { label, value: String(num), effectiveValue: String(effective), tooltip };
+  }
   return { label, value: value || "-", tooltip };
 }
 
@@ -2089,12 +2094,17 @@ function renderStatOverviewPanel(title, items, mode) {
     <div class="side-stat-panel side-stat-panel--${html(mode)}">
       <div class="side-stat-head">${html(title)}</div>
       <div class="side-stat-grid">
-        ${items.map((item) => `
-          <div class="side-stat-cell${item.tooltip ? " has-tooltip" : ""}" ${item.tooltip ? `data-tooltip="${html(item.tooltip)}"` : ""}>
+        ${items.map((item) => {
+          const isCapped = !!item.effectiveValue;
+          const cls = `side-stat-cell${isCapped ? " side-stat-cell--capped" : ""}${item.tooltip ? " has-tooltip" : ""}`;
+          const tooltipAttr = item.tooltip ? ` data-tooltip="${html(item.tooltip)}"` : "";
+          return `
+          <div class="${cls}"${tooltipAttr}>
             <span>${html(item.label)}</span>
             <strong>${html(item.value)}</strong>
-          </div>
-        `).join("")}
+            ${isCapped ? `<em class="side-cap-hint">有效 ${html(item.effectiveValue)}</em>` : ""}
+          </div>`;
+        }).join("")}
       </div>
     </div>
   `;
