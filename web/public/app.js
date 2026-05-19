@@ -206,6 +206,43 @@ const CLASS_PASSIVE_CONFIGS = {
   },
 };
 const HISTORY_KEY = "aion2-query-history";
+const PET_SIM_KEY = "aion2-pet-simulator";
+const PET_DISK_TYPES = {
+  normal: "普通盤",
+  special: "特殊盤",
+};
+const PET_STAT_OPTIONS = [
+  { key: "block", label: "格擋", bucket: "otherStats", statKey: "block", max: 50, maxCount: 9, isPct: false },
+  { key: "extraEvasion", label: "額外迴避", bucket: "primaryStats", statKey: "extraEvasion", max: 40, maxCount: 9, isPct: false },
+  { key: "criticalResist", label: "暴擊抵抗", bucket: "primaryStats", statKey: "criticalResist", max: 30, maxCount: 9, isPct: false },
+  { key: "hp", label: "生命力", bucket: "primaryStats", statKey: "hp", max: 200, maxCount: 9, isPct: false },
+  { key: "extraHit", label: "額外命中", bucket: "primaryStats", statKey: "extraHit", max: 40, maxCount: 9, isPct: false },
+  { key: "extraAttack", label: "額外攻擊力", bucket: "primaryStats", statKey: "extraAttack", max: 16, maxCount: 3, isPct: false },
+  { key: "maxAttack", label: "最大攻擊力", bucket: "primaryStats", statKey: "attack", max: 20, maxCount: 3, isPct: false, scale: 0.5, note: "按平均攻擊力折算 50%" },
+  { key: "bossAttack", label: "首領攻擊力", bucket: "envCombatAmpStats", statKey: "bossAttack", max: 20, maxCount: 9, isPct: false },
+  { key: "critical", label: "暴擊", bucket: "primaryStats", statKey: "critical", max: 30, maxCount: 9, isPct: false },
+  { key: "pveDamageAmp", label: "PVE傷害增幅", bucket: "envCombatAmpStats", statKey: "pveDamageAmp", max: 3, maxCount: 2, isPct: true },
+  { key: "pveDamageResist", label: "PVE傷害耐性", bucket: "envCombatAmpStats", statKey: "pveDamageResist", max: 3, maxCount: 1, isPct: true },
+  { key: "weaponDamageResist", label: "武器傷害耐性", bucket: "basicCombatAmpStats", statKey: "weaponDamageResist", max: 2.4, maxCount: 1, isPct: true },
+  { key: "critDamageResist", label: "暴擊傷害耐性", bucket: "basicCombatAmpStats", statKey: "critDamageResist", max: 2.4, maxCount: 1, isPct: true },
+  { key: "backDamageResist", label: "後方傷害耐性", bucket: "basicCombatAmpStats", statKey: "backDamageResist", max: 2.4, maxCount: 1, isPct: true },
+  { key: "damageResist", label: "傷害耐性", bucket: "basicCombatAmpStats", statKey: "damageResist", max: 2.4, maxCount: 1, isPct: true },
+  { key: "powerStrike", label: "強擊", bucket: "otherStats", statKey: "powerStrike", max: 2.4, maxCount: 2, isPct: true },
+  { key: "perfect", label: "完美", bucket: "otherStats", statKey: "perfect", max: 2.4, maxCount: 2, isPct: true },
+  { key: "damageAmp", label: "傷害增幅", bucket: "basicCombatAmpStats", statKey: "damageAmp", max: 2.4, maxCount: 2, isPct: true },
+  { key: "backDamageAmp", label: "後方傷害增幅", bucket: "basicCombatAmpStats", statKey: "backDamageAmp", max: 3, maxCount: 2, isPct: true },
+  { key: "critDamageAmp", label: "暴擊傷害增幅", bucket: "basicCombatAmpStats", statKey: "critDamageAmp", max: 3, maxCount: 2, isPct: true },
+  { key: "weaponDamageAmp", label: "武器傷害增幅", bucket: "basicCombatAmpStats", statKey: "weaponDamageAmp", max: 2.4, maxCount: 2, isPct: true },
+  { key: "ironWall", label: "鐵壁", bucket: "otherStats", statKey: "ironWall", max: 2.4, maxCount: 1, isPct: true },
+];
+const PET_SPECIAL_OVERRIDES = {
+  extraHit: { max: 0, maxCount: 0 },
+  extraAttack: { maxCount: 6 },
+  maxAttack: { maxCount: 6 },
+};
+const PET_SPECIAL_ONLY_OPTIONS = [
+  { key: "penetration", label: "貫穿", bucket: "basicCombatStats", statKey: "penetration", max: 160, maxCount: 9, isPct: false },
+];
 const EQUIP_SLOT_ORDER = [
   "MainHand", "SubHand",
   "Helmet", "Shoulder",
@@ -217,6 +254,30 @@ const EQUIP_SLOT_ORDER = [
   "Ring1", "Ring2",
   "Bracelet1", "Bracelet2",
   "Rune1", "Rune2",
+];
+const MOBILE_EQUIP_COLUMNS = [
+  [
+    { slot: "MainHand", label: "武器" },
+    { slot: "Helmet", label: "頭盔" },
+    { slot: "Torso", label: "上衣" },
+    { slot: "Pants", label: "下裝" },
+    { slot: "Cape", label: "披風" },
+    { slot: "Earring1", label: "耳環" },
+    { slot: "Necklace", label: "項鍊" },
+    { slot: "Ring1", label: "戒指" },
+    { slot: "Rune1", label: "古文石" },
+  ],
+  [
+    { slot: "SubHand", label: "臂甲" },
+    { slot: "Shoulder", label: "肩甲" },
+    { slot: "Belt", label: "腰帶" },
+    { slot: "Gloves", label: "手套" },
+    { slot: "Boots", label: "鞋子" },
+    { slot: "Earring2", label: "耳環" },
+    { slot: "Amulet", label: "護身符" },
+    { slot: "Ring2", label: "戒指" },
+    { slot: "Rune2", label: "古文石" },
+  ],
 ];
 const NO_STONE_SLOTS = new Set(["Rune1", "Rune2", "Amulet"]);
 const TRAD_MAP = {
@@ -244,6 +305,8 @@ const state = {
   detailLoading: false,
   snapshotTab: null,
   snapshots: {},
+  mobileIconMode: false,
+  petSimulator: loadPetSimulatorConfig(),
 };
 
 let wingEffectCatalogPromise = null;
@@ -317,6 +380,23 @@ function stripHtml(value) {
 function toNum(value) {
   const parsed = parseFloat(value);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function mapLimit(items, limit, worker) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex++;
+      results[index] = await worker(items[index], index);
+    }
+  });
+  await Promise.all(runners);
+  return results;
 }
 
 function formatTime(ts) {
@@ -472,6 +552,22 @@ async function getJson(path, timeoutMs = 25000) {
   return data;
 }
 
+async function getJsonRetry(path, timeoutMs = 25000, attempts = 3) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await getJson(path, timeoutMs);
+    } catch (error) {
+      lastError = error;
+      const retryable = error.status === 429 || /timeout|HTTP 5\d\d|Failed to fetch|NetworkError/i.test(error.message || "");
+      if (!retryable || attempt === attempts) throw error;
+      const wait = error.status === 429 ? 1200 * attempt : 450 * attempt;
+      await sleep(wait);
+    }
+  }
+  throw lastError;
+}
+
 async function searchCharacters() {
   const keyword = els.keywordInput.value.trim();
   if (!keyword) {
@@ -572,21 +668,241 @@ function currentViewDetail() {
 
 function currentViewAnalysis() {
   const snap = state.snapshotTab && state.snapshots[state.snapshotTab];
-  return snap ? snap.analysis : state.selectedAttack;
+  const detail = snap ? snap.detail : state.selectedDetail;
+  return detail ? calcAttributes(detail) : (snap ? snap.analysis : state.selectedAttack);
+}
+
+function isUsableSnapshot(snap, ttlMs = Infinity) {
+  return !!(
+    snap &&
+    snap.detail &&
+    snap.detail.detailDaevanionComplete === true &&
+    snap.detail.detailEquipmentComplete === true &&
+    Date.now() - (snap.savedAt || 0) < ttlMs
+  );
+}
+
+function defaultPetSimulatorConfig() {
+  const normalRows = [
+    { statKey: "extraHit", count: 3, value: 35 },
+    { statKey: "extraAttack", count: 3, value: 14 },
+    { statKey: "powerStrike", count: 2, value: 1.8 },
+    { statKey: "damageResist", count: 1, value: 2.0 },
+  ];
+  const specialRows = [
+    { statKey: "extraAttack", count: 6, value: 14 },
+    { statKey: "powerStrike", count: 2, value: 2.0 },
+    { statKey: "damageResist", count: 1, value: 2.0 },
+  ];
+  return {
+    disks: [
+      { id: "normal-1", type: "normal", name: "普通盤 1", rows: normalRows.map((row) => ({ ...row })) },
+      { id: "normal-2", type: "normal", name: "普通盤 2", rows: normalRows.map((row) => ({ ...row })) },
+      { id: "normal-3", type: "normal", name: "普通盤 3", rows: normalRows.map((row) => ({ ...row })) },
+      { id: "normal-4", type: "normal", name: "普通盤 4", rows: normalRows.map((row) => ({ ...row })) },
+      { id: "special-1", type: "special", name: "特殊盤", rows: specialRows.map((row) => ({ ...row })) },
+    ],
+  };
+}
+
+function loadPetSimulatorConfig() {
+  const defaultTemplate = defaultPetSimulatorConfig();
+  const defaults = {
+    enabled: false,
+    activeTemplate: 0,
+    templates: [0, 1, 2].map((index) => ({
+      name: `模板 ${index + 1}`,
+      disks: defaultTemplate.disks.map((disk) => ({ ...disk, rows: disk.rows.map((row) => ({ ...row })) })),
+    })),
+  };
+  try {
+    const saved = JSON.parse(localStorage.getItem(PET_SIM_KEY) || "null");
+    if (!saved) return defaults;
+    if (Array.isArray(saved.disks)) {
+      defaults.enabled = !!saved.enabled;
+      defaults.templates[0].disks = defaultTemplate.disks.map((disk) => {
+        const current = saved.disks.find((item) => item.id === disk.id);
+        return current ? { ...disk, rows: normalizePetRows(current.rows, disk.type) } : disk;
+      });
+      return defaults;
+    }
+    if (!Array.isArray(saved.templates)) return defaults;
+    return {
+      enabled: !!saved.enabled,
+      activeTemplate: clampInt(saved.activeTemplate, 0, 2),
+      templates: defaults.templates.map((template, index) => {
+        const current = saved.templates[index];
+        if (!current || !Array.isArray(current.disks)) return template;
+        return {
+          name: String(current.name || template.name).slice(0, 12),
+          disks: defaultTemplate.disks.map((disk) => {
+            const savedDisk = current.disks.find((item) => item.id === disk.id);
+            return savedDisk ? { ...disk, rows: normalizePetRows(savedDisk.rows, disk.type) } : disk;
+          }),
+        };
+      }),
+    };
+  } catch (_) {
+    return defaults;
+  }
+}
+
+function savePetSimulatorConfig() {
+  try { localStorage.setItem(PET_SIM_KEY, JSON.stringify(state.petSimulator)); } catch (_) {}
+  syncPetSimulatorConfig();
+}
+
+let petSyncTimer = null;
+function syncPetSimulatorConfig() {
+  clearTimeout(petSyncTimer);
+  petSyncTimer = setTimeout(() => {
+    fetch("/api/pet-templates", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(state.petSimulator),
+    }).catch(() => {});
+  }, 350);
+}
+
+async function loadPetSimulatorFromCloud() {
+  try {
+    const data = await getJson("/api/pet-templates", 8000);
+    if (!data || !Array.isArray(data.templates) || !data.templates.length) return;
+    const current = state.petSimulator;
+    const next = {
+      enabled: current.enabled,
+      activeTemplate: current.activeTemplate,
+      templates: current.templates.map((template, index) => {
+        const remote = data.templates.find((item) => Number(item.slotIndex) === index) || data.templates[index];
+        if (!remote || !Array.isArray(remote.disks) || !remote.disks.length) return template;
+        return {
+          name: String(remote.name || template.name).slice(0, 12),
+          disks: template.disks.map((disk) => {
+            const remoteDisk = remote.disks.find((item) => item.id === disk.id);
+            return remoteDisk ? { ...disk, rows: normalizePetRows(remoteDisk.rows, disk.type) } : disk;
+          }),
+        };
+      }),
+    };
+    state.petSimulator = next;
+    try { localStorage.setItem(PET_SIM_KEY, JSON.stringify(state.petSimulator)); } catch (_) {}
+    if (state.selectedDetail && state.selectedAttack) renderDetail(currentViewDetail(), currentViewAnalysis());
+  } catch (_) {}
+}
+
+function activePetTemplate() {
+  return state.petSimulator.templates[state.petSimulator.activeTemplate] || state.petSimulator.templates[0];
+}
+
+function activePetDisks() {
+  return activePetTemplate().disks || [];
+}
+
+function resetActivePetTemplate() {
+  const defaults = defaultPetSimulatorConfig();
+  const current = activePetTemplate();
+  current.disks = defaults.disks.map((disk) => ({ ...disk, rows: disk.rows.map((row) => ({ ...row })) }));
+}
+
+function petOptionsForType(type) {
+  const base = PET_STAT_OPTIONS.map((option) => ({
+    ...option,
+    ...(type === "special" && PET_SPECIAL_OVERRIDES[option.key] ? PET_SPECIAL_OVERRIDES[option.key] : {}),
+  }));
+  return type === "special" ? base.concat(PET_SPECIAL_ONLY_OPTIONS) : base;
+}
+
+function petOption(type, key) {
+  return petOptionsForType(type).find((option) => option.key === key) || petOptionsForType(type)[0];
+}
+
+function normalizePetRows(rows, type) {
+  const options = petOptionsForType(type);
+  let diskUsed = 0;
+  const statUsed = {};
+  const normalized = [];
+  (Array.isArray(rows) ? rows : []).forEach((row) => {
+      const option = options.find((item) => item.key === row.statKey);
+      if (!option || option.maxCount <= 0 || diskUsed >= 9) return;
+      const remainingDisk = 9 - diskUsed;
+      const remainingStat = option.maxCount - (statUsed[option.key] || 0);
+      const count = clampInt(row.count, 1, Math.min(remainingDisk, remainingStat));
+      if (count <= 0) return;
+      diskUsed += count;
+      statUsed[option.key] = (statUsed[option.key] || 0) + count;
+      normalized.push({
+        statKey: option.key,
+        count,
+        value: clampNum(row.value, 0, option.max),
+      });
+    });
+  return normalized;
+}
+
+function clampInt(value, min, max) {
+  const parsed = Math.round(toNum(value));
+  return Math.max(min, Math.min(max, Number.isFinite(parsed) ? parsed : min));
+}
+
+function clampNum(value, min, max) {
+  const parsed = toNum(value);
+  return Math.max(min, Math.min(max, Number.isFinite(parsed) ? parsed : min));
+}
+
+function cloneAnalysis(analysis) {
+  return JSON.parse(JSON.stringify(analysis || {}));
+}
+
+function petLineTotal(row, option) {
+  return toNum(row.count) * toNum(row.value) * toNum(option.scale || 1);
+}
+
+function addPetValue(analysis, option, row, disk) {
+  const bucket = analysis[option.bucket];
+  if (!Array.isArray(bucket)) return;
+  const target = bucket.find((stat) => stat.key === option.statKey);
+  const value = petLineTotal(row, option);
+  if (!target || !value) return;
+  if (option.isPct) target.pct += value; else target.flat += value;
+  target.count += row.count;
+  const sourceLabel = `寵物模擬 · ${disk.name}`;
+  let source = target.sources.find((item) => item.label === sourceLabel);
+  if (!source) {
+    source = { label: sourceLabel, flat: 0, pct: 0, details: [] };
+    target.sources.push(source);
+  }
+  if (option.isPct) source.pct += value; else source.flat += value;
+  source.details.push({
+    label: `寵物盤 · ${option.label}${option.note ? `（${option.note}）` : ""} × ${row.count}`,
+    value,
+    isPct: option.isPct,
+  });
+}
+
+function analysisWithPetSimulator(analysis) {
+  const next = cloneAnalysis(analysis);
+  if (!state.petSimulator.enabled || !next.primaryStats) return next;
+  activePetDisks().forEach((disk) => {
+    normalizePetRows(disk.rows, disk.type).forEach((row) => {
+      const option = petOption(disk.type, row.statKey);
+      addPetValue(next, option, row, disk);
+    });
+  });
+  return next;
 }
 
 async function loadDetail(char) {
   state.selectedChar = char;
   const SNAP_TTL_MS = 30 * 60 * 1000;
   const cached = loadSnapshots(char.characterId);
-  const freshSnap = Object.values(cached).find((s) => s && Date.now() - (s.savedAt || 0) < SNAP_TTL_MS);
+  const freshSnap = Object.values(cached).find((s) => isUsableSnapshot(s, SNAP_TTL_MS));
   if (freshSnap && !char._forceRefresh) {
     // 快照未过期，直接渲染不请求 API
     state.selectedId = char.characterId;
     state.detailTab = "equipment";
     state.detailLoading = false;
     state.snapshots = cached;
-    state.snapshotTab = cached.pvp ? "pvp" : "pve";
+    state.snapshotTab = isUsableSnapshot(cached.pvp, SNAP_TTL_MS) ? "pvp" : "pve";
     state.selectedDetail = (cached[state.snapshotTab] || {}).detail || null;
     state.selectedAttack = (cached[state.snapshotTab] || {}).analysis || null;
     renderResults();
@@ -625,17 +941,27 @@ async function loadDetail(char) {
     const statList = (info.stat && info.stat.statList) || [];
     const itemLevel = statList.filter((stat) => stat.type === "ItemLevel").reduce((sum, stat) => sum + (Number(stat.value) || 0), 0);
     const equipList = (equipment.equipment && equipment.equipment.equipmentList) || [];
-    const [detailEquipItems, daevanionEntries, wingEffects] = await Promise.all([
+    const [equipmentResult, daevanionResult, wingEffects] = await Promise.all([
       enrichEquipment(equipList, char),
       loadDaevanionEntries(info, char),
       resolveWingEffects(equipment),
     ]);
-    const detail = normalizeDetail(info, equipment, itemLevel, detailEquipItems, daevanionEntries, wingEffects);
+    const detail = normalizeDetail(
+      info,
+      equipment,
+      itemLevel,
+      equipmentResult.items,
+      daevanionResult.entries,
+      wingEffects,
+      daevanionResult.complete,
+      equipmentResult.complete,
+      equipmentResult.failedSlots,
+    );
     const attributes = calcAttributes(detail);
     state.selectedDetail = detail;
     state.selectedAttack = attributes;
     const snapType = detectSnapshotType(detail);
-    state.snapshots = saveSnapshot(char.characterId, snapType, detail, attributes);
+    state.snapshots = detail.detailDataComplete ? saveSnapshot(char.characterId, snapType, detail, attributes) : loadSnapshots(char.characterId);
     state.snapshotTab = snapType;
     renderDetail(currentViewDetail(), currentViewAnalysis());
     if (window.innerWidth > 980) setResultsCollapsed(true);
@@ -648,14 +974,14 @@ async function loadDetail(char) {
       serverName: detail.profile.serverName || char.serverName,
       serverId: detail.profile.serverId || char.serverId,
     });
-    setStatus("詳情已載入");
+    setStatus(detail.detailDataComplete ? "詳情已載入" : "詳情已載入（部分資料缺失，未保存快照）");
   } catch (error) {
     if (error.status === 429) {
       const fallback = loadSnapshots(char.characterId);
-      const snap = fallback.pvp || fallback.pve;
+      const snap = isUsableSnapshot(fallback.pvp) ? fallback.pvp : (isUsableSnapshot(fallback.pve) ? fallback.pve : null);
       if (snap) {
         state.snapshots = fallback;
-        state.snapshotTab = fallback.pvp ? "pvp" : "pve";
+        state.snapshotTab = isUsableSnapshot(fallback.pvp) ? "pvp" : "pve";
         state.selectedDetail = snap.detail;
         state.selectedAttack = snap.analysis;
         renderDetail(currentViewDetail(), currentViewAnalysis());
@@ -672,7 +998,8 @@ async function loadDetail(char) {
 }
 
 async function enrichEquipment(equipList, char) {
-  const queue = equipList.map(async (item) => {
+  const failedSlots = [];
+  const items = await mapLimit(equipList, 4, async (item) => {
     const params = new URLSearchParams({
       id: item.id,
       enchantLevel: String((item.enchantLevel || 0) + (item.exceedLevel || 0)),
@@ -681,7 +1008,7 @@ async function enrichEquipment(equipList, char) {
       slotPos: item.slotPos,
     });
     try {
-      const detail = await getJson(`/api/equipment-item?${params.toString()}`);
+      const detail = await getJsonRetry(`/api/equipment-item?${params.toString()}`, 25000, 3);
       const godStone = Array.isArray(detail.godStoneStat) ? detail.godStoneStat[0] : detail.godStoneStat;
       return {
         ...item,
@@ -705,8 +1032,10 @@ async function enrichEquipment(equipList, char) {
           .map((source) => typeof source === "string" ? source : (source.name || source.desc || ""))
           .filter(Boolean)
           .join(" · "),
+        detailComplete: true,
       };
-    } catch (_) {
+    } catch (error) {
+      failedSlots.push(slotLabel(item) || item.slotPosName || String(item.slotPos || ""));
       return {
         ...item,
         mainStatsNormal: [],
@@ -720,10 +1049,16 @@ async function enrichEquipment(equipList, char) {
         categoryName: item.categoryName || "",
         godStoneStat: null,
         sourcesText: "",
+        detailComplete: false,
+        detailError: error.message || "裝備詳情讀取失敗",
       };
     }
   });
-  return Promise.all(queue);
+  return {
+    items,
+    complete: failedSlots.length === 0,
+    failedSlots,
+  };
 }
 
 async function loadWingEffectCatalog() {
@@ -768,32 +1103,47 @@ function normalizeGrowthStats(detail) {
 
 async function loadDaevanionEntries(info, char) {
   const boards = (info.daevanion && info.daevanion.boardList) || [];
-  const results = await Promise.all(boards.map(async (board) => {
+  if (!boards.length) return { entries: [], complete: true };
+  const results = await mapLimit(boards, 3, async (board) => {
     const params = new URLSearchParams({
       characterId: char.characterId,
       serverId: char.serverId,
       boardId: board.id,
     });
     try {
-      const data = await getJson(`/api/daevanion?${params.toString()}`);
+      const data = await getJsonRetry(`/api/daevanion?${params.toString()}`, 25000, 3);
       return { board, data };
-    } catch (_) {
-      return { board, data: null };
+    } catch (error) {
+      return { board, data: null, error };
     }
-  }));
+  });
 
   const entries = [];
+  let complete = true;
   results.forEach(({ board, data }) => {
-    if (!data || !Array.isArray(data.openStatEffectList)) return;
+    if (!data || !Array.isArray(data.openStatEffectList)) {
+      complete = false;
+      return;
+    }
     data.openStatEffectList.forEach((effect) => {
       const desc = String(effect.desc || "");
       if (desc && /[\d.]+%?/.test(desc)) entries.push({ boardName: board.name || board.id, desc });
     });
   });
-  return entries;
+  return { entries, complete };
 }
 
-function normalizeDetail(info, equipment, itemLevel, detailEquipItems, daevanionEntries, wingEffects) {
+function normalizeDetail(
+  info,
+  equipment,
+  itemLevel,
+  detailEquipItems,
+  daevanionEntries,
+  wingEffects,
+  daevanionComplete = true,
+  equipmentComplete = true,
+  failedEquipSlots = [],
+) {
   const statList = (info.stat && info.stat.statList) || [];
   const allSkills = (equipment.skill && equipment.skill.skillList) || [];
   const titleList = (info.title && info.title.titleList) || [];
@@ -817,6 +1167,10 @@ function normalizeDetail(info, equipment, itemLevel, detailEquipItems, daevanion
     detailSkillDp: allSkills.filter((skill) => skill.category === "Dp"),
     detailTitleGroups: titleGroups,
     detailDaevanionEntries: daevanionEntries,
+    detailDaevanionComplete: daevanionComplete,
+    detailEquipmentComplete: equipmentComplete,
+    detailFailedEquipSlots: failedEquipSlots,
+    detailDataComplete: daevanionComplete && equipmentComplete,
     petwing: equipment.petwing || {},
     wingEffects,
   };
@@ -1549,7 +1903,11 @@ function renderCombatPanel(analysis) {
     <div class="combat-panel">
       <div class="combat-panel-head">
         <span>${isPvp ? "PVP" : "PVE"} 戰鬥面板</span>
+        <button type="button" class="pet-sim-toggle${state.petSimulator.enabled ? " active" : ""}" data-pet-sim-toggle aria-pressed="${state.petSimulator.enabled ? "true" : "false"}">
+          <i></i>${state.petSimulator.enabled ? "寵物模擬" : "寵物關閉"}
+        </button>
       </div>
+      ${state.petSimulator.enabled ? `<a class="pet-sim-link" href="#pet-simulator" data-pet-editor-link>前往寵物盤屬性選擇</a>` : ""}
       <div class="combat-grid">
         ${stats.map((s) => `
           <div class="combat-stat${s.tooltip ? " has-tooltip" : ""}" ${s.tooltip ? `data-tooltip="${html(s.tooltip)}"` : ""}>
@@ -1576,6 +1934,7 @@ const SECONDARY_PANEL_ORDER = ["正義", "自由", "幻象", "生命", "時間",
 function renderSidePanels(detail, analysis) {
   return `
     ${renderCombatPanel(analysis)}
+    ${state.petSimulator.enabled ? renderPetSimulatorEditor() : ""}
     ${renderStatOverviewPanel("基礎能力", BASIC_PANEL_ORDER.map((def) => {
       const stat = (detail.detailStatBasic || []).find((item) => item.type === def.type || item.name === def.label);
       return statOverviewItem(def.label, stat);
@@ -1625,8 +1984,113 @@ function renderStatOverviewPanel(title, items, mode) {
   `;
 }
 
+function petDiskUsedCount(disk) {
+  return (disk.rows || []).reduce((sum, row) => sum + clampInt(row.count, 0, 9), 0);
+}
+
+function petStatUsedCount(disk, statKey, excludeRowIndex = -1) {
+  return (disk.rows || []).reduce((sum, row, index) => {
+    if (index === excludeRowIndex || row.statKey !== statKey) return sum;
+    return sum + clampInt(row.count, 0, 9);
+  }, 0);
+}
+
+function formatPetValue(option, value) {
+  return option.isPct ? `${Math.round(toNum(value) * 10) / 10}%` : String(Math.round(toNum(value) * 10) / 10);
+}
+
+function petDiskTotalText(disk) {
+  const totals = {};
+  normalizePetRows(disk.rows, disk.type).forEach((row) => {
+    const option = petOption(disk.type, row.statKey);
+    const key = option.key;
+    totals[key] = totals[key] || { option, value: 0 };
+    totals[key].value += petLineTotal(row, option);
+  });
+  const parts = Object.values(totals)
+    .filter((item) => item.value)
+    .map((item) => `${item.option.label} +${formatPetValue(item.option, item.value)}`);
+  return parts.length ? parts.join(" / ") : "未配置";
+}
+
+function renderPetSimulatorEditor() {
+  const template = activePetTemplate();
+  return `
+    <section class="pet-sim-panel" id="pet-simulator">
+      <div class="side-stat-head pet-sim-head">
+        <span>寵物盤模擬</span>
+        <button type="button" data-pet-reset>重置模板</button>
+      </div>
+      <div class="pet-template-bar">
+        ${state.petSimulator.templates.map((item, index) => `
+          <button type="button" class="${state.petSimulator.activeTemplate === index ? "active" : ""}" data-pet-template="${index}">
+            ${html(item.name || `模板 ${index + 1}`)}
+          </button>
+        `).join("")}
+      </div>
+      <label class="pet-template-name">
+        <span>模板名稱</span>
+        <input data-pet-template-name type="text" maxlength="12" value="${html(template.name || "")}" />
+      </label>
+      <div class="pet-disk-list">
+        ${activePetDisks().map((disk, diskIndex) => renderPetDiskEditor(disk, diskIndex)).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderPetDiskEditor(disk, diskIndex) {
+  const used = petDiskUsedCount(disk);
+  return `
+    <article class="pet-disk-card">
+      <div class="pet-disk-title">
+        <div>
+          <strong>${html(disk.name)}</strong>
+          <span>${html(PET_DISK_TYPES[disk.type])} · ${used}/9 條</span>
+        </div>
+        <button type="button" data-pet-add-row="${diskIndex}" ${used >= 9 ? "disabled" : ""}>新增</button>
+      </div>
+      <div class="pet-disk-summary">${html(petDiskTotalText(disk))}</div>
+      <div class="pet-row-list">
+        ${normalizePetRows(disk.rows, disk.type).map((row, rowIndex) => renderPetRowEditor(disk, diskIndex, row, rowIndex)).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function renderPetRowEditor(disk, diskIndex, row, rowIndex) {
+  const option = petOption(disk.type, row.statKey);
+  const options = petOptionsForType(disk.type).filter((item) => item.maxCount > 0);
+  const rowCount = clampInt(row.count, 0, 9);
+  const usedWithoutCurrent = petDiskUsedCount(disk) - rowCount;
+  const currentRowFillsDisk = rowCount >= 9 && usedWithoutCurrent <= 0;
+  return `
+    <div class="pet-row" data-pet-disk="${diskIndex}" data-pet-row="${rowIndex}">
+      <select data-pet-field="statKey" aria-label="寵物盤屬性">
+        ${options.map((item) => {
+          const selected = item.key === row.statKey;
+          const used = petStatUsedCount(disk, item.key, rowIndex);
+          const disabled = !selected && (currentRowFillsDisk || used >= item.maxCount || usedWithoutCurrent + rowCount > 9 || rowCount > item.maxCount);
+          return `<option value="${html(item.key)}" ${selected ? "selected" : ""} ${disabled ? "disabled" : ""}>${html(item.label)}${disabled ? "（已滿）" : ""}</option>`;
+        }).join("")}
+      </select>
+      <label>
+        <span>條數</span>
+        <input data-pet-field="count" type="number" min="1" max="${html(option.maxCount)}" step="1" value="${html(row.count)}" />
+      </label>
+      <label>
+        <span>數值</span>
+        <input data-pet-field="value" type="number" min="0" max="${html(option.max)}" step="${option.isPct ? "0.1" : "1"}" value="${html(row.value)}" />
+      </label>
+      <button type="button" data-pet-delete-row="${diskIndex}:${rowIndex}" title="刪除">刪</button>
+      <small>上限 ${html(option.max)}${option.isPct ? "%" : ""} / ${html(option.maxCount)}條</small>
+    </div>
+  `;
+}
+
 function renderDetail(detail, analysis) {
   const profile = detail.profile || {};
+  const displayAnalysis = analysisWithPetSimulator(analysis);
   els.detailPanel.innerHTML = `
     <article>
       <section class="profile-card race-${profile.raceId || profile.race || ""}">
@@ -1662,6 +2126,8 @@ function renderDetail(detail, analysis) {
         <button type="button" class="snap-refresh-btn" data-refresh-detail title="刷新角色數據">↺</button>
       </nav>
 
+      ${renderDataIntegrityNotice(detail)}
+
       <div class="detail-body">
         <div class="detail-main">
           <nav class="detail-tabs" aria-label="角色詳情分頁">
@@ -1669,11 +2135,11 @@ function renderDetail(detail, analysis) {
             <button type="button" class="${state.detailTab === "attack" ? "active" : ""}" data-detail-tab="attack">屬性分析</button>
           </nav>
           <div class="tab-content">
-            ${state.detailTab === "attack" ? renderAttributeAnalysis(analysis) : renderEquipment(detail.detailEquipItems)}
+            ${state.detailTab === "attack" ? renderAttributeAnalysis(displayAnalysis) : renderEquipment(detail, displayAnalysis)}
           </div>
         </div>
         <div class="detail-side${resultsCollapsed ? " visible" : ""}">
-          ${renderSidePanels(detail, analysis)}
+          ${renderSidePanels(detail, displayAnalysis)}
         </div>
       </div>
     </article>
@@ -1838,36 +2304,194 @@ function renderAttributeAnalysis(analysis) {
   `;
 }
 
-function renderEquipment(items) {
+function renderEquipment(detail, analysis) {
+  const items = detail.detailEquipItems || [];
   const equipmentItems = items.filter((item) => !isCardItem(item)).sort(compareEquipSlots);
   const cardItems = items.filter(isCardItem);
+  const body = state.mobileIconMode
+    ? renderMobileEquipmentMode(detail, analysis, equipmentItems, cardItems)
+    : renderStandardEquipmentMode(detail, equipmentItems, cardItems);
   return `
     <section class="detail-section">
-      <div class="block-stack">
-        <section class="info-block">
-          <div class="block-head">
-            <h4 class="section-title">裝備</h4>
+      ${body}
+    </section>
+  `;
+}
+
+function renderDataIntegrityNotice(detail) {
+  const messages = [];
+  if (detail.detailEquipmentComplete === false) {
+    const slots = (detail.detailFailedEquipSlots || []).filter(Boolean).join("、");
+    messages.push(`裝備詳情有缺失${slots ? `：${slots}` : ""}`);
+  }
+  if (detail.detailDaevanionComplete === false) {
+    messages.push("守護力資料未完整讀取");
+  }
+  if (!messages.length) return "";
+  return `
+    <section class="data-warning">
+      <strong>資料未完整</strong>
+      <span>${html(messages.join("；"))}。本次結果不會寫入快照，請稍後點 ↺ 重新整理。</span>
+    </section>
+  `;
+}
+
+function renderEquipmentModeToggle() {
+  return `
+    <button type="button" class="mobile-mode-toggle${state.mobileIconMode ? " active" : ""}" data-mobile-icon-mode aria-pressed="${state.mobileIconMode ? "true" : "false"}">
+      <span></span>
+      ${state.mobileIconMode ? "圖標模式" : "列表模式"}
+    </button>
+  `;
+}
+
+function renderStandardEquipmentMode(detail, equipmentItems, cardItems) {
+  return `
+    <div class="block-stack">
+      <section class="info-block">
+        <div class="block-head">
+          <h4 class="section-title">裝備</h4>
+          <div class="block-actions">
             <span>${equipmentItems.length} 件</span>
+            ${renderEquipmentModeToggle()}
           </div>
-          ${equipmentItems.length ? `<div class="compact-equip-grid">${equipmentItems.map(renderCompactEquipItem).join("")}</div>` : `<p class="muted">暫無裝備資料</p>`}
-        </section>
+        </div>
+        ${equipmentItems.length ? `<div class="compact-equip-grid">${equipmentItems.map(renderCompactEquipItem).join("")}</div>` : `<p class="muted">暫無裝備資料</p>`}
+      </section>
 
-        ${renderEquipSetSection(equipmentItems)}
+      ${renderEquipSetSection(equipmentItems)}
 
-        <section class="info-block">
-          <div class="block-head">
-            <h4 class="section-title">卡牌</h4>
-            <span>${cardItems.length} 張</span>
+      <section class="info-block">
+        <div class="block-head">
+          <h4 class="section-title">卡牌</h4>
+          <span>${cardItems.length} 張</span>
+        </div>
+        ${cardItems.length ? `
+          <div class="card-grid">${cardItems.map(renderCardItem).join("")}</div>
+          ${renderCardSetSummary(cardItems)}
+        ` : `<p class="muted">暫無卡牌資料</p>`}
+      </section>
+
+      ${renderSkills(detail)}
+    </div>
+  `;
+}
+
+function renderMobileEquipmentMode(detail, analysis, equipmentItems, cardItems) {
+  return `
+    <div class="block-stack">
+      <section class="info-block">
+        <div class="block-head">
+          <h4 class="section-title">裝備</h4>
+          <div class="block-actions">
+            <span>${equipmentItems.length} 件</span>
+            ${renderEquipmentModeToggle()}
           </div>
-          ${cardItems.length ? `
-            <div class="card-grid">${cardItems.map(renderCardItem).join("")}</div>
-            ${renderCardSetSummary(cardItems)}
-          ` : `<p class="muted">暫無卡牌資料</p>`}
-        </section>
+        </div>
+        <div class="mobile-icon-layout">
+          <div class="mobile-equip-columns">
+            ${MOBILE_EQUIP_COLUMNS.map((column) => `
+              <div class="mobile-equip-column">
+                ${column.map(({ slot, label }) => renderMobileEquipSlot(slot, label, equipmentItems)).join("")}
+              </div>
+            `).join("")}
+          </div>
+          <div class="mobile-side-stack">
+            ${renderMobileSkillPane(detail)}
+            ${renderMobileCardPane(cardItems)}
+          </div>
+        </div>
+      </section>
 
-        ${renderSkills(state.selectedDetail)}
+      ${renderEquipSetSection(equipmentItems)}
+
+      <div class="mobile-analysis-after">
+        ${renderAttributeAnalysis(analysis)}
+      </div>
+    </div>
+  `;
+}
+
+function renderMobileEquipSlot(slot, label, equipmentItems) {
+  const item = equipmentItems.find((equip) => equip.slotPosName === slot);
+  if (!item) {
+    return `
+      <div class="mobile-icon-tile mobile-icon-tile--empty" aria-label="${html(label)}">
+        <span>${html(label)}</span>
+      </div>
+    `;
+  }
+  return `
+    <div class="mobile-icon-tile mobile-equip-tile" tabindex="0" aria-label="${html(slotLabel(item))}">
+      ${item.icon ? `<img class="mobile-thumb grade-${html(item.grade)}" src="${html(item.icon)}" alt="" />` : `<div class="mobile-thumb grade-${html(item.grade)}"></div>`}
+      <div class="mobile-detail-popover">${renderCompactEquipItem(item)}</div>
+    </div>
+  `;
+}
+
+function renderMobileCardPane(cardItems) {
+  return `
+    <section class="mobile-icon-pane">
+      <div class="mobile-pane-head">
+        <h5>卡牌</h5>
+        <span>${cardItems.length}</span>
+      </div>
+      <div class="mobile-card-icons">
+        ${cardItems.length ? cardItems.map(renderMobileCardIcon).join("") : `<p class="mobile-pane-empty">暫無卡牌</p>`}
+      </div>
+      ${renderCardSetSummary(cardItems)}
+    </section>
+  `;
+}
+
+function renderMobileCardIcon(card) {
+  const stats = (card.mainStatsNormal || []).slice(0, 3);
+  const skills = (card.subSkills || []).slice(0, 2);
+  return `
+    <div class="mobile-icon-tile mobile-card-tile">
+      ${card.icon ? `<img class="mobile-thumb grade-${html(card.grade)}" src="${html(card.icon)}" alt="" />` : `<div class="mobile-thumb grade-${html(card.grade)}"></div>`}
+      <div class="mobile-skill-info">
+        <span class="mobile-skill-name grade-${html(card.grade)}">${html(card.name || "卡牌")}${card.enchantLevel ? ` +${html(card.enchantLevel)}` : ""}</span>
+        <span class="mobile-skill-level">${html(slotLabel(card))}</span>
+        ${stats.map((s) => `<span class="mobile-skill-level">${html(s.name)} ${html(s.value || "")}</span>`).join("")}
+        ${skills.map((s) => `<span class="mobile-skill-level">${html(s.name)} Lv.${html(s.level ?? "-")}</span>`).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderMobileSkillPane(detail) {
+  const groups = getSkillGroups(detail);
+  const skillCount = groups.reduce((sum, group) => sum + group.items.length, 0);
+  return `
+    <section class="mobile-icon-pane">
+      <div class="mobile-pane-head">
+        <h5>技能</h5>
+        <span>${skillCount}</span>
+      </div>
+      <div class="mobile-skill-groups">
+        ${groups.length ? groups.map((group) => `
+          <section class="mobile-skill-group">
+            <h6>${html(group.title)}</h6>
+            <div class="mobile-skill-icons">
+              ${group.items.map((skill) => renderMobileSkillIcon({ ...skill, groupTitle: group.title })).join("")}
+            </div>
+          </section>
+        `).join("") : `<p class="mobile-pane-empty">暫無技能</p>`}
       </div>
     </section>
+  `;
+}
+
+function renderMobileSkillIcon(skill) {
+  return `
+    <div class="mobile-icon-tile mobile-skill-tile">
+      ${skill.icon ? `<img class="mobile-thumb" src="${html(skill.icon)}" alt="" />` : `<div class="mobile-thumb"></div>`}
+      <div class="mobile-skill-info">
+        <span class="mobile-skill-name">${html(skill.name || "技能")}</span>
+        <span class="mobile-skill-level">Lv.${html(skill.skillLevel ?? "-")}</span>
+      </div>
+    </div>
   `;
 }
 
@@ -2131,12 +2755,7 @@ function renderCardSetSummary(cardItems) {
 }
 
 function renderSkills(detail) {
-  if (!detail) return "";
-  const groups = [
-    { title: "主動技能", items: detail.detailSkillActive },
-    { title: "被動技能", items: detail.detailSkillPassive },
-    { title: "烙印技能", items: detail.detailSkillDp },
-  ].filter((group) => group.items && group.items.length);
+  const groups = getSkillGroups(detail);
 
   if (!groups.length) {
     return `
@@ -2162,6 +2781,15 @@ function renderSkills(detail) {
       </div>
     </section>
   `;
+}
+
+function getSkillGroups(detail) {
+  if (!detail) return [];
+  return [
+    { title: "主動技能", items: detail.detailSkillActive },
+    { title: "被動技能", items: detail.detailSkillPassive },
+    { title: "烙印技能", items: detail.detailSkillDp },
+  ].filter((group) => group.items && group.items.length);
 }
 
 function renderSkillItem(skill) {
@@ -2302,9 +2930,105 @@ function bindEvents() {
       renderDetail(currentViewDetail(), currentViewAnalysis());
       return;
     }
+    const mobileModeButton = event.target.closest("[data-mobile-icon-mode]");
+    if (mobileModeButton) {
+      state.mobileIconMode = !state.mobileIconMode;
+      renderDetail(currentViewDetail(), currentViewAnalysis());
+      return;
+    }
+    const petToggle = event.target.closest("[data-pet-sim-toggle]");
+    if (petToggle) {
+      state.petSimulator.enabled = !state.petSimulator.enabled;
+      savePetSimulatorConfig();
+      renderDetail(currentViewDetail(), currentViewAnalysis());
+      return;
+    }
+    if (event.target.closest("[data-pet-editor-link]")) {
+      requestAnimationFrame(() => document.getElementById("pet-simulator")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+      return;
+    }
+    if (event.target.closest("[data-pet-reset]")) {
+      resetActivePetTemplate();
+      savePetSimulatorConfig();
+      renderDetail(currentViewDetail(), currentViewAnalysis());
+      return;
+    }
+    const petTemplateButton = event.target.closest("[data-pet-template]");
+    if (petTemplateButton) {
+      state.petSimulator.activeTemplate = clampInt(petTemplateButton.dataset.petTemplate, 0, 2);
+      savePetSimulatorConfig();
+      renderDetail(currentViewDetail(), currentViewAnalysis());
+      return;
+    }
+    const addPetRow = event.target.closest("[data-pet-add-row]");
+    if (addPetRow) {
+      const disk = activePetDisks()[Number(addPetRow.dataset.petAddRow)];
+      if (!disk || petDiskUsedCount(disk) >= 9) return;
+      const option = petOptionsForType(disk.type).find((item) => item.maxCount > 0);
+      disk.rows.push({ statKey: option.key, count: 1, value: option.max });
+      disk.rows = normalizePetRows(disk.rows, disk.type);
+      savePetSimulatorConfig();
+      renderDetail(currentViewDetail(), currentViewAnalysis());
+      return;
+    }
+    const deletePetRow = event.target.closest("[data-pet-delete-row]");
+    if (deletePetRow) {
+      const [diskIndex, rowIndex] = deletePetRow.dataset.petDeleteRow.split(":").map(Number);
+      const disk = activePetDisks()[diskIndex];
+      if (!disk) return;
+      disk.rows.splice(rowIndex, 1);
+      savePetSimulatorConfig();
+      renderDetail(currentViewDetail(), currentViewAnalysis());
+      return;
+    }
     const button = event.target.closest("[data-detail-tab]");
     if (!button || !state.selectedDetail) return;
     state.detailTab = button.dataset.detailTab;
+    renderDetail(currentViewDetail(), currentViewAnalysis());
+  });
+
+  els.detailPanel.addEventListener("change", (event) => {
+    const templateName = event.target.closest("[data-pet-template-name]");
+    if (templateName) {
+      activePetTemplate().name = String(templateName.value || "").trim().slice(0, 12) || `模板 ${state.petSimulator.activeTemplate + 1}`;
+      savePetSimulatorConfig();
+      renderDetail(currentViewDetail(), currentViewAnalysis());
+      return;
+    }
+    const field = event.target.closest("[data-pet-field]");
+    if (!field) return;
+    const rowEl = field.closest("[data-pet-disk][data-pet-row]");
+    if (!rowEl) return;
+    const disk = activePetDisks()[Number(rowEl.dataset.petDisk)];
+    const row = disk && disk.rows[Number(rowEl.dataset.petRow)];
+    if (!disk || !row) return;
+    if (field.dataset.petField === "statKey") {
+      const option = petOption(disk.type, field.value);
+      const rowIndex = Number(rowEl.dataset.petRow);
+      const rowCount = clampInt(row.count, 0, 9);
+      const usedWithoutCurrent = petDiskUsedCount(disk) - rowCount;
+      const currentRowFillsDisk = rowCount >= 9 && usedWithoutCurrent <= 0;
+      if (
+        currentRowFillsDisk ||
+        petStatUsedCount(disk, option.key, rowIndex) >= option.maxCount ||
+        usedWithoutCurrent + rowCount > 9 ||
+        rowCount > option.maxCount
+      ) {
+        renderDetail(currentViewDetail(), currentViewAnalysis());
+        return;
+      }
+      row.statKey = option.key;
+      row.count = Math.min(row.count, option.maxCount);
+      row.value = Math.min(row.value, option.max);
+    } else if (field.dataset.petField === "count") {
+      const option = petOption(disk.type, row.statKey);
+      row.count = clampInt(field.value, 1, Math.min(option.maxCount, 9));
+    } else if (field.dataset.petField === "value") {
+      const option = petOption(disk.type, row.statKey);
+      row.value = clampNum(field.value, 0, option.max);
+    }
+    disk.rows = normalizePetRows(disk.rows, disk.type);
+    savePetSimulatorConfig();
     renderDetail(currentViewDetail(), currentViewAnalysis());
   });
 
@@ -2315,6 +3039,17 @@ function bindEvents() {
   els.themeToggle.addEventListener("click", () => {
     applyTheme(document.body.classList.contains("light") ? "dark" : "light");
   });
+
+  document.addEventListener("mouseover", (e) => {
+    const tile = e.target.closest(".mobile-icon-tile[tabindex]");
+    if (!tile) return;
+    const popover = tile.querySelector(".mobile-detail-popover");
+    if (!popover) return;
+    const rect = tile.getBoundingClientRect();
+    const pw = Math.min(360, window.innerWidth * 0.82);
+    const overflowsRight = rect.right + 8 + pw > window.innerWidth - 8;
+    popover.classList.toggle("mobile-detail-popover--flip", overflowsRight && !popover.classList.contains("mobile-detail-popover--right"));
+  });
 }
 
 renderServers();
@@ -2322,3 +3057,4 @@ loadHistory();
 renderHistory();
 applyTheme(localStorage.getItem("aion2-theme") || "dark");
 bindEvents();
+loadPetSimulatorFromCloud();

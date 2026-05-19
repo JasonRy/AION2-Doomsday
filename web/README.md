@@ -16,7 +16,35 @@ npm start
 默认地址：
 
 ```text
-http://localhost:4173
+http://localhost:8080
+```
+
+## 本地数据库
+
+宠物模板已经接入本地 PostgreSQL，开发阶段使用固定 `DEV_USER_UUID` 模拟登录用户。
+
+第一次启动数据库：
+
+```bash
+docker compose up -d postgres
+npm install
+npm run db:migrate
+```
+
+之后日常启动：
+
+```bash
+docker compose up -d postgres
+npm start
+```
+
+环境变量参考 `.env.example`，本地 `.env` 不提交。
+
+当前模板 API：
+
+```text
+GET /api/pet-templates
+PUT /api/pet-templates
 ```
 
 ## 说明

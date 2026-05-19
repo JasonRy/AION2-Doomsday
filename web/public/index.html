@@ -100,5 +100,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <script src="/app.js"></script>
+    <script>
+      if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+        var _lr = new EventSource("/dev-reload");
+        _lr.onmessage = function (e) { if (e.data === "reload") location.reload(); };
+      }
+    </script>
   </body>
 </html>

@@ -4,14 +4,139 @@ const https = require("https");
 const path = require("path");
 const { URL } = require("url");
 
-const PORT = Number(process.env.PORT || 4173);
+loadEnv(path.join(__dirname, ".env"));
+
+const PORT = Number(process.env.PORT || 8080);
 const PUBLIC_DIR = path.join(__dirname, "public");
 const NC_HOST = "tw.ncsoft.com";
 const { toTraditional } = require(path.join(__dirname, "..", "miniprogram", "utils", "s2t.js"));
+let PrismaClient = null;
+try {
+  ({ PrismaClient } = require("@prisma/client"));
+} catch (_) {}
+const prisma = PrismaClient ? new PrismaClient() : null;
+const DEV_USER_UUID = process.env.DEV_USER_UUID || "00000000-0000-4000-8000-000000000001";
 
 const rateStore = new Map();
-const RATE_LIMIT = 30;
+const RATE_LIMIT = 180;
 const RATE_WINDOW_MS = 60_000;
+
+const reloadClients = new Set();
+let reloadTimer = null;
+fs.watch(PUBLIC_DIR, { recursive: true }, () => {
+  clearTimeout(reloadTimer);
+  reloadTimer = setTimeout(() => {
+    for (const res of reloadClients) res.write("id: 1\ndata: reload\n\n");
+  }, 80);
+});
+
+function loadEnv(filePath) {
+  if (!fs.existsSync(filePath)) return;
+  const lines = fs.readFileSync(filePath, "utf8").split(/\r?\n/);
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) return;
+    const eq = trimmed.indexOf("=");
+    if (eq === -1) return;
+    const key = trimmed.slice(0, eq).trim();
+    const raw = trimmed.slice(eq + 1).trim();
+    const value = raw.replace(/^["']|["']$/g, "");
+    if (!process.env[key]) process.env[key] = value;
+  });
+}
+
+function jsonHeaders(extra = {}) {
+  return {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+    ...extra,
+  };
+}
+
+function readJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+      if (body.length > 1024 * 1024) {
+        reject(new Error("request body too large"));
+        req.destroy();
+      }
+    });
+    req.on("end", () => {
+      if (!body.trim()) {
+        resolve({});
+        return;
+      }
+      try { resolve(JSON.parse(body)); } catch (_) { reject(new Error("invalid json body")); }
+    });
+    req.on("error", reject);
+  });
+}
+
+async function currentUser() {
+  if (!prisma) throw new Error("Prisma client is not ready. Run npm install and npm run db:generate.");
+  return prisma.user.upsert({
+    where: { uuid: DEV_USER_UUID },
+    update: {},
+    create: { uuid: DEV_USER_UUID },
+  });
+}
+
+function sanitizeTemplateName(value, fallback) {
+  const text = String(value || "").trim().slice(0, 12);
+  return text || fallback;
+}
+
+function sanitizeTemplatePayload(body) {
+  const templates = Array.isArray(body.templates) ? body.templates.slice(0, 3) : [];
+  return {
+    enabled: !!body.enabled,
+    activeTemplate: Math.max(0, Math.min(2, Math.round(Number(body.activeTemplate) || 0))),
+    templates: [0, 1, 2].map((index) => {
+      const template = templates[index] || {};
+      return {
+        name: sanitizeTemplateName(template.name, `模板 ${index + 1}`),
+        disks: Array.isArray(template.disks) ? template.disks : [],
+      };
+    }),
+  };
+}
+
+async function handlePetTemplates(req, res) {
+  if (!prisma) {
+    send(res, 503, JSON.stringify({ success: false, error: "database is not configured" }), jsonHeaders());
+    return;
+  }
+  const user = await currentUser();
+  if (req.method === "GET") {
+    const rows = await prisma.petTemplate.findMany({
+      where: { userId: user.id },
+      orderBy: { slotIndex: "asc" },
+    });
+    send(res, 200, JSON.stringify({
+      success: true,
+      userUuid: user.uuid,
+      enabled: false,
+      activeTemplate: 0,
+      templates: rows.map((row) => ({ slotIndex: row.slotIndex, name: row.name, disks: row.data && row.data.disks ? row.data.disks : [] })),
+    }), jsonHeaders());
+    return;
+  }
+
+  if (req.method === "PUT") {
+    const body = sanitizeTemplatePayload(await readJsonBody(req));
+    await Promise.all(body.templates.map((template, slotIndex) => prisma.petTemplate.upsert({
+      where: { userId_slotIndex: { userId: user.id, slotIndex } },
+      update: { name: template.name, data: { disks: template.disks } },
+      create: { userId: user.id, slotIndex, name: template.name, data: { disks: template.disks } },
+    })));
+    send(res, 200, JSON.stringify({ success: true, userUuid: user.uuid }), jsonHeaders());
+    return;
+  }
+
+  send(res, 405, JSON.stringify({ success: false, error: "method not allowed" }), jsonHeaders({ Allow: "GET, PUT" }));
+}
 
 function checkRate(ip) {
   const now = Date.now();
@@ -137,6 +262,15 @@ function ncPathFromRoute(url) {
 }
 
 async function handleApi(req, res, url) {
+  if (url.pathname === "/api/pet-templates") {
+    try {
+      await handlePetTemplates(req, res);
+    } catch (error) {
+      send(res, 500, JSON.stringify({ success: false, error: error.message }), jsonHeaders());
+    }
+    return;
+  }
+
   if (url.pathname !== "/api/convert") {
     const ip = ((req.headers["x-forwarded-for"] || "").split(",")[0].trim()) || req.socket.remoteAddress || "unknown";
     const wait = checkRate(ip);
@@ -212,6 +346,16 @@ function handleStatic(req, res, url) {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+
+  if (url.pathname === "/dev-reload") {
+    res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" });
+    res.write(":\n\n");
+    if (req.headers["last-event-id"]) res.write("id: 1\ndata: reload\n\n");
+    reloadClients.add(res);
+    req.on("close", () => reloadClients.delete(res));
+    return;
+  }
+
   if (url.pathname.startsWith("/api/")) {
     handleApi(req, res, url);
     return;

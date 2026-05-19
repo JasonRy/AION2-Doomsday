@@ -3,3 +3,4 @@ miniprogram/miniprogram_npm/
 .idea/
 .claude/
 web/*.log
+web/.env
