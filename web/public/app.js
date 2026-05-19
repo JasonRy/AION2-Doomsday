@@ -70,6 +70,7 @@ const SLOT_CN = {
 };
 
 const BASIC_TYPES = ["STR", "DEX", "INT", "CON", "AGI", "WIS"];
+const SNAPSHOT_SCHEMA_VERSION = 3;
 const PRIMARY_STAT_DEFS = [
   { key: "attack", label: "攻擊力", names: ["攻擊力", "攻击力"], ids: ["WeaponFixingDamage"] },
   { key: "extraAttack", label: "額外攻擊力", names: ["額外攻擊力", "额外攻击力"], ids: ["AdditionalWeaponFixingDamage", "AdditionalAttack", "AdditionalDamage"] },
@@ -97,7 +98,7 @@ const PCT_STAT_DEFS = [
   { key: "pBlock",      label: "格擋增加",     names: ["格擋增加", "格挡增加"],                 ids: ["BlockRate", "Block"] },
   { key: "pHp",         label: "生命力增加",   names: ["生命力增加", "HP增加"],                 ids: ["HPRatio"] },
   { key: "pMp",         label: "精神力增加",   names: ["精神力增加", "MP增加"],                 ids: ["MPRatio"] },
-  { key: "cooldownReduce", label: "冷卻時間減少", names: ["冷卻時間減少", "冷却时间减少"], ids: ["CoolTimeReduce", "CooldownReduce", "CoolTimeReduction", "CooldownReduction"] },
+  { key: "cooldownReduce", label: "冷卻時間減少", names: ["冷卻時間減少", "冷却时间减少", "冷卻時間", "冷却时间", "冷卻CD", "冷却CD", "Cooldown Reduction", "Skill Cooldown Reduction"], ids: ["CoolTimeReduce", "CooldownReduce", "CoolTimeReduction", "CooldownReduction", "SkillCoolTimeReduce", "SkillCooldownReduce", "SkillCoolTimeReduction", "SkillCooldownReduction"] },
 ];
 const BASIC_COMBAT_STAT_DEFS = [
   { key: "penetration",      label: "貫穿",             names: ["貫穿", "贯穿"],                         ids: ["Penetration", "Pierce"],                   isPct: false, exactName: true },
@@ -649,7 +650,7 @@ function saveSnapshot(characterId, type, detail, analysis) {
   const key = `aion2-snap-${characterId}`;
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch (_) {}
-  saved[type] = { savedAt: Date.now(), detail, analysis };
+  saved[type] = { savedAt: Date.now(), version: SNAPSHOT_SCHEMA_VERSION, detail, analysis };
   try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) {
     console.warn("快照保存失敗（儲存空間不足）:", e);
   }
@@ -675,6 +676,7 @@ function currentViewAnalysis() {
 function isUsableSnapshot(snap, ttlMs = Infinity) {
   return !!(
     snap &&
+    snap.version === SNAPSHOT_SCHEMA_VERSION &&
     snap.detail &&
     snap.detail.detailDaevanionComplete === true &&
     snap.detail.detailEquipmentComplete === true &&
@@ -709,6 +711,7 @@ function loadPetSimulatorConfig() {
   const defaultTemplate = defaultPetSimulatorConfig();
   const defaults = {
     enabled: false,
+    collapsed: false,
     activeTemplate: 0,
     templates: [0, 1, 2].map((index) => ({
       name: `模板 ${index + 1}`,
@@ -720,6 +723,7 @@ function loadPetSimulatorConfig() {
     if (!saved) return defaults;
     if (Array.isArray(saved.disks)) {
       defaults.enabled = !!saved.enabled;
+      defaults.collapsed = !!saved.collapsed;
       defaults.templates[0].disks = defaultTemplate.disks.map((disk) => {
         const current = saved.disks.find((item) => item.id === disk.id);
         return current ? { ...disk, rows: normalizePetRows(current.rows, disk.type) } : disk;
@@ -729,6 +733,7 @@ function loadPetSimulatorConfig() {
     if (!Array.isArray(saved.templates)) return defaults;
     return {
       enabled: !!saved.enabled,
+      collapsed: !!saved.collapsed,
       activeTemplate: clampInt(saved.activeTemplate, 0, 2),
       templates: defaults.templates.map((template, index) => {
         const current = saved.templates[index];
@@ -771,6 +776,7 @@ async function loadPetSimulatorFromCloud() {
     const current = state.petSimulator;
     const next = {
       enabled: current.enabled,
+      collapsed: current.collapsed,
       activeTemplate: current.activeTemplate,
       templates: current.templates.map((template, index) => {
         const remote = data.templates.find((item) => Number(item.slotIndex) === index) || data.templates[index];
@@ -1570,7 +1576,8 @@ function calcAttributes(detail) {
     const def = matchPctMetric(stat);
     if (!def) return;
     const name = String(stat.name || stat.desc || "");
-    const num = toNum(String(stat.value ?? "").replace("%", "")) + toNum(String(stat.extra ?? "").replace("%", ""));
+    let num = toNum(String(stat.value ?? "").replace("%", "")) + toNum(String(stat.extra ?? "").replace("%", ""));
+    if (def.key === "cooldownReduce" && num < 0) num = Math.abs(num);
     if (!Number.isFinite(num) || num === 0) return;
     const target = pctValues[def.key];
     const source = findSource(target, sourceLabel);
@@ -1628,6 +1635,23 @@ function calcAttributes(detail) {
     addStat({ name, value }, sourceLabel, `${detailKind}${condition}`, sourceType, cap);
   }
 
+  function addDerivedStatItem(item, sourceLabel, detailKind, cap = Infinity) {
+    if (item && typeof item === "object") {
+      const value = item.value;
+      const extra = item.extra;
+      const id = item.id || item.key || item.type || item.statId || item.statType || item.optionId || item.optionType || "";
+      const name = item.name || item.desc || item.statName || item.optionName || item.displayName || "";
+      const text = String(name);
+      if ((value === undefined || value === null || value === "") && (extra === undefined || extra === null || extra === "") && /[+-]?[\d.]+%?/.test(text)) {
+        addDesc(text, sourceLabel, detailKind, "", cap);
+        return;
+      }
+      addStat({ id, name, value, extra }, sourceLabel, detailKind, "", cap);
+      return;
+    }
+    addDesc(String(item), sourceLabel, detailKind, "", cap);
+  }
+
   function addActiveSetBonuses() {
     const seen = new Set();
     (detail.detailEquipItems || []).forEach((item) => {
@@ -1673,23 +1697,11 @@ function calcAttributes(detail) {
 
   detail.detailStatBasic.forEach((stat) => {
     const sourceLabel = `能力值 · ${stat.name || stat.type}`;
-    (stat.statSecondList || []).forEach((item) => {
-      if (item && typeof item === "object") {
-        addStat({ id: item.id || item.type || "", name: item.name || item.desc || "", value: item.value, extra: item.extra }, sourceLabel, "派生能力", "", 20);
-      } else {
-        addDesc(String(item), sourceLabel, "派生能力", "", 20);
-      }
-    });
+    (stat.statSecondList || []).forEach((item) => addDerivedStatItem(item, sourceLabel, "派生能力", 20));
   });
   detail.detailStatSecondary.forEach((stat) => {
     const sourceLabel = `能力值 · ${stat.name || stat.type}`;
-    (stat.statSecondList || []).forEach((item) => {
-      if (item && typeof item === "object") {
-        addStat({ id: item.id || item.type || "", name: item.name || item.desc || "", value: item.value, extra: item.extra }, sourceLabel, "派生能力");
-      } else {
-        addDesc(String(item), sourceLabel, "派生能力");
-      }
-    });
+    (stat.statSecondList || []).forEach((item) => addDerivedStatItem(item, sourceLabel, "派生能力"));
   });
   detail.detailStatSecondary.forEach((stat) => {
     const def = PRIMARY_STAT_DEFS.find((d) => d.ids.includes(stat.type || ""));
@@ -1698,7 +1710,7 @@ function calcAttributes(detail) {
     if (value > 0) addValue(def.key, value, false, "角色轉換", `屬性轉換 · ${stat.name || stat.type}`);
   });
   detail.detailTitleGroups.forEach((group) => {
-    group.items.forEach((title) => (title.equipStatList || []).forEach((stat) => addDesc(stat.desc || "", `稱號 · ${title.name || "稱號"}`, "稱號")));
+    group.items.forEach((title) => (title.equipStatList || []).forEach((stat) => addDerivedStatItem(stat, `稱號 · ${title.name || "稱號"}`, "稱號")));
   });
   detail.detailDaevanionEntries.forEach((entry) => addDesc(entry.desc || `額外攻擊力 +${entry.value}`, "守護力", entry.boardName || "守護力", "daevanion"));
   extractWingStats(detail).forEach((stat) => {
@@ -1805,7 +1817,7 @@ function renderCombatPanel(analysis) {
   const envCritResist = isPvp ? env("pvpCriticalResist").flat : 0;
   const criticalResist = Math.round(pri("criticalResist").flat * (1 + pct("pCritResist").pct / 100)) + envCritResist;
   const hp = Math.round(pri("hp").flat * (1 + pct("pHp").pct / 100));
-  const mp = Math.round(pri("mp").flat * (1 + pct("pMp").pct / 100));
+  const cooldownReduce = pct("cooldownReduce").pct;
   const damageAmp    = isPvp ? env("pvpDamageAmp").pct    : env("pveDamageAmp").pct;
   const damageResist = isPvp ? env("pvpDamageResist").pct : env("pveDamageResist").pct;
   const weaponAmp = amp("weaponDamageAmp").pct;
@@ -1885,10 +1897,7 @@ function renderCombatPanel(analysis) {
       { label: "生命力", value: fi(pri("hp").flat) },
       { label: "生命力增加", value: fp(pct("pHp").pct) },
     ]) },
-    { label: "精神力", value: fi(mp), tooltip: tip("精神力 × 精神力增加%", [
-      { label: "精神力", value: fi(pri("mp").flat) },
-      { label: "精神力增加", value: fp(pct("pMp").pct) },
-    ]) },
+    { label: "冷卻時間減少", value: fp(cooldownReduce), tooltip: tip("百分比增加：冷卻時間減少", [{ label: "冷卻時間減少", value: fp(cooldownReduce) }]) },
     { label: "戰鬥速度", value: fspd(csFlat, csPct), tooltip: tip("戰鬥速度：固定值 / 百分比", [
       { label: "固定值", value: csFlat ? String(fnum(csFlat)) : "" },
       { label: "百分比", value: csPct ? fp(csPct) : "" },
@@ -1903,9 +1912,12 @@ function renderCombatPanel(analysis) {
     <div class="combat-panel">
       <div class="combat-panel-head">
         <span>${isPvp ? "PVP" : "PVE"} 戰鬥面板</span>
-        <button type="button" class="pet-sim-toggle${state.petSimulator.enabled ? " active" : ""}" data-pet-sim-toggle aria-pressed="${state.petSimulator.enabled ? "true" : "false"}">
-          <i></i>${state.petSimulator.enabled ? "寵物模擬" : "寵物關閉"}
-        </button>
+        <div class="pet-sim-actions">
+          <button type="button" class="pet-sim-help" aria-label="寵物盤默認屬性說明" data-tooltip="普通盤默認：額外命中35×3、額外攻擊力14×3、強擊1.8%×2、傷害耐性2.0%×1&#10;特殊盤默認：額外攻擊力14×6、強擊2.0%×2、傷害耐性2.0%×1">?</button>
+          <button type="button" class="pet-sim-toggle${state.petSimulator.enabled ? " active" : ""}" data-pet-sim-toggle aria-pressed="${state.petSimulator.enabled ? "true" : "false"}">
+            <i></i>${state.petSimulator.enabled ? "寵物模擬" : "寵物關閉"}
+          </button>
+        </div>
       </div>
       ${state.petSimulator.enabled ? `<a class="pet-sim-link" href="#pet-simulator" data-pet-editor-link>前往寵物盤屬性選擇</a>` : ""}
       <div class="combat-grid">
@@ -1943,7 +1955,100 @@ function renderSidePanels(detail, analysis) {
       const stat = findSecondaryStat(detail.detailStatSecondary || [], label);
       return statOverviewItem(label, stat);
     }), "secondary")}
+    ${renderCharacterInfoPanels(detail)}
   `;
+}
+
+function renderCharacterInfoPanels(detail) {
+  return `
+    ${renderDaevanionOverview(detail)}
+    ${renderRankingOverview(detail)}
+    ${renderTitleOverview(detail)}
+  `;
+}
+
+function renderDaevanionOverview(detail) {
+  const boards = ((detail.info || {}).daevanion || {}).boardList || [];
+  if (!boards.length) return "";
+  return renderSideInfoPanel("守護力進度", boards.map((board) => `
+    <article class="side-info-row">
+      ${renderSideInfoIcon(board.icon, board.name)}
+      <div class="side-info-body">
+        <strong>${html(board.name || "守護力")}</strong>
+        <span>${html(board.openNodeCount ?? 0)}/${html(board.totalNodeCount ?? 0)} 節點</span>
+      </div>
+      <b>${html(board.openPercent ?? 0)}%</b>
+    </article>
+  `).join(""));
+}
+
+function renderRankingOverview(detail) {
+  const rows = (((detail.info || {}).ranking || {}).rankingList || []).filter((row) => row && row.rank !== null && row.rank !== undefined);
+  if (!rows.length) return "";
+  return renderSideInfoPanel("排名", rows.map((row) => `
+    <article class="side-info-row">
+      ${renderSideInfoIcon(row.gradeIcon, row.gradeName)}
+      <div class="side-info-body">
+        <strong>${html(row.rankingContentsName || "排名")}</strong>
+        <span>${html(row.gradeName || "未分級")}${row.point !== null && row.point !== undefined ? ` · ${html(formatNumber(row.point))}` : ""}</span>
+      </div>
+      <b>#${html(row.rank)}</b>
+    </article>
+  `).join(""));
+}
+
+function renderTitleOverview(detail) {
+  const titles = (((detail.info || {}).title || {}).titleList || []).filter((title) => {
+    return (title.statList || []).length || (title.equipStatList || []).length;
+  });
+  if (!titles.length) return "";
+  return renderSideInfoPanel("稱號效果", titles.map((title) => {
+    const statText = (title.statList || []).map(statDescText).filter(Boolean).join("、");
+    const equipText = (title.equipStatList || []).map(statDescText).filter(Boolean).join("、");
+    return `
+      <article class="side-info-row side-info-row--title">
+        <div class="side-info-icon side-info-icon--text grade-${html(title.grade || "")}">${html(titleCategoryLabel(title.equipCategory).slice(0, 1))}</div>
+        <div class="side-info-body">
+          <strong class="grade-${html(title.grade || "")}">${html(title.name || "稱號")}</strong>
+          <span>${html(titleCategoryLabel(title.equipCategory))}</span>
+          ${statText ? `<small>持有效果：${html(statText)}</small>` : ""}
+          ${equipText ? `<small>裝備效果：${html(equipText)}</small>` : ""}
+        </div>
+      </article>
+    `;
+  }).join(""));
+}
+
+function renderSideInfoPanel(title, body) {
+  return `
+    <section class="side-info-panel">
+      <div class="side-stat-head">${html(title)}</div>
+      <div class="side-info-list">${body}</div>
+    </section>
+  `;
+}
+
+function renderSideInfoIcon(src, label = "") {
+  return `
+    <div class="side-info-icon">
+      ${src ? `<img src="${html(src)}" alt="${html(label)}" />` : `<span>${html(String(label || "?").slice(0, 1))}</span>`}
+    </div>
+  `;
+}
+
+function statDescText(stat) {
+  if (!stat) return "";
+  if (typeof stat === "string") return stat;
+  return stat.desc || [stat.name, stat.value, stat.extra].filter((value) => value !== undefined && value !== null && value !== "" && value !== "0").join(" ");
+}
+
+function titleCategoryLabel(category) {
+  return { Attack: "攻擊稱號", Defense: "防禦稱號", Etc: "其他稱號" }[category] || "其他稱號";
+}
+
+function formatNumber(value) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num.toLocaleString("zh-TW") : value;
 }
 
 function findSecondaryStat(stats, label) {
@@ -2013,14 +2118,41 @@ function petDiskTotalText(disk) {
   return parts.length ? parts.join(" / ") : "未配置";
 }
 
+function activePetTotalText() {
+  const totals = {};
+  activePetDisks().forEach((disk) => {
+    normalizePetRows(disk.rows, disk.type).forEach((row) => {
+      const option = petOption(disk.type, row.statKey);
+      const key = option.key;
+      totals[key] = totals[key] || { option, value: 0 };
+      totals[key].value += petLineTotal(row, option);
+    });
+  });
+  const parts = Object.values(totals)
+    .filter((item) => item.value)
+    .slice(0, 4)
+    .map((item) => `${item.option.label} +${formatPetValue(item.option, item.value)}`);
+  const count = Object.values(totals).filter((item) => item.value).length;
+  if (!parts.length) return "未配置";
+  return count > parts.length ? `${parts.join(" / ")} / 等 ${count} 項` : parts.join(" / ");
+}
+
 function renderPetSimulatorEditor() {
   const template = activePetTemplate();
+  const collapsed = !!state.petSimulator.collapsed;
   return `
-    <section class="pet-sim-panel" id="pet-simulator">
+    <section class="pet-sim-panel${collapsed ? " collapsed" : ""}" id="pet-simulator">
       <div class="side-stat-head pet-sim-head">
-        <span>寵物盤模擬</span>
-        <button type="button" data-pet-reset>重置模板</button>
+        <div>
+          <span>寵物盤模擬</span>
+          <small>${html(template.name || `模板 ${state.petSimulator.activeTemplate + 1}`)} · ${html(activePetTotalText())}</small>
+        </div>
+        <div class="pet-sim-head-actions">
+          <button type="button" data-pet-collapse>${collapsed ? "展開" : "收起"}</button>
+          <button type="button" data-pet-reset ${collapsed ? "disabled" : ""}>重置模板</button>
+        </div>
       </div>
+      ${collapsed ? "" : `
       <div class="pet-template-bar">
         ${state.petSimulator.templates.map((item, index) => `
           <button type="button" class="${state.petSimulator.activeTemplate === index ? "active" : ""}" data-pet-template="${index}">
@@ -2035,6 +2167,7 @@ function renderPetSimulatorEditor() {
       <div class="pet-disk-list">
         ${activePetDisks().map((disk, diskIndex) => renderPetDiskEditor(disk, diskIndex)).join("")}
       </div>
+      `}
     </section>
   `;
 }
@@ -2160,6 +2293,56 @@ function renderAttributeAnalysis(analysis) {
   const allAbnormalStats = analysis.abnormalStats;
   const activeOtherStats = analysis.otherStats.filter((s) => s.count > 0);
   const allOtherStats = analysis.otherStats;
+  const primaryStats = orderStatsForPairs(analysis.primaryStats, [
+    "attack", "defense",
+    "extraAttack", "extraDefense",
+    "hit", "evasion",
+    "extraHit", "extraEvasion",
+    "critical", "criticalResist",
+    "hp", "mp",
+    "combatSpeed", "moveSpeed",
+  ]);
+  const pctStats = orderStatsForPairs(activePctStats, [
+    "pAttack", "pDefense",
+    "pHit", "pEvasion",
+    "pCritical", "pCritResist",
+    "pBlockPen", "pBlock",
+    "pHp", "pMp",
+    "cooldownReduce",
+  ]);
+  const basicCombatStats = orderStatsForPairs(allBasicCombatStats, [
+    "penetration", "soulstoneDamage",
+    "criticalAttack", "criticalDefense",
+    "backAttack", "backDefense",
+  ]);
+  const basicCombatAmpStats = orderStatsForPairs(allBasicCombatAmpStats, [
+    "damageAmp", "damageResist",
+    "weaponDamageAmp", "weaponDamageResist",
+    "critDamageAmp", "critDamageResist",
+    "backDamageAmp", "backDamageResist",
+  ]);
+  const pveStats = orderStatsForPairs(pveAmpStats, [
+    "pveAttack", "pveDefense",
+    "pveHit", "pveEvasion",
+    "pveDamageAmp", "pveDamageResist",
+    "bossAttack", "bossDefense",
+    "bossDamageAmp", "bossDamageResist",
+  ]);
+  const pvpStats = orderStatsForPairs(pvpAmpStats, [
+    "pvpAttack", "pvpDefense",
+    "pvpHit", "pvpEvasion",
+    "pvpCritical", "pvpCriticalResist",
+    "pvpDamageAmp", "pvpDamageResist",
+  ]);
+  const otherStats = orderStatsForPairs(allOtherStats, [
+    "multiHit", "multiHitResist",
+    "ironWallPen", "ironWall",
+    "regenPen", "regen",
+    "perfect", "perfectResist",
+    "powerStrike", "powerStrikeResist",
+    "backCrit", "backCritResist",
+    "blockPen", "block",
+  ]);
   return `
     <section class="detail-section">
       <div class="block-stack">
@@ -2169,7 +2352,7 @@ function renderAttributeAnalysis(analysis) {
             <span>${analysis.primaryStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${analysis.primaryStats.map((stat) => `
+            ${primaryStats.map((stat) => `
               <details class="attr-card">
                 <summary>
                   <span>${html(stat.label)}</span>
@@ -2186,7 +2369,7 @@ function renderAttributeAnalysis(analysis) {
             <span>${activePctStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${activePctStats.length ? activePctStats.map((stat) => `
+            ${pctStats.length ? pctStats.map((stat) => `
               <details class="attr-card">
                 <summary>
                   <span>${html(stat.label)}</span>
@@ -2203,7 +2386,7 @@ function renderAttributeAnalysis(analysis) {
             <span>${activeBasicCombatStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${allBasicCombatStats.map((stat) => `
+            ${basicCombatStats.map((stat) => `
               <details class="attr-card${stat.count === 0 ? " attr-card--empty" : ""}">
                 <summary>
                   <span>${html(stat.label)}</span>
@@ -2220,7 +2403,7 @@ function renderAttributeAnalysis(analysis) {
             <span>${activeBasicCombatAmpStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${allBasicCombatAmpStats.map((stat) => `
+            ${basicCombatAmpStats.map((stat) => `
               <details class="attr-card${stat.count === 0 ? " attr-card--empty" : ""}">
                 <summary>
                   <span>${html(stat.label)}</span>
@@ -2237,7 +2420,7 @@ function renderAttributeAnalysis(analysis) {
             <span>${activePveAmpStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${pveAmpStats.map((stat) => `
+            ${pveStats.map((stat) => `
               <details class="attr-card${stat.count === 0 ? " attr-card--empty" : ""}">
                 <summary>
                   <span>${html(stat.label)}</span>
@@ -2254,7 +2437,7 @@ function renderAttributeAnalysis(analysis) {
             <span>${activePvpAmpStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${pvpAmpStats.map((stat) => `
+            ${pvpStats.map((stat) => `
               <details class="attr-card${stat.count === 0 ? " attr-card--empty" : ""}">
                 <summary>
                   <span>${html(stat.label)}</span>
@@ -2288,7 +2471,7 @@ function renderAttributeAnalysis(analysis) {
             <span>${activeOtherStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${allOtherStats.map((stat) => `
+            ${otherStats.map((stat) => `
               <details class="attr-card${stat.count === 0 ? " attr-card--empty" : ""}">
                 <summary>
                   <span>${html(stat.label)}</span>
@@ -2302,6 +2485,22 @@ function renderAttributeAnalysis(analysis) {
       </div>
     </section>
   `;
+}
+
+function orderStatsForPairs(stats, keys) {
+  const byKey = new Map(stats.map((stat) => [stat.key, stat]));
+  const used = new Set();
+  const ordered = [];
+  keys.forEach((key) => {
+    const stat = byKey.get(key);
+    if (!stat) return;
+    ordered.push(stat);
+    used.add(key);
+  });
+  stats.forEach((stat) => {
+    if (!used.has(stat.key)) ordered.push(stat);
+  });
+  return ordered;
 }
 
 function renderEquipment(detail, analysis) {
@@ -2348,7 +2547,7 @@ function renderEquipmentModeToggle() {
 function renderStandardEquipmentMode(detail, equipmentItems, cardItems) {
   return `
     <div class="block-stack">
-      <section class="info-block">
+      <section class="info-block mobile-equipment-block">
         <div class="block-head">
           <h4 class="section-title">裝備</h4>
           <div class="block-actions">
@@ -2389,12 +2588,14 @@ function renderMobileEquipmentMode(detail, analysis, equipmentItems, cardItems) 
           </div>
         </div>
         <div class="mobile-icon-layout">
-          <div class="mobile-equip-columns">
-            ${MOBILE_EQUIP_COLUMNS.map((column) => `
-              <div class="mobile-equip-column">
-                ${column.map(({ slot, label }) => renderMobileEquipSlot(slot, label, equipmentItems)).join("")}
-              </div>
-            `).join("")}
+          <div class="mobile-equip-frame">
+            <div class="mobile-equip-columns">
+              ${MOBILE_EQUIP_COLUMNS.map((column) => `
+                <div class="mobile-equip-column">
+                  ${column.map(({ slot, label }) => renderMobileEquipSlot(slot, label, equipmentItems)).join("")}
+                </div>
+              `).join("")}
+            </div>
           </div>
           <div class="mobile-side-stack">
             ${renderMobileSkillPane(detail)}
@@ -2404,6 +2605,7 @@ function renderMobileEquipmentMode(detail, analysis, equipmentItems, cardItems) 
       </section>
 
       ${renderEquipSetSection(equipmentItems)}
+      ${renderMobileCardSetSection(cardItems)}
 
       <div class="mobile-analysis-after">
         ${renderAttributeAnalysis(analysis)}
@@ -2439,7 +2641,19 @@ function renderMobileCardPane(cardItems) {
       <div class="mobile-card-icons">
         ${cardItems.length ? cardItems.map(renderMobileCardIcon).join("") : `<p class="mobile-pane-empty">暫無卡牌</p>`}
       </div>
-      ${renderCardSetSummary(cardItems)}
+    </section>
+  `;
+}
+
+function renderMobileCardSetSection(cardItems) {
+  const summary = renderCardSetSummary(cardItems);
+  if (!summary) return "";
+  return `
+    <section class="info-block mobile-card-set-block">
+      <div class="block-head">
+        <h4 class="section-title">卡牌套裝</h4>
+      </div>
+      ${summary}
     </section>
   `;
 }
@@ -2448,7 +2662,11 @@ function renderMobileCardIcon(card) {
   const stats = (card.mainStatsNormal || []).slice(0, 3);
   const skills = (card.subSkills || []).slice(0, 2);
   return `
-    <div class="mobile-icon-tile mobile-card-tile">
+    <div class="mobile-icon-tile mobile-card-compact mobile-icon-only mobile-card-mobile" tabindex="0" aria-label="${html(card.name || "卡牌")}">
+      ${card.icon ? `<img class="mobile-thumb grade-${html(card.grade)}" src="${html(card.icon)}" alt="" />` : `<div class="mobile-thumb grade-${html(card.grade)}"></div>`}
+      <div class="mobile-detail-popover mobile-detail-popover--right">${renderCardItem(card)}</div>
+    </div>
+    <div class="mobile-icon-tile mobile-card-tile mobile-card-desktop" tabindex="0" aria-label="${html(card.name || "卡牌")}">
       ${card.icon ? `<img class="mobile-thumb grade-${html(card.grade)}" src="${html(card.icon)}" alt="" />` : `<div class="mobile-thumb grade-${html(card.grade)}"></div>`}
       <div class="mobile-skill-info">
         <span class="mobile-skill-name grade-${html(card.grade)}">${html(card.name || "卡牌")}${card.enchantLevel ? ` +${html(card.enchantLevel)}` : ""}</span>
@@ -2456,6 +2674,7 @@ function renderMobileCardIcon(card) {
         ${stats.map((s) => `<span class="mobile-skill-level">${html(s.name)} ${html(s.value || "")}</span>`).join("")}
         ${skills.map((s) => `<span class="mobile-skill-level">${html(s.name)} Lv.${html(s.level ?? "-")}</span>`).join("")}
       </div>
+      <div class="mobile-detail-popover mobile-detail-popover--right">${renderCardItem(card)}</div>
     </div>
   `;
 }
@@ -2485,12 +2704,17 @@ function renderMobileSkillPane(detail) {
 
 function renderMobileSkillIcon(skill) {
   return `
-    <div class="mobile-icon-tile mobile-skill-tile">
+    <div class="mobile-icon-tile mobile-skill-tile mobile-icon-only mobile-skill-mobile" tabindex="0" aria-label="${html(skill.name || "技能")}">
+      ${skill.icon ? `<img class="mobile-thumb" src="${html(skill.icon)}" alt="" />` : `<div class="mobile-thumb"></div>`}
+      <div class="mobile-detail-popover mobile-detail-popover--right mobile-skill-card">${renderSkillItem(skill)}</div>
+    </div>
+    <div class="mobile-icon-tile mobile-skill-tile mobile-skill-desktop" tabindex="0" aria-label="${html(skill.name || "技能")}">
       ${skill.icon ? `<img class="mobile-thumb" src="${html(skill.icon)}" alt="" />` : `<div class="mobile-thumb"></div>`}
       <div class="mobile-skill-info">
         <span class="mobile-skill-name">${html(skill.name || "技能")}</span>
         <span class="mobile-skill-level">Lv.${html(skill.skillLevel ?? "-")}</span>
       </div>
+      <div class="mobile-detail-popover mobile-detail-popover--right mobile-skill-card">${renderSkillItem(skill)}</div>
     </div>
   `;
 }
@@ -2939,6 +3163,12 @@ function bindEvents() {
     const petToggle = event.target.closest("[data-pet-sim-toggle]");
     if (petToggle) {
       state.petSimulator.enabled = !state.petSimulator.enabled;
+      savePetSimulatorConfig();
+      renderDetail(currentViewDetail(), currentViewAnalysis());
+      return;
+    }
+    if (event.target.closest("[data-pet-collapse]")) {
+      state.petSimulator.collapsed = !state.petSimulator.collapsed;
       savePetSimulatorConfig();
       renderDetail(currentViewDetail(), currentViewAnalysis());
       return;
