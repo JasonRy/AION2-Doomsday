@@ -1960,7 +1960,7 @@ function renderSidePanels(detail, analysis) {
     ${state.petSimulator.enabled ? renderPetSimulatorEditor() : ""}
     ${renderStatOverviewPanel("基礎能力", BASIC_PANEL_ORDER.map((def) => {
       const stat = (detail.detailStatBasic || []).find((item) => item.type === def.type || item.name === def.label);
-      return statOverviewItem(def.label, stat, true);
+      return statOverviewItem(def.label, stat);
     }), "basic")}
     ${renderStatOverviewPanel("屬性轉換", SECONDARY_PANEL_ORDER.map((label) => {
       const stat = findSecondaryStat(detail.detailStatSecondary || [], label);
@@ -2066,27 +2066,36 @@ function findSecondaryStat(stats, label) {
   return stats.find((stat) => stat.name === label);
 }
 
-function statOverviewItem(label, stat, capAt200 = false) {
+function statOverviewItem(label, stat) {
   const value = stat ? (stat.value ?? stat.statValue ?? stat.totalValue ?? "-") : "-";
-  const tooltip = statTooltip(stat);
-  const num = parseFloat(String(value));
-  if (capAt200 && Number.isFinite(num) && num > 200) {
-    const effective = Math.round((200 + (num - 200) * 0.2) * 10) / 10;
-    return { label, value: String(num), effectiveValue: String(effective), tooltip };
-  }
-  return { label, value: value || "-", tooltip };
+  const popHtml = statTooltipHtml(stat);
+  return { label, value: value || "-", popHtml };
 }
 
-function statTooltip(stat) {
+function statTooltipHtml(stat) {
   if (!stat || !Array.isArray(stat.statSecondList) || !stat.statSecondList.length) return "";
+  const PCT_CAP = 20;
   return stat.statSecondList.map((item) => {
+    let text;
     if (item && typeof item === "object") {
       const name = item.name || item.desc || item.type || item.id || "轉化";
-      const value = [item.value, item.extra].filter((v) => v !== undefined && v !== null && v !== "" && v !== "0" && v !== "0%").join(" / ");
-      return value ? `${name} ${value}` : String(name);
+      const val = [item.value, item.extra].filter((v) => v !== undefined && v !== null && v !== "" && v !== "0" && v !== "0%").join(" / ");
+      text = val ? `${name} ${val}` : String(name);
+    } else {
+      text = String(item);
     }
-    return String(item);
-  }).filter(Boolean).join("\n");
+    const pctMatch = text.match(/([+-]?)([\d.]+)%/);
+    if (pctMatch) {
+      const abs = parseFloat(pctMatch[2]);
+      if (Number.isFinite(abs) && abs > PCT_CAP) {
+        const sign = pctMatch[1];
+        const pre = html(text.substring(0, pctMatch.index));
+        const suf = html(text.substring(pctMatch.index + pctMatch[0].length));
+        return `<div class="pop-row">${pre}<b class="pop-eff">${sign}${PCT_CAP}%</b> <s class="pop-raw">${html(pctMatch[0])}</s>${suf}</div>`;
+      }
+    }
+    return `<div class="pop-row">${html(text)}</div>`;
+  }).filter(Boolean).join("");
 }
 
 function renderStatOverviewPanel(title, items, mode) {
@@ -2094,17 +2103,13 @@ function renderStatOverviewPanel(title, items, mode) {
     <div class="side-stat-panel side-stat-panel--${html(mode)}">
       <div class="side-stat-head">${html(title)}</div>
       <div class="side-stat-grid">
-        ${items.map((item) => {
-          const isCapped = !!item.effectiveValue;
-          const cls = `side-stat-cell${isCapped ? " side-stat-cell--capped" : ""}${item.tooltip ? " has-tooltip" : ""}`;
-          const tooltipAttr = item.tooltip ? ` data-tooltip="${html(item.tooltip)}"` : "";
-          return `
-          <div class="${cls}"${tooltipAttr}>
+        ${items.map((item) => `
+          <div class="side-stat-cell${item.popHtml ? " has-popover" : ""}">
             <span>${html(item.label)}</span>
             <strong>${html(item.value)}</strong>
-            ${isCapped ? `<em class="side-cap-hint">有效 ${html(item.effectiveValue)}</em>` : ""}
-          </div>`;
-        }).join("")}
+            ${item.popHtml ? `<div class="side-stat-pop">${item.popHtml}</div>` : ""}
+          </div>
+        `).join("")}
       </div>
     </div>
   `;

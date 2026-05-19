@@ -993,22 +993,48 @@ body.light .primary-button {
   font-weight: 800;
 }
 
-.side-cap-hint {
-  display: none;
+.side-stat-cell.has-popover {
+  cursor: help;
+}
+
+.side-stat-pop {
+  position: absolute;
+  right: 50%;
+  bottom: calc(100% + 8px);
+  z-index: 100;
+  width: max-content;
+  max-width: 220px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--panel-2) 94%, black 6%);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.7;
+  opacity: 0;
+  pointer-events: none;
+  text-align: left;
+  transform: translate(50%, 4px);
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+
+.side-stat-cell.has-popover:hover .side-stat-pop {
+  opacity: 1;
+  transform: translate(50%, 0);
+}
+
+.pop-row {
+  white-space: nowrap;
+}
+
+.pop-eff {
   color: var(--accent);
-  font-size: 11px;
-  font-style: normal;
-  font-weight: 600;
+  font-weight: 700;
 }
 
-.side-stat-cell--capped:hover strong {
-  opacity: 0.35;
-  text-decoration: line-through;
-  text-decoration-thickness: 2px;
-}
-
-.side-stat-cell--capped:hover .side-cap-hint {
-  display: block;
+.pop-raw {
+  color: var(--muted);
 }
 
 .panel-head {
