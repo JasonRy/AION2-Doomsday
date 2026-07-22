@@ -1965,6 +1965,15 @@ body.light .primary-button {
   gap: 10px;
 }
 
+.lower-equip-section {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+}
+
 .mobile-icon-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(360px, 3fr);
@@ -2960,7 +2969,8 @@ body.light .primary-button {
   }
 
   .compact-equip-grid,
-  .card-grid {
+  .card-grid,
+  .lower-equip-section {
     grid-template-columns: 1fr;
   }
 

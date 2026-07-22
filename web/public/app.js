@@ -58,6 +58,7 @@ const SLOT_CN = {
   Ring2: "戒指2",
   Bracelet1: "手鐲1",
   Bracelet2: "手鐲2",
+  Pendant: "吊墜",
   Brooch1: "胸針1",
   Brooch2: "胸針2",
   Rune1: "古文石1",
@@ -113,6 +114,8 @@ const BASIC_COMBAT_AMP_STAT_DEFS = [
   { key: "critDamageResist",  label: "暴擊傷害耐性",   names: ["暴擊傷害耐性", "暴击伤害耐性"],                 ids: ["DecreaseCriticalDamage", "CriticalDamageResist"], isPct: true },
   { key: "backDamageAmp",     label: "後方傷害增幅",   names: ["後方傷害增幅", "后方伤害增幅"],                 ids: ["AmplifyBackAttack", "BackDamageAmplify", "BackDamageAmp"], isPct: true },
   { key: "backDamageResist",  label: "後方傷害耐性",   names: ["後方傷害耐性", "后方伤害耐性"],                 ids: ["DecreaseBackAttack", "BackDamageResist"], isPct: true },
+  { key: "frontDamageAmp",    label: "前方傷害增幅",   names: ["前方傷害增幅", "前方伤害增幅"],                 ids: ["AmplifyFrontAttack", "AmplifyFrontDamage", "FrontDamageAmplify", "FrontDamageAmp", "FrontalDamageAmplify", "FrontalDamageAmp"], isPct: true },
+  { key: "frontDamageResist", label: "前方傷害耐性",   names: ["前方傷害耐性", "前方伤害耐性"],                 ids: ["DecreaseFrontAttack", "DecreaseFrontDamage", "FrontDamageResist", "FrontDamageResistance", "FrontalDamageResist", "FrontalDamageResistance"], isPct: true },
 ];
 const ENV_COMBAT_AMP_STAT_DEFS = [
   { key: "pveAttack", label: "PVE攻擊力", names: ["PVE攻擊力", "PVE攻击力"], ids: ["PvEWeaponFixingDamage", "PVEWeaponFixingDamage", "PvEAttack", "PVEAttack"], isPct: false },
@@ -187,7 +190,7 @@ const CLASS_PASSIVE_CONFIGS = {
         name: "衝擊擊中",
         effects: [
           { bucket: "abnormal", key: "shockHit", label: "衝擊系擊中", base: 11.2, perLevel: 1.2 },
-          { bucket: "other", key: "powerStrike", label: "強擊", base: 0.3, perLevel: 0.3 },
+          { bucket: "other", key: "powerStrike", label: "強擊", base: 0, perLevel: 0.3 },
         ],
       },
       {
@@ -200,6 +203,18 @@ const CLASS_PASSIVE_CONFIGS = {
         name: "強襲姿態",
         effects: [
           { bucket: "basicCombatAmp", key: "critDamageAmp", label: "暴擊傷害增幅", base: 6, perLevel: 1 },
+        ],
+      },
+    ],
+  },
+  "魔道星": {
+    className: "魔道星",
+    skills: [
+      {
+        name: "火花長袍",
+        aliases: ["火花长袍"],
+        effects: [
+          { bucket: "other", key: "powerStrike", label: "強擊", base: 0, perLevel: 0.2 },
         ],
       },
     ],
@@ -305,7 +320,8 @@ const MOBILE_EQUIP_COLUMNS = [
     { slot: "Rune2", label: "古文石" },
   ],
 ];
-const NO_STONE_SLOTS = new Set(["Rune1", "Rune2", "Amulet"]);
+const NO_STONE_SLOTS = new Set(["Rune1", "Rune2", "Amulet", "Pendant"]);
+const LOWER_EQUIP_SLOTS = new Set(["Pendant"]);
 const TRAD_MAP = {
   剑: "劍", 杀: "殺", 灵: "靈", 护: "護", 治: "治", 魔: "魔", 道: "道",
   星: "星", 龙: "龍", 龙王: "龍王", 闪: "閃", 耀: "耀", 无: "無",
@@ -1543,7 +1559,9 @@ function calcAttributes(detail) {
 
   function configuredEffectValue(effect, level) {
     if (typeof effect.fixed !== "undefined") return toNum(effect.fixed);
-    return toNum(effect.base) + toNum(effect.perLevel) * level;
+    const baseLevel = typeof effect.baseLevel === "undefined" ? 0 : toNum(effect.baseLevel);
+    const growthLevel = Math.max(0, level - baseLevel);
+    return toNum(effect.base) + toNum(effect.perLevel) * growthLevel;
   }
 
   function applyClassPassiveEffects() {
@@ -1552,7 +1570,8 @@ function calcAttributes(detail) {
     if (!config) return;
     const skills = detail.detailSkillPassive || [];
     config.skills.forEach((skillConfig) => {
-      const skill = skills.find((item) => item.name === skillConfig.name);
+      const names = [skillConfig.name].concat(skillConfig.aliases || []);
+      const skill = skills.find((item) => names.includes(item.name));
       if (!skill || skill.acquired === 0) return;
       const level = Math.max(0, toNum(skill.skillLevel));
       if (!level) return;
@@ -2617,6 +2636,7 @@ function renderAttributeAnalysis(analysis) {
     "weaponDamageAmp", "weaponDamageResist",
     "critDamageAmp", "critDamageResist",
     "backDamageAmp", "backDamageResist",
+    "frontDamageAmp", "frontDamageResist",
   ]);
   const pveStats = orderStatsForPairs(pveAmpStats, [
     "pveAttack", "pveDefense",
@@ -2786,6 +2806,8 @@ function renderEquipmentModeToggle() {
 }
 
 function renderStandardEquipmentMode(detail, equipmentItems, cardItems) {
+  const mainEquipmentItems = equipmentItems.filter((item) => !LOWER_EQUIP_SLOTS.has(item.slotPosName));
+  const lowerEquipmentItems = equipmentItems.filter((item) => LOWER_EQUIP_SLOTS.has(item.slotPosName));
   return `
     <div class="block-stack">
       <section class="info-block mobile-equipment-block">
@@ -2796,7 +2818,8 @@ function renderStandardEquipmentMode(detail, equipmentItems, cardItems) {
             ${renderEquipmentModeToggle()}
           </div>
         </div>
-        ${equipmentItems.length ? `<div class="compact-equip-grid">${equipmentItems.map(renderCompactEquipItem).join("")}</div>` : `<p class="muted">暫無裝備資料</p>`}
+        ${mainEquipmentItems.length ? `<div class="compact-equip-grid">${mainEquipmentItems.map(renderCompactEquipItem).join("")}</div>` : `<p class="muted">暫無裝備資料</p>`}
+        ${renderLowerEquipmentSection(lowerEquipmentItems)}
       </section>
 
       ${renderEquipSetSection(equipmentItems)}
@@ -2818,6 +2841,7 @@ function renderStandardEquipmentMode(detail, equipmentItems, cardItems) {
 }
 
 function renderMobileEquipmentMode(detail, analysis, equipmentItems, cardItems) {
+  const lowerEquipmentItems = equipmentItems.filter((item) => LOWER_EQUIP_SLOTS.has(item.slotPosName));
   return `
     <div class="block-stack">
       <section class="info-block">
@@ -2843,6 +2867,7 @@ function renderMobileEquipmentMode(detail, analysis, equipmentItems, cardItems) 
             ${renderMobileCardPane(cardItems)}
           </div>
         </div>
+        ${renderLowerEquipmentSection(lowerEquipmentItems)}
       </section>
 
       ${renderEquipSetSection(equipmentItems)}
@@ -2851,6 +2876,15 @@ function renderMobileEquipmentMode(detail, analysis, equipmentItems, cardItems) 
       <div class="mobile-analysis-after">
         ${renderAttributeAnalysis(analysis)}
       </div>
+    </div>
+  `;
+}
+
+function renderLowerEquipmentSection(items) {
+  if (!items.length) return "";
+  return `
+    <div class="lower-equip-section">
+      ${items.map(renderCompactEquipItem).join("")}
     </div>
   `;
 }
@@ -3028,7 +3062,8 @@ function renderMainStatLines(item) {
   if (!NO_STONE_SLOTS.has(item.slotPosName)) return "";
   const stats = []
     .concat(item.mainStatsNormal || [])
-    .concat(item.mainStatsExceed || []);
+    .concat(item.mainStatsExceed || [])
+    .concat(item.subStats || []);
   if (!stats.length) return "";
   return `
     <section class="equip-word-block main-stat-block">
