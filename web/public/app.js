@@ -58,23 +58,19 @@ const SLOT_CN = {
   Ring2: "戒指2",
   Bracelet1: "手鐲1",
   Bracelet2: "手鐲2",
+  Brooch1: "胸針1",
+  Brooch2: "胸針2",
   Rune1: "古文石1",
   Rune2: "古文石2",
   Amulet: "護身符",
-  Arcana1: "卡牌1",
-  Arcana2: "卡牌2",
-  Arcana3: "卡牌3",
-  Arcana4: "卡牌4",
-  Arcana5: "卡牌5",
-  Arcana6: "卡牌6",
 };
 
 const BASIC_TYPES = ["STR", "DEX", "INT", "CON", "AGI", "WIS"];
-const SNAPSHOT_SCHEMA_VERSION = 3;
+const SNAPSHOT_SCHEMA_VERSION = 4;
 const PRIMARY_STAT_DEFS = [
   { key: "attack", label: "攻擊力", names: ["攻擊力", "攻击力"], ids: ["WeaponFixingDamage"] },
   { key: "extraAttack", label: "額外攻擊力", names: ["額外攻擊力", "额外攻击力"], ids: ["AdditionalWeaponFixingDamage", "AdditionalAttack", "AdditionalDamage"] },
-  { key: "defense", label: "防禦力", names: ["防禦力", "防御力"], ids: ["Defense"] },
+  { key: "defense", label: "防禦力", names: ["防禦力", "防御力"], ids: ["Defense", "ArmorDefense"] },
   { key: "extraDefense", label: "額外防禦力", names: ["額外防禦力", "额外防御力"], ids: ["AdditionalDefense"] },
   { key: "hit", label: "命中", names: ["命中"], ids: ["WeaponAccuracy", "HitRate"] },
   { key: "extraHit", label: "額外命中", names: ["額外命中", "命中增加"], ids: ["Accuracy"] },
@@ -82,8 +78,8 @@ const PRIMARY_STAT_DEFS = [
   { key: "extraEvasion", label: "額外迴避", names: ["額外迴避", "迴避增加", "回避增加"], ids: ["Evasion"] },
   { key: "critical", label: "暴擊", names: ["暴擊", "暴击"], ids: ["Critical"] },
   { key: "criticalResist", label: "暴擊抵抗", names: ["暴擊抵抗", "暴击抵抗"], ids: ["CriticalResist"] },
-  { key: "hp", label: "生命力", names: ["生命力", "HP"], ids: ["HP"] },
-  { key: "mp", label: "精神力", names: ["精神力", "MP"], ids: ["MP"] },
+  { key: "hp", label: "生命力", names: ["生命力", "HP"], ids: ["HP", "HPMax"] },
+  { key: "mp", label: "精神力", names: ["精神力", "MP"], ids: ["MP", "MPMax"] },
   { key: "combatSpeed", label: "戰鬥速度", names: ["戰鬥速度", "战斗速度"], ids: ["CombatSpeed"] },
   { key: "moveSpeed", label: "移動速度", names: ["移動速度", "移动速度"], ids: ["MoveSpeed"] },
 ];
@@ -96,13 +92,13 @@ const PCT_STAT_DEFS = [
   { key: "pCritResist", label: "暴擊抵抗增加", names: ["暴擊抵抗增加", "暴击抵抗增加"],         ids: ["CriticalResistRatio"] },
   { key: "pBlockPen",   label: "格擋貫穿增加", names: ["格擋貫穿增加", "格挡贯穿增加"],         ids: ["BlockPenetration"] },
   { key: "pBlock",      label: "格擋增加",     names: ["格擋增加", "格挡增加"],                 ids: ["BlockRate", "Block"] },
-  { key: "pHp",         label: "生命力增加",   names: ["生命力增加", "HP增加"],                 ids: ["HPRatio"] },
+  { key: "pHp",         label: "生命力增加",   names: ["生命力增加", "HP增加"],                 ids: ["HPRatio", "MaxHPRatio"] },
   { key: "pMp",         label: "精神力增加",   names: ["精神力增加", "MP增加"],                 ids: ["MPRatio"] },
   { key: "cooldownReduce", label: "冷卻時間減少", names: ["冷卻時間減少", "冷却时间减少", "冷卻時間", "冷却时间", "冷卻CD", "冷却CD", "Cooldown Reduction", "Skill Cooldown Reduction"], ids: ["CoolTimeReduce", "CooldownReduce", "CoolTimeReduction", "CooldownReduction", "SkillCoolTimeReduce", "SkillCooldownReduce", "SkillCoolTimeReduction", "SkillCooldownReduction"] },
 ];
 const BASIC_COMBAT_STAT_DEFS = [
-  { key: "penetration",      label: "貫穿",             names: ["貫穿", "贯穿"],                         ids: ["Penetration", "Pierce"],                   isPct: false, exactName: true },
-  { key: "soulstoneDamage",  label: "封魂石額外傷害",   names: ["封魂石額外傷害", "封魂石额外伤害"],       ids: ["SoulStoneAdditionalDamage", "SoulStoneDamage"], isPct: false },
+  { key: "penetration",      label: "貫穿",             names: ["貫穿", "贯穿"],                         ids: ["Penetration", "Pierce", "DefensePierce"],  isPct: false, exactName: true },
+  { key: "soulstoneDamage",  label: "封魂石額外傷害",   names: ["封魂石額外傷害", "封魂石额外伤害"],       ids: ["SoulStoneAdditionalDamage", "SoulStoneDamage", "SealStoneAddDamage"], isPct: false },
   { key: "criticalAttack",   label: "暴擊攻擊力",       names: ["暴擊攻擊力", "暴击攻击力"],               ids: ["CriticalAttack", "CriticalDamage"],        isPct: false },
   { key: "criticalDefense",  label: "暴擊防禦力",       names: ["暴擊防禦力", "暴击防御力"],               ids: ["CriticalDefense"],                         isPct: false },
   { key: "backAttack",       label: "後方攻擊力",       names: ["後方攻擊力", "后方攻击力"],               ids: ["BackAttack", "BackDamage"],                isPct: false },
@@ -140,18 +136,21 @@ const ENV_COMBAT_AMP_STAT_DEFS = [
 ];
 const ABNORMAL_STAT_DEFS = [
   { key: "shockHit", label: "衝擊系擊中", names: ["衝擊系擊中", "冲击系击中"], ids: ["ShockHit", "ImpactHit"], isPct: true },
-  { key: "pStatusResist", label: "異常狀態抵抗增加", names: ["異常狀態抵抗增加", "异常状态抵抗增加"], ids: ["AbnormalStatusResistRatio", "AbnormalResistRatio"], isPct: true },
+  { key: "statusHit", label: "異常狀態擊中", names: ["異常狀態擊中", "异常状态击中"], ids: ["AbnormalStatusHit", "AbnormalHit"], isPct: true },
+  { key: "pStatusResist", label: "異常狀態抵抗增加", names: ["異常狀態抵抗增加", "异常状态抵抗增加", "異常狀態抵抗", "异常状态抵抗"], ids: ["AbnormalStatusResistRatio", "AbnormalResistRatio"], isPct: true },
 ];
 const OTHER_STAT_DEFS = [
-  { key: "multiHit",          label: "多段打擊擊中",   names: ["多段打擊擊中", "多段打击击中"],         ids: ["MultiHit", "MultipleHit"],             isPct: true  },
+  { key: "multiHit",          label: "多段打擊擊中",   names: ["多段打擊擊中", "多段打击击中"],         ids: ["MultiHit", "MultipleHit", "AdditionalHitRate"], isPct: true  },
   { key: "multiHitResist",    label: "多段打擊抵抗",   names: ["多段打擊抵抗", "多段打击抵抗"],         ids: ["MultiHitResist", "MultipleHitResist"],  isPct: true  },
   { key: "ironWallPen",       label: "鐵壁貫穿",       names: ["鐵壁貫穿", "铁壁贯穿"],                 ids: ["IronWallPenetration", "IronWallBreak"],  isPct: true  },
   { key: "ironWall",          label: "鐵壁",           names: ["鐵壁", "铁壁"],                         ids: ["IronWall", "IronWallRate"],             isPct: true  },
   { key: "regenPen",          label: "再生貫穿",       names: ["再生貫穿", "再生贯穿"],                 ids: ["RegenerationPenetration", "RegenBreak"], isPct: true  },
   { key: "regen",             label: "再生",           names: ["再生"],                                 ids: ["Regeneration", "Regen"],               isPct: true  },
+  { key: "healingReceived",    label: "所受治療量",     names: ["所受治療量", "受到治療量"],             ids: ["HealingReceived", "ReceivedHealing"],   isPct: true  },
+  { key: "hpRegen",            label: "生命力自然恢復", names: ["生命力自然恢復", "生命力自然恢复"],     ids: ["NaturalHPRegen", "HPRegen"],           isPct: false },
   { key: "perfect",           label: "完美",           names: ["完美"],                                 ids: ["Perfect", "PerfectAttack"],            isPct: true  },
   { key: "perfectResist",     label: "完美抵抗",       names: ["完美抵抗"],                             ids: ["PerfectResist", "PerfectDefense"],      isPct: true  },
-  { key: "powerStrike",       label: "強擊",           names: ["強擊", "强击"],                         ids: ["PowerStrike", "StrongAttack"],          isPct: true  },
+  { key: "powerStrike",       label: "強擊",           names: ["強擊", "强击"],                         ids: ["PowerStrike", "StrongAttack", "HardHit"], isPct: true  },
   { key: "powerStrikeResist", label: "強擊抵抗",       names: ["強擊抵抗", "强击抵抗"],                 ids: ["PowerStrikeResist", "StrongAttackResist"], isPct: true },
   { key: "backCrit",          label: "後方暴擊",       names: ["後方暴擊", "后方暴击"],                 ids: ["BackCritical", "BackCrit"],             isPct: false },
   { key: "backCritResist",    label: "後方暴擊抵抗",   names: ["後方暴擊抵抗", "后方暴击抵抗"],         ids: ["BackCriticalResist", "BackCritResist"],  isPct: true  },
@@ -207,7 +206,9 @@ const CLASS_PASSIVE_CONFIGS = {
   },
 };
 const HISTORY_KEY = "aion2-query-history";
+const FAVORITES_KEY = "aion2-favorite-characters";
 const PET_SIM_KEY = "aion2-pet-simulator";
+const WING_BONUS_KEY = "aion2-wing-bonus-enabled";
 const PET_DISK_TYPES = {
   normal: "普通盤",
   special: "特殊盤",
@@ -244,6 +245,27 @@ const PET_SPECIAL_OVERRIDES = {
 const PET_SPECIAL_ONLY_OPTIONS = [
   { key: "penetration", label: "貫穿", bucket: "basicCombatStats", statKey: "penetration", max: 160, maxCount: 9, isPct: false },
 ];
+const WING_BONUS_EFFECT_OPTIONS = {
+  "額外攻擊力": { label: "額外攻擊力", bucket: "primaryStats", statKey: "extraAttack", isPct: false },
+  "強擊": { label: "強擊", bucket: "otherStats", statKey: "powerStrike", isPct: true },
+  "傷害增幅": { label: "傷害增幅", bucket: "basicCombatAmpStats", statKey: "damageAmp", isPct: true },
+  "武器傷害增幅": { label: "武器傷害增幅", bucket: "basicCombatAmpStats", statKey: "weaponDamageAmp", isPct: true },
+  "PVE攻擊力": { label: "PVE攻擊力", bucket: "envCombatAmpStats", statKey: "pveAttack", isPct: false },
+  "PVE傷害增幅": { label: "PVE傷害增幅", bucket: "envCombatAmpStats", statKey: "pveDamageAmp", isPct: true },
+  "暴擊": { label: "暴擊", bucket: "primaryStats", statKey: "critical", isPct: false },
+  "額外命中": { label: "額外命中", bucket: "primaryStats", statKey: "extraHit", isPct: false },
+  "貫穿": { label: "貫穿", bucket: "basicCombatStats", statKey: "penetration", isPct: false },
+  "所受治療量": { label: "所受治療量", bucket: "otherStats", statKey: "healingReceived", isPct: true },
+  "異常狀態抵抗": { label: "異常狀態抵抗", bucket: "abnormalStats", statKey: "pStatusResist", isPct: true },
+  "最大攻擊力": { label: "最大攻擊力", bucket: "primaryStats", statKey: "attack", isPct: false, scale: 0.5, note: "按平均攻擊力折算 50%" },
+  "PVE防禦力": { label: "PVE防禦力", bucket: "envCombatAmpStats", statKey: "pveDefense", isPct: false },
+  "暴擊抵抗": { label: "暴擊抵抗", bucket: "primaryStats", statKey: "criticalResist", isPct: false },
+  "額外迴避": { label: "額外迴避", bucket: "primaryStats", statKey: "extraEvasion", isPct: false },
+  "格擋": { label: "格擋", bucket: "otherStats", statKey: "block", isPct: false },
+  "再生": { label: "再生", bucket: "otherStats", statKey: "regen", isPct: true },
+  "生命力": { label: "生命力", bucket: "primaryStats", statKey: "hp", isPct: false },
+  "生命力自然恢復": { label: "生命力自然恢復", bucket: "otherStats", statKey: "hpRegen", isPct: false }
+};
 const EQUIP_SLOT_ORDER = [
   "MainHand", "SubHand",
   "Helmet", "Shoulder",
@@ -254,6 +276,7 @@ const EQUIP_SLOT_ORDER = [
   "Earring1", "Earring2",
   "Ring1", "Ring2",
   "Bracelet1", "Bracelet2",
+  "Brooch1", "Brooch2",
   "Rune1", "Rune2",
 ];
 const MOBILE_EQUIP_COLUMNS = [
@@ -266,6 +289,7 @@ const MOBILE_EQUIP_COLUMNS = [
     { slot: "Earring1", label: "耳環" },
     { slot: "Necklace", label: "項鍊" },
     { slot: "Ring1", label: "戒指" },
+    { slot: "Brooch1", label: "胸針" },
     { slot: "Rune1", label: "古文石" },
   ],
   [
@@ -277,6 +301,7 @@ const MOBILE_EQUIP_COLUMNS = [
     { slot: "Earring2", label: "耳環" },
     { slot: "Amulet", label: "護身符" },
     { slot: "Ring2", label: "戒指" },
+    { slot: "Brooch2", label: "胸針" },
     { slot: "Rune2", label: "古文石" },
   ],
 ];
@@ -302,18 +327,34 @@ const state = {
   selectedAttack: null,
   detailTab: "equipment",
   history: [],
+  favorites: [],
   loading: false,
   detailLoading: false,
   snapshotTab: null,
   snapshots: {},
   mobileIconMode: false,
   petSimulator: loadPetSimulatorConfig(),
+  wingBonusEnabled: loadWingBonusEnabled(),
+  wingBonusCatalog: null,
 };
 
 let wingEffectCatalogPromise = null;
+let wingBonusCatalogPromise = null;
 let resultsCollapsed = false;
 let lastDetailLoadTime = 0;
 const DETAIL_COOLDOWN_MS = 5000;
+
+function refreshIcons() {
+  if (!window.lucide || typeof window.lucide.createIcons !== "function") return;
+  window.lucide.createIcons();
+}
+
+function setCollapseButtonIcon() {
+  if (!els.collapseResultsBtn) return;
+  els.collapseResultsBtn.innerHTML = `<i data-lucide="${resultsCollapsed ? "panel-left-open" : "panel-left-close"}" aria-hidden="true"></i>`;
+  els.collapseResultsBtn.title = resultsCollapsed ? "展開搜索結果" : "收起搜索結果";
+  refreshIcons();
+}
 
 function setResultsCollapsed(collapse) {
   if (collapse === resultsCollapsed) return;
@@ -329,12 +370,13 @@ function setResultsCollapsed(collapse) {
   const detailSide = document.querySelector(".detail-side");
 
   els.contentGrid.classList.toggle("results-collapsed", collapse);
+  setCollapseButtonIcon();
 
   if (collapse) {
     gsap.timeline()
       .to(innerEls, { autoAlpha: 0, duration: 0.14, ease: "power1.in" })
       .set(innerEls, { display: "none" })
-      .to(panel, { width: 32, duration: 0.38, ease: "power3.inOut" }, "-=0.04")
+      .to(panel, { width: 44, duration: 0.38, ease: "power3.inOut" }, "-=0.04")
       .call(() => { if (detailSide) detailSide.classList.add("visible"); });
   } else {
     if (detailSide) detailSide.classList.remove("visible");
@@ -420,6 +462,25 @@ function serverName(serverId) {
   return (allServers().find((server) => String(server.serverId) === String(serverId)) || {}).serverName || "";
 }
 
+function serverByNameHint(value) {
+  const hint = stripHtml(value || "").trim();
+  if (!hint) return null;
+  return allServers().find((server) => {
+    const name = server.serverName || "";
+    return name === hint || name.startsWith(hint) || hint.startsWith(name);
+  }) || null;
+}
+
+function parseKeywordServerHint(value) {
+  const text = String(value || "").trim();
+  const match = text.match(/^(.+?)\[([^\]]+)\]$/);
+  if (!match) return { keyword: text, server: null };
+  return {
+    keyword: match[1].trim(),
+    server: serverByNameHint(match[2]),
+  };
+}
+
 function setStatus(text) {
   els.statusText.textContent = text;
 }
@@ -458,42 +519,98 @@ function saveHistory() {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(state.history.slice(0, 10)));
 }
 
-function pushHistory(char) {
-  const item = {
+function loadFavorites() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]");
+    state.favorites = Array.isArray(raw) ? raw.slice(0, 20) : [];
+  } catch (_) {
+    state.favorites = [];
+  }
+}
+
+function saveFavorites() {
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(state.favorites.slice(0, 20)));
+}
+
+function toStoredCharacter(char) {
+  return {
     characterId: char.characterId,
     characterName: char.characterName,
     serverId: char.serverId,
-    serverName: char.serverName,
+    serverName: char.serverName || serverName(char.serverId),
     className: char.className,
     race: char.race,
     level: char.level,
-    savedAt: Date.now(),
   };
+}
+
+function isFavoriteCharacter(characterId) {
+  return state.favorites.some((item) => item.characterId === characterId);
+}
+
+function toggleFavoriteCharacter(char) {
+  if (!char || !char.characterId) return;
+  if (isFavoriteCharacter(char.characterId)) {
+    state.favorites = state.favorites.filter((item) => item.characterId !== char.characterId);
+  } else {
+    state.favorites = [{ ...toStoredCharacter(char), savedAt: Date.now() }]
+      .concat(state.favorites.filter((item) => item.characterId !== char.characterId))
+      .slice(0, 20);
+  }
+  saveFavorites();
+  renderHistory();
+  renderResults();
+  refreshIcons();
+}
+
+function pushHistory(char) {
+  const item = { ...toStoredCharacter(char), savedAt: Date.now() };
   state.history = [item].concat(state.history.filter((h) => h.characterId !== item.characterId)).slice(0, 10);
   saveHistory();
   renderHistory();
 }
 
+function renderMiniCharacterCard(item, index, type) {
+  const favorited = isFavoriteCharacter(item.characterId);
+  return `
+    <div class="history-card race-${item.race}">
+      <button type="button" class="history-chip" data-${type}-index="${index}" title="查看角色">
+        <span>${item.race === 1 ? "天" : item.race === 2 ? "魔" : "?"}</span>
+        <strong>${html(item.characterName)}</strong>
+        <small>${html(item.serverName)}${item.level ? ` · Lv.${html(item.level)}` : ""}</small>
+      </button>
+      <button type="button" class="favorite-button ${favorited ? "active" : ""}" data-favorite-${type}-index="${index}" title="${favorited ? "取消收藏" : "收藏角色"}" aria-label="${favorited ? "取消收藏" : "收藏角色"}">
+        <i data-lucide="star" aria-hidden="true"></i>
+      </button>
+    </div>
+  `;
+}
+
 function renderHistory() {
-  if (!state.history.length) {
+  if (!state.history.length && !state.favorites.length) {
     els.historyPanel.innerHTML = "";
     return;
   }
   els.historyPanel.innerHTML = `
-    <div class="history-head">
-      <span>查詢歷史</span>
-      <button type="button" data-history-clear>清空</button>
-    </div>
-    <div class="history-list">
-      ${state.history.map((item, index) => `
-        <button type="button" class="history-chip race-${item.race}" data-history-index="${index}">
-          <span>${item.race === 1 ? "天" : item.race === 2 ? "魔" : "?"}</span>
-          <strong>${html(item.characterName)}</strong>
-          <small>${html(item.serverName)}</small>
-        </button>
-      `).join("")}
-    </div>
+    ${state.favorites.length ? `
+      <div class="history-head">
+        <span>收藏角色</span>
+      </div>
+      <div class="history-list">
+        ${state.favorites.map((item, index) => renderMiniCharacterCard(item, index, "favorite")).join("")}
+      </div>
+    ` : ""}
+    ${state.history.length ? `
+      <div class="history-head">
+        <span>查詢歷史</span>
+        <button type="button" data-history-clear>清空</button>
+      </div>
+      <div class="history-list">
+        ${state.history.map((item, index) => renderMiniCharacterCard(item, index, "history")).join("")}
+      </div>
+    ` : ""}
   `;
+  refreshIcons();
 }
 
 function renderServers() {
@@ -514,9 +631,9 @@ function cleanChar(raw) {
   return {
     characterId,
     serverId: raw.serverId,
-    serverName: serverName(raw.serverId),
+    serverName: stripHtml(raw.serverName || "") || serverName(raw.serverId),
     characterName: stripHtml(raw.characterName || raw.name || ""),
-    className: stripHtml(raw.className || raw.class || ""),
+    className: stripHtml(raw.className || raw.class || raw.classText || ""),
     race: raw.race || raw.raceId || 0,
     level: raw.level || raw.characterLevel || "",
   };
@@ -570,8 +687,8 @@ async function getJsonRetry(path, timeoutMs = 25000, attempts = 3) {
 }
 
 async function searchCharacters() {
-  const keyword = els.keywordInput.value.trim();
-  if (!keyword) {
+  const parsed = parseKeywordServerHint(els.keywordInput.value);
+  if (!parsed.keyword) {
     setStatus("請輸入角色名");
     els.keywordInput.focus();
     return;
@@ -584,11 +701,19 @@ async function searchCharacters() {
 
   try {
     const params = new URLSearchParams({
-      keyword,
+      keyword: parsed.keyword,
       page: "1",
       size: "30",
+      sort: "desc",
     });
-    if (state.serverId) params.set("serverId", String(state.serverId));
+    if (parsed.server) {
+      params.set("serverId", String(parsed.server.serverId));
+      state.serverId = parsed.server.serverId;
+      state.race = parsed.server.serverId >= 2000 ? 2 : 1;
+      renderServers();
+    } else if (state.serverId) {
+      params.set("serverId", String(state.serverId));
+    }
     if (state.race) params.set("race", String(state.race));
     const data = await getJson(`/api/search?${params.toString()}`);
     const raw = Array.isArray(data) ? data : (data.list || data.characters || data.result || []);
@@ -625,9 +750,13 @@ function renderResults() {
           <span>Lv.${html(char.level)}</span>
         </span>
       </span>
+      <span class="favorite-button result-favorite ${isFavoriteCharacter(char.characterId) ? "active" : ""}" data-result-favorite-index="${index}" title="${isFavoriteCharacter(char.characterId) ? "取消收藏" : "收藏角色"}" aria-label="${isFavoriteCharacter(char.characterId) ? "取消收藏" : "收藏角色"}">
+        <i data-lucide="star" aria-hidden="true"></i>
+      </span>
       <span class="chevron">›</span>
     </button>
   `).join("");
+  refreshIcons();
 }
 
 function detectSnapshotType(detail) {
@@ -688,7 +817,7 @@ function defaultPetSimulatorConfig() {
   const normalRows = [
     { statKey: "extraHit", count: 3, value: 35 },
     { statKey: "extraAttack", count: 3, value: 14 },
-    { statKey: "powerStrike", count: 2, value: 1.8 },
+    { statKey: "powerStrike", count: 2, value: 2.0 },
     { statKey: "damageResist", count: 1, value: 2.0 },
   ];
   const specialRows = [
@@ -755,6 +884,14 @@ function loadPetSimulatorConfig() {
 function savePetSimulatorConfig() {
   try { localStorage.setItem(PET_SIM_KEY, JSON.stringify(state.petSimulator)); } catch (_) {}
   syncPetSimulatorConfig();
+}
+
+function loadWingBonusEnabled() {
+  try { return localStorage.getItem(WING_BONUS_KEY) === "1"; } catch (_) { return false; }
+}
+
+function saveWingBonusEnabled() {
+  try { localStorage.setItem(WING_BONUS_KEY, state.wingBonusEnabled ? "1" : "0"); } catch (_) {}
 }
 
 let petSyncTimer = null;
@@ -839,7 +976,9 @@ function normalizePetRows(rows, type) {
       normalized.push({
         statKey: option.key,
         count,
-        value: clampNum(row.value, 0, option.max),
+        value: type === "normal" && option.key === "powerStrike" && count === 2 && toNum(row.value) === 1.8
+          ? 2.0
+          : clampNum(row.value, 0, option.max),
       });
     });
   return normalized;
@@ -863,15 +1002,13 @@ function petLineTotal(row, option) {
   return toNum(row.count) * toNum(row.value) * toNum(option.scale || 1);
 }
 
-function addPetValue(analysis, option, row, disk) {
+function addSimulatedValue(analysis, option, value, count, sourceLabel, detailLabel) {
   const bucket = analysis[option.bucket];
   if (!Array.isArray(bucket)) return;
   const target = bucket.find((stat) => stat.key === option.statKey);
-  const value = petLineTotal(row, option);
   if (!target || !value) return;
   if (option.isPct) target.pct += value; else target.flat += value;
-  target.count += row.count;
-  const sourceLabel = `寵物模擬 · ${disk.name}`;
+  target.count += count || 1;
   let source = target.sources.find((item) => item.label === sourceLabel);
   if (!source) {
     source = { label: sourceLabel, flat: 0, pct: 0, details: [] };
@@ -879,21 +1016,56 @@ function addPetValue(analysis, option, row, disk) {
   }
   if (option.isPct) source.pct += value; else source.flat += value;
   source.details.push({
-    label: `寵物盤 · ${option.label}${option.note ? `（${option.note}）` : ""} × ${row.count}`,
+    label: detailLabel,
     value,
     isPct: option.isPct,
   });
 }
 
-function analysisWithPetSimulator(analysis) {
+function addPetValue(analysis, option, row, disk) {
+  const value = petLineTotal(row, option);
+  addSimulatedValue(
+    analysis,
+    option,
+    value,
+    row.count,
+    `寵物模擬 · ${disk.name}`,
+    `寵物盤 · ${option.label}${option.note ? `（${option.note}）` : ""} × ${row.count}`
+  );
+}
+
+function wingBonusValue(row, option) {
+  return toNum(String(row.value ?? "").replace("%", "")) * toNum(option.scale || 1);
+}
+
+function addWingBonusValue(analysis, row) {
+  const option = WING_BONUS_EFFECT_OPTIONS[row.effect];
+  if (!option) return;
+  const value = wingBonusValue(row, option);
+  addSimulatedValue(
+    analysis,
+    option,
+    value,
+    1,
+    `翅膀滿增幅 · ${row.name}`,
+    `滿級增幅 · ${option.label}${option.note ? `（${option.note}）` : ""}`
+  );
+}
+
+function analysisWithSimulators(analysis) {
   const next = cloneAnalysis(analysis);
-  if (!state.petSimulator.enabled || !next.primaryStats) return next;
-  activePetDisks().forEach((disk) => {
-    normalizePetRows(disk.rows, disk.type).forEach((row) => {
-      const option = petOption(disk.type, row.statKey);
-      addPetValue(next, option, row, disk);
+  if (!next.primaryStats) return next;
+  if (state.petSimulator.enabled) {
+    activePetDisks().forEach((disk) => {
+      normalizePetRows(disk.rows, disk.type).forEach((row) => {
+        const option = petOption(disk.type, row.statKey);
+        addPetValue(next, option, row, disk);
+      });
     });
-  });
+  }
+  if (state.wingBonusEnabled) {
+    ((state.wingBonusCatalog || {}).wings || []).forEach((row) => addWingBonusValue(next, row));
+  }
   return next;
 }
 
@@ -1084,6 +1256,16 @@ async function resolveWingEffects(equipment) {
   return byId[String(wing.id)] || Object.values(byId).find((item) => item.name === wing.name) || null;
 }
 
+async function loadWingBonusCatalog() {
+  if (!wingBonusCatalogPromise) {
+    wingBonusCatalogPromise = fetch("/data/wing-bonus-catalog.json", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : { wings: [] }))
+      .catch(() => ({ wings: [] }));
+  }
+  state.wingBonusCatalog = await wingBonusCatalogPromise;
+  return state.wingBonusCatalog;
+}
+
 function normalizeSoulBindStats(detail) {
   const explicit = []
     .concat(Array.isArray(detail.soulBindStats) ? detail.soulBindStats : [])
@@ -1107,6 +1289,21 @@ function normalizeGrowthStats(detail) {
     .concat(Array.isArray(detail.enhanceGrowthStats) ? detail.enhanceGrowthStats : []);
 }
 
+function daevanionStatDescriptions(data) {
+  const summary = Array.isArray(data && data.openStatEffectList)
+    ? data.openStatEffectList.map((effect) => effect && effect.desc).filter(Boolean)
+    : [];
+  if (summary.length) return summary;
+  const descriptions = [];
+  (Array.isArray(data && data.nodeList) ? data.nodeList : []).forEach((node) => {
+    if (!node || node.open !== 1 || node.type !== "Stat") return;
+    (Array.isArray(node.effectList) ? node.effectList : []).forEach((effect) => {
+      if (effect && effect.desc) descriptions.push(effect.desc);
+    });
+  });
+  return descriptions;
+}
+
 async function loadDaevanionEntries(info, char) {
   const boards = (info.daevanion && info.daevanion.boardList) || [];
   if (!boards.length) return { entries: [], complete: true };
@@ -1127,12 +1324,13 @@ async function loadDaevanionEntries(info, char) {
   const entries = [];
   let complete = true;
   results.forEach(({ board, data }) => {
-    if (!data || !Array.isArray(data.openStatEffectList)) {
+    const descriptions = daevanionStatDescriptions(data);
+    if (!data || !descriptions.length) {
       complete = false;
       return;
     }
-    data.openStatEffectList.forEach((effect) => {
-      const desc = String(effect.desc || "");
+    descriptions.forEach((rawDesc) => {
+      const desc = String(rawDesc || "");
       if (desc && /[\d.]+%?/.test(desc)) entries.push({ boardName: board.name || board.id, desc });
     });
   });
@@ -1270,7 +1468,8 @@ function calcAttack(detail) {
   }
 
   const charGroup = getGroup("char", "能力值");
-  addEntry(charGroup, "角色等級攻擊力", 61, false);
+  const characterLevel = toNum((detail.profile || {}).characterLevel);
+  addEntry(charGroup, "角色等級攻擊力", characterLevel >= 50 ? 66 : 61, false);
   detail.detailStatBasic.concat(detail.detailStatSecondary).forEach((stat) => {
     (stat.statSecondList || []).forEach((desc) => parseDescToGroup(desc, charGroup));
   });
@@ -1571,7 +1770,7 @@ function calcAttributes(detail) {
     source.details.push({ label: `${detailKind} · ${name}`, value: num, isPct: usePct });
   }
 
-  function addPctStat(stat, sourceLabel, detailKind, cap = Infinity) {
+  function addPctStat(stat, sourceLabel, detailKind) {
     if (!stat) return;
     const def = matchPctMetric(stat);
     if (!def) return;
@@ -1581,25 +1780,28 @@ function calcAttributes(detail) {
     if (!Number.isFinite(num) || num === 0) return;
     const target = pctValues[def.key];
     const source = findSource(target, sourceLabel);
-    const allowed = isFinite(cap) ? Math.min(num, Math.max(0, cap - source.pct)) : num;
-    if (allowed === 0) return;
-    target.pct += allowed;
+    target.pct += num;
     target.count += 1;
-    source.pct += allowed;
-    source.details.push({ label: `${detailKind} · ${name}`, value: allowed, isPct: true });
+    source.pct += num;
+    source.details.push({ label: `${detailKind} · ${name}`, value: num, isPct: true });
   }
 
-  function addStat(stat, sourceLabel = "其他來源", detailKind = "能力值", sourceType = "", cap = Infinity) {
+  function addStat(stat, sourceLabel = "其他來源", detailKind = "能力值", sourceType = "") {
     if (!stat) return;
     const name = String(stat.name || stat.desc || "");
     const value = stat.value ?? "";
     const extra = stat.extra ?? "";
     const isPct = String(value).includes("%") || String(extra).includes("%") || name.includes("增加");
+    if (/最大攻擊力|最大攻击力/.test(name)) {
+      const total = toNum(String(value).replace("%", "")) + toNum(String(extra).replace("%", ""));
+      if (Number.isFinite(total) && total !== 0) addValue("attack", total * 0.5, false, sourceLabel, `${detailKind} · ${name}（按平均攻擊力折算 50%）`);
+      return;
+    }
     if (addEnvCombatAmpStat(stat, sourceLabel, detailKind, sourceType)) return;
     if (addAbnormalStat(stat, sourceLabel, detailKind)) return;
     const pctDef = matchPctMetric(stat);
     if (pctDef && (isPct || !matchOtherMetric(stat))) {
-      addPctStat(stat, sourceLabel, detailKind, cap);
+      addPctStat(stat, sourceLabel, detailKind);
       return;
     }
     const metric = matchMetric(stat, sourceType);
@@ -1618,11 +1820,11 @@ function calcAttributes(detail) {
     addValue(metric.key, total, isPct, sourceLabel, `${detailKind} · ${name}`);
   }
 
-  function addDesc(desc, sourceLabel = "其他來源", detailKind = "能力值", sourceType = "", cap = Infinity) {
+  function addDesc(desc, sourceLabel = "其他來源", detailKind = "能力值", sourceType = "") {
     if (!desc || typeof desc !== "string") return;
     const text = desc.trim();
     if (/[，,、]/.test(text) && !/^[^，,、]+時[，,、]/.test(text)) {
-      text.split(/[，,、]/).forEach((part) => addDesc(part.trim(), sourceLabel, detailKind, sourceType, cap));
+      text.split(/[，,、]/).forEach((part) => addDesc(part.trim(), sourceLabel, detailKind, sourceType));
       return;
     }
     const match = text.match(/^(?:(.+?時)[，,])?(.+?)\s*([+-]?[\d.]+%?)$/);
@@ -1633,10 +1835,10 @@ function calcAttributes(detail) {
     if (!value.includes("%") && /^(攻擊力|攻击力|防禦力|防御力|命中|迴避|回避|暴擊|暴击|暴擊抵抗|暴击抵抗)增加$/.test(name)) {
       name = name.replace(/增加$/, "");
     }
-    addStat({ name, value }, sourceLabel, `${detailKind}${condition}`, sourceType, cap);
+    addStat({ name, value }, sourceLabel, `${detailKind}${condition}`, sourceType);
   }
 
-  function addDerivedStatItem(item, sourceLabel, detailKind, cap = Infinity) {
+  function addDerivedStatItem(item, sourceLabel, detailKind) {
     if (item && typeof item === "object") {
       const value = item.value;
       const extra = item.extra;
@@ -1644,13 +1846,13 @@ function calcAttributes(detail) {
       const name = item.name || item.desc || item.statName || item.optionName || item.displayName || "";
       const text = String(name);
       if ((value === undefined || value === null || value === "") && (extra === undefined || extra === null || extra === "") && /[+-]?[\d.]+%?/.test(text)) {
-        addDesc(text, sourceLabel, detailKind, "", cap);
+        addDesc(text, sourceLabel, detailKind, "");
         return;
       }
-      addStat({ id, name, value, extra }, sourceLabel, detailKind, "", cap);
+      addStat({ id, name, value, extra }, sourceLabel, detailKind, "");
       return;
     }
-    addDesc(String(item), sourceLabel, detailKind, "", cap);
+    addDesc(String(item), sourceLabel, detailKind, "");
   }
 
   function addActiveSetBonuses() {
@@ -1661,7 +1863,7 @@ function calcAttributes(detail) {
       if (!set || seen.has(key)) return;
       seen.add(key);
       const equippedCount = toNum(set.equippedCount);
-      const setType = isCardItem(item) ? "卡牌套裝" : "裝備套裝";
+      const setType = isCardItem(item) ? "阿爾卡納套裝" : "裝備套裝";
       (set.bonuses || []).forEach((bonus) => {
         const degree = toNum(bonus.degree);
         if (!degree || equippedCount < degree) return;
@@ -1698,7 +1900,7 @@ function calcAttributes(detail) {
 
   detail.detailStatBasic.forEach((stat) => {
     const sourceLabel = `能力值 · ${stat.name || stat.type}`;
-    (stat.statSecondList || []).forEach((item) => addDerivedStatItem(item, sourceLabel, "派生能力", 20));
+    (stat.statSecondList || []).forEach((item) => addDerivedStatItem(item, sourceLabel, "派生能力"));
   });
   detail.detailStatSecondary.forEach((stat) => {
     const sourceLabel = `能力值 · ${stat.name || stat.type}`;
@@ -1729,7 +1931,8 @@ function calcAttributes(detail) {
     addStat(stat, `翅膀 · ${wingName}`, "佩戴效果", "wing");
   });
   const level = toNum((detail.profile || {}).characterLevel);
-  if (level === 45) addValue("extraAttack", 61, false, "角色等級", "基礎能力值 · Lv.45");
+  if (level >= 50) addValue("extraAttack", 66, false, "角色等級", "基礎能力值 · Lv.50");
+  else if (level === 45) addValue("extraAttack", 61, false, "角色等級", "基礎能力值 · Lv.45");
   if (level === 45) addValue("extraDefense", 450, false, "角色等級", "基礎能力值 · Lv.45");
   if (level === 45) addValue("hp", 4702, false, "角色等級", "基礎能力值 · Lv.45");
   applyClassPassiveEffects();
@@ -1767,6 +1970,51 @@ function formatSourceValue(source) {
   if (source.flat) parts.push(`+${Math.round(source.flat * 10) / 10}`);
   if (source.pct) parts.push(`+${Math.round(source.pct * 10) / 10}%`);
   return parts.join(" / ");
+}
+
+function formatKm(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num <= 0) return "—";
+  const abs = Math.abs(num);
+  if (abs >= 1_000_000) return `${Math.round((num / 1_000_000) * 10) / 10}M`;
+  if (abs >= 1_000) return `${Math.round((num / 1_000) * 10) / 10}K`;
+  return String(Math.round(num));
+}
+
+function statBucketValue(analysis, bucket, key) {
+  const stat = ((analysis && analysis[bucket]) || []).find((item) => item.key === key);
+  return stat || { flat: 0, pct: 0 };
+}
+
+function estimateCombatScore(analysis) {
+  if (!analysis) return null;
+  const isPvp = state.snapshotTab === "pvp";
+  const pri = (key) => statBucketValue(analysis, "primaryStats", key);
+  const pct = (key) => statBucketValue(analysis, "pctStats", key);
+  const env = (key) => statBucketValue(analysis, "envCombatAmpStats", key);
+  const amp = (key) => statBucketValue(analysis, "basicCombatAmpStats", key);
+  const other = (key) => statBucketValue(analysis, "otherStats", key);
+  const basic = (key) => statBucketValue(analysis, "basicCombatStats", key);
+
+  const attack = (pri("attack").flat + pri("extraAttack").flat + (isPvp ? env("pvpAttack").flat : env("pveAttack").flat)) * (1 + pct("pAttack").pct / 100);
+  const defense = (pri("defense").flat + pri("extraDefense").flat + (isPvp ? env("pvpDefense").flat : env("pveDefense").flat)) * (1 + pct("pDefense").pct / 100);
+  const hit = (pri("hit").flat + pri("extraHit").flat + (isPvp ? env("pvpHit").flat : env("pveHit").flat)) * (1 + pct("pHit").pct / 100);
+  const evasion = (pri("evasion").flat + pri("extraEvasion").flat + (isPvp ? env("pvpEvasion").flat : env("pveEvasion").flat)) * (1 + pct("pEvasion").pct / 100);
+  const critical = (pri("critical").flat + (isPvp ? env("pvpCritical").flat : 0)) * (1 + pct("pCritical").pct / 100);
+  const criticalResist = (pri("criticalResist").flat + (isPvp ? env("pvpCriticalResist").flat : 0)) * (1 + pct("pCritResist").pct / 100);
+  const hp = pri("hp").flat * (1 + pct("pHp").pct / 100);
+  const combatSpeed = pri("combatSpeed").flat + pri("combatSpeed").pct;
+  const moveSpeed = pri("moveSpeed").flat + pri("moveSpeed").pct;
+  const damageAmp = amp("damageAmp").pct + amp("weaponDamageAmp").pct + amp("critDamageAmp").pct * 0.7 + amp("backDamageAmp").pct * 0.55 + (isPvp ? env("pvpDamageAmp").pct : env("pveDamageAmp").pct);
+  const damageResist = amp("damageResist").pct + amp("weaponDamageResist").pct + amp("critDamageResist").pct * 0.65 + amp("backDamageResist").pct * 0.5 + (isPvp ? env("pvpDamageResist").pct : env("pveDamageResist").pct);
+  const utility = other("multiHit").pct * 180 + other("powerStrike").pct * 155 + other("ironWallPen").pct * 130 + other("ironWall").pct * 110 + basic("penetration").flat * 0.9 + basic("soulstoneDamage").flat * 0.7;
+  const speedBonus = Math.max(0, combatSpeed) * 115 + Math.max(0, moveSpeed) * 36 + Math.max(0, pct("cooldownReduce").pct) * 170;
+  const sustain = other("block").flat * 1.2 + other("regen").pct * 120 + other("healingReceived").pct * 95 + other("hpRegen").flat * 0.8;
+
+  const offense = attack * 7.2 + hit * 1.45 + critical * 1.75 + damageAmp * 260 + utility + speedBonus;
+  const survival = defense * 4.2 + hp * 0.42 + evasion * 1.15 + criticalResist * 1.25 + damageResist * 210 + sustain;
+  const modeFactor = isPvp ? 1.03 : 1;
+  return Math.round((offense * 0.64 + survival * 0.36) * modeFactor);
 }
 
 function renderAttrSources(stat) {
@@ -1838,7 +2086,7 @@ function renderCombatPanel(analysis) {
   const multiHit = other("multiHit").pct;
   const multiHitResist = other("multiHitResist").pct;
   const powerStrike = other("powerStrike").pct;
-  const powerStrikeResist = other("powerStrikeResist").pct;
+  const backDamageAmp = amp("backDamageAmp").pct;
   const ironWall = other("ironWall").pct;
   const ironWallPen = other("ironWallPen").pct;
   const csFlat = pri("combatSpeed").flat, csPct = pri("combatSpeed").pct;
@@ -1901,7 +2149,7 @@ function renderCombatPanel(analysis) {
     { label: "暴擊傷害增幅", value: fp(critAmp), tooltip: tip("基礎戰鬥增幅：暴擊傷害增幅", [{ label: "暴擊傷害增幅", value: fp(critAmp) }]) },
     { label: "暴擊傷害耐性", value: fp(critResist), tooltip: tip("基礎戰鬥增幅：暴擊傷害耐性", [{ label: "暴擊傷害耐性", value: fp(critResist) }]) },
     { label: "強擊", value: fp(powerStrike), tooltip: tip("其他手段：強擊", [{ label: "強擊", value: fp(powerStrike) }]) },
-    { label: "強擊抵抗", value: fp(powerStrikeResist), tooltip: tip("其他手段：強擊抵抗", [{ label: "強擊抵抗", value: fp(powerStrikeResist) }]) },
+    { label: "後方傷害增幅", value: fp(backDamageAmp), tooltip: tip("基礎戰鬥增幅：後方傷害增幅", [{ label: "後方傷害增幅", value: fp(backDamageAmp) }]) },
     { label: "鐵壁貫穿", value: fp(ironWallPen), tooltip: tip("其他手段：鐵壁貫穿", [{ label: "鐵壁貫穿", value: fp(ironWallPen) }]) },
     { label: "鐵壁", value: fp(ironWall), tooltip: tip("其他手段：鐵壁", [{ label: "鐵壁", value: fp(ironWall) }]) },
     { label: "生命力", value: fi(hp), tooltip: tip("生命力 × 生命力增加%", [
@@ -1922,11 +2170,16 @@ function renderCombatPanel(analysis) {
   return `
     <div class="combat-panel">
       <div class="combat-panel-head">
-        <span>${isPvp ? "PVP" : "PVE"} 戰鬥面板</span>
+        <div class="combat-panel-title">
+          <span>${isPvp ? "PVP" : "PVE"} 戰鬥面板</span>
+          <button type="button" class="pet-sim-help" aria-label="戰鬥面板模擬說明" data-tooltip="普通盤默認：額外命中35×3、額外攻擊力14×3、強擊2.0%×2、傷害耐性2.0%×1&#10;特殊盤默認：額外攻擊力14×6、強擊2.0%×2、傷害耐性2.0%×1&#10;翅膀打開後預設提供所有翅膀+10數據">?</button>
+        </div>
         <div class="pet-sim-actions">
-          <button type="button" class="pet-sim-help" aria-label="寵物盤默認屬性說明" data-tooltip="普通盤默認：額外命中35×3、額外攻擊力14×3、強擊1.8%×2、傷害耐性2.0%×1&#10;特殊盤默認：額外攻擊力14×6、強擊2.0%×2、傷害耐性2.0%×1">?</button>
           <button type="button" class="pet-sim-toggle${state.petSimulator.enabled ? " active" : ""}" data-pet-sim-toggle aria-pressed="${state.petSimulator.enabled ? "true" : "false"}">
-            <i></i>${state.petSimulator.enabled ? "寵物模擬" : "寵物關閉"}
+            <i></i>${state.petSimulator.enabled ? "寵物" : "寵物"}
+          </button>
+          <button type="button" class="pet-sim-toggle wing-bonus-toggle${state.wingBonusEnabled ? " active" : ""}" data-wing-bonus-toggle aria-pressed="${state.wingBonusEnabled ? "true" : "false"}" title="全翅膀滿增幅：開啟後把資料表中 28 個可強化翅膀滿級增幅全部加入屬性分析與綜合評級">
+            <i></i>${state.wingBonusEnabled ? "翅膀" : "翅膀"}
           </button>
         </div>
       </div>
@@ -2249,7 +2502,8 @@ function renderPetRowEditor(disk, diskIndex, row, rowIndex) {
 
 function renderDetail(detail, analysis) {
   const profile = detail.profile || {};
-  const displayAnalysis = analysisWithPetSimulator(analysis);
+  const displayAnalysis = analysisWithSimulators(analysis);
+  const simulatedScore = estimateCombatScore(displayAnalysis);
   els.detailPanel.innerHTML = `
     <article>
       <section class="profile-card race-${profile.raceId || profile.race || ""}">
@@ -2265,7 +2519,11 @@ function renderDetail(detail, analysis) {
           ${profile.characterLevel ? `<div class="profile-level">LV${html(profile.characterLevel)}</div>` : ""}
           <div class="profile-title">${html(profile.titleName || "未裝備称号")}</div>
           <div class="profile-stats">
-            <div class="stat-chip"><span>戰力</span><strong class="gold">${html(profile.combatPower || "-")}</strong></div>
+            <div class="stat-chip"><span>戰力</span><strong class="gold" title="${html(profile.combatPower || "")}">${html(formatKm(profile.combatPower))}</strong></div>
+            <div class="stat-chip stat-chip--score" title="綜合評級按輸出 64% / 生存 36% 估算，權重參考常見 MMO 屬性價值：攻擊、命中、暴擊、速度與傷害增幅偏輸出；防禦、生命、迴避、抗暴與耐性偏生存。">
+              <span>綜合評級</span>
+              <strong>${html(formatKm(simulatedScore))}</strong>
+            </div>
             <div class="stat-chip"><span>道具等級</span><strong>${html(detail.itemLevel || "-")}</strong></div>
           </div>
         </div>
@@ -2303,10 +2561,23 @@ function renderDetail(detail, analysis) {
       </div>
     </article>
   `;
+  refreshIcons();
+}
+
+function renderAttrCard(stat) {
+  return `
+    <details class="attr-card${stat.count === 0 ? " attr-card--empty" : ""}">
+      <summary>
+        <span>${html(stat.label)}</span>
+        <strong>${html(formatAttrValue(stat))}</strong>
+        <i class="attr-chevron" data-lucide="chevron-down" aria-hidden="true"></i>
+      </summary>
+      ${renderAttrSources(stat)}
+    </details>
+  `;
 }
 
 function renderAttributeAnalysis(analysis) {
-  const activePctStats = analysis.pctStats.filter((s) => s.count > 0);
   const activeBasicCombatStats = analysis.basicCombatStats.filter((s) => s.count > 0);
   const allBasicCombatStats = analysis.basicCombatStats;
   const activeBasicCombatAmpStats = analysis.basicCombatAmpStats.filter((s) => s.count > 0);
@@ -2320,15 +2591,15 @@ function renderAttributeAnalysis(analysis) {
   const activeOtherStats = analysis.otherStats.filter((s) => s.count > 0);
   const allOtherStats = analysis.otherStats;
   const primaryStats = orderStatsForPairs(analysis.primaryStats, [
-    "attack", "defense",
-    "extraAttack", "extraDefense",
-    "hit", "evasion",
-    "extraHit", "extraEvasion",
+    "attack", "extraAttack",
+    "defense", "extraDefense",
+    "hit", "extraHit",
+    "evasion", "extraEvasion",
     "critical", "criticalResist",
     "hp", "mp",
     "combatSpeed", "moveSpeed",
   ]);
-  const pctStats = orderStatsForPairs(activePctStats, [
+  const pctStats = orderStatsForPairs(analysis.pctStats, [
     "pAttack", "pDefense",
     "pHit", "pEvasion",
     "pCritical", "pCritResist",
@@ -2364,6 +2635,7 @@ function renderAttributeAnalysis(analysis) {
     "multiHit", "multiHitResist",
     "ironWallPen", "ironWall",
     "regenPen", "regen",
+    "healingReceived", "hpRegen",
     "perfect", "perfectResist",
     "powerStrike", "powerStrikeResist",
     "backCrit", "backCritResist",
@@ -2374,36 +2646,27 @@ function renderAttributeAnalysis(analysis) {
       <div class="block-stack">
         <section class="info-block">
           <div class="block-head">
-            <h4 class="section-title">主要能力值</h4>
+            <h4 class="section-title section-title-with-help">
+              主要能力值
+              <span
+                class="inline-help"
+                tabindex="0"
+                data-tooltip="最大攻擊力會按 50% 折算進攻擊力，用於接近平均攻擊力口徑；這是本站特色算法，不等同於官方原始字段。"
+              >?</span>
+            </h4>
             <span>${analysis.primaryStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${primaryStats.map((stat) => `
-              <details class="attr-card">
-                <summary>
-                  <span>${html(stat.label)}</span>
-                  <strong>${html(formatAttrValue(stat))}</strong>
-                </summary>
-                ${renderAttrSources(stat)}
-              </details>
-            `).join("")}
+            ${primaryStats.map(renderAttrCard).join("")}
           </div>
         </section>
         <section class="info-block">
           <div class="block-head">
             <h4 class="section-title">百分比增加</h4>
-            <span>${activePctStats.length} 項</span>
+            <span>${analysis.pctStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${pctStats.length ? pctStats.map((stat) => `
-              <details class="attr-card">
-                <summary>
-                  <span>${html(stat.label)}</span>
-                  <strong>${html(formatAttrValue(stat))}</strong>
-                </summary>
-                ${renderAttrSources(stat)}
-              </details>
-            `).join("") : `<p class="attr-empty">暫無百分比增加數值</p>`}
+            ${pctStats.length ? pctStats.map(renderAttrCard).join("") : `<p class="attr-empty">暫無百分比增加數值</p>`}
           </div>
         </section>
         <section class="info-block">
@@ -2412,15 +2675,7 @@ function renderAttributeAnalysis(analysis) {
             <span>${activeBasicCombatStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${basicCombatStats.map((stat) => `
-              <details class="attr-card${stat.count === 0 ? " attr-card--empty" : ""}">
-                <summary>
-                  <span>${html(stat.label)}</span>
-                  <strong>${html(formatAttrValue(stat))}</strong>
-                </summary>
-                ${renderAttrSources(stat)}
-              </details>
-            `).join("")}
+            ${basicCombatStats.map(renderAttrCard).join("")}
           </div>
         </section>
         <section class="info-block">
@@ -2429,15 +2684,7 @@ function renderAttributeAnalysis(analysis) {
             <span>${activeBasicCombatAmpStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${basicCombatAmpStats.map((stat) => `
-              <details class="attr-card${stat.count === 0 ? " attr-card--empty" : ""}">
-                <summary>
-                  <span>${html(stat.label)}</span>
-                  <strong>${html(formatAttrValue(stat))}</strong>
-                </summary>
-                ${renderAttrSources(stat)}
-              </details>
-            `).join("")}
+            ${basicCombatAmpStats.map(renderAttrCard).join("")}
           </div>
         </section>
         <section class="info-block">
@@ -2446,15 +2693,7 @@ function renderAttributeAnalysis(analysis) {
             <span>${activePveAmpStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${pveStats.map((stat) => `
-              <details class="attr-card${stat.count === 0 ? " attr-card--empty" : ""}">
-                <summary>
-                  <span>${html(stat.label)}</span>
-                  <strong>${html(formatAttrValue(stat))}</strong>
-                </summary>
-                ${renderAttrSources(stat)}
-              </details>
-            `).join("")}
+            ${pveStats.map(renderAttrCard).join("")}
           </div>
         </section>
         <section class="info-block">
@@ -2463,15 +2702,7 @@ function renderAttributeAnalysis(analysis) {
             <span>${activePvpAmpStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${pvpStats.map((stat) => `
-              <details class="attr-card${stat.count === 0 ? " attr-card--empty" : ""}">
-                <summary>
-                  <span>${html(stat.label)}</span>
-                  <strong>${html(formatAttrValue(stat))}</strong>
-                </summary>
-                ${renderAttrSources(stat)}
-              </details>
-            `).join("")}
+            ${pvpStats.map(renderAttrCard).join("")}
           </div>
         </section>
         <section class="info-block">
@@ -2480,15 +2711,7 @@ function renderAttributeAnalysis(analysis) {
             <span>${activeAbnormalStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${allAbnormalStats.map((stat) => `
-              <details class="attr-card${stat.count === 0 ? " attr-card--empty" : ""}">
-                <summary>
-                  <span>${html(stat.label)}</span>
-                  <strong>${html(formatAttrValue(stat))}</strong>
-                </summary>
-                ${renderAttrSources(stat)}
-              </details>
-            `).join("")}
+            ${allAbnormalStats.map(renderAttrCard).join("")}
           </div>
         </section>
         <section class="info-block">
@@ -2497,15 +2720,7 @@ function renderAttributeAnalysis(analysis) {
             <span>${activeOtherStats.length} 項</span>
           </div>
           <div class="attr-grid">
-            ${otherStats.map((stat) => `
-              <details class="attr-card${stat.count === 0 ? " attr-card--empty" : ""}">
-                <summary>
-                  <span>${html(stat.label)}</span>
-                  <strong>${html(formatAttrValue(stat))}</strong>
-                </summary>
-                ${renderAttrSources(stat)}
-              </details>
-            `).join("")}
+            ${otherStats.map(renderAttrCard).join("")}
           </div>
         </section>
       </div>
@@ -2588,13 +2803,13 @@ function renderStandardEquipmentMode(detail, equipmentItems, cardItems) {
 
       <section class="info-block">
         <div class="block-head">
-          <h4 class="section-title">卡牌</h4>
+          <h4 class="section-title">阿爾卡納</h4>
           <span>${cardItems.length} 張</span>
         </div>
         ${cardItems.length ? `
           <div class="card-grid">${cardItems.map(renderCardItem).join("")}</div>
           ${renderCardSetSummary(cardItems)}
-        ` : `<p class="muted">暫無卡牌資料</p>`}
+        ` : `<p class="muted">暫無阿爾卡納資料</p>`}
       </section>
 
       ${renderSkills(detail)}
@@ -2661,11 +2876,11 @@ function renderMobileCardPane(cardItems) {
   return `
     <section class="mobile-icon-pane">
       <div class="mobile-pane-head">
-        <h5>卡牌</h5>
+        <h5>阿爾卡納</h5>
         <span>${cardItems.length}</span>
       </div>
       <div class="mobile-card-icons">
-        ${cardItems.length ? cardItems.map(renderMobileCardIcon).join("") : `<p class="mobile-pane-empty">暫無卡牌</p>`}
+        ${cardItems.length ? cardItems.map(renderMobileCardIcon).join("") : `<p class="mobile-pane-empty">暫無阿爾卡納</p>`}
       </div>
     </section>
   `;
@@ -2677,7 +2892,7 @@ function renderMobileCardSetSection(cardItems) {
   return `
     <section class="info-block mobile-card-set-block">
       <div class="block-head">
-        <h4 class="section-title">卡牌套裝</h4>
+        <h4 class="section-title">阿爾卡納套裝</h4>
       </div>
       ${summary}
     </section>
@@ -2688,14 +2903,14 @@ function renderMobileCardIcon(card) {
   const stats = (card.mainStatsNormal || []).slice(0, 3);
   const skills = (card.subSkills || []).slice(0, 2);
   return `
-    <div class="mobile-icon-tile mobile-card-compact mobile-icon-only mobile-card-mobile" tabindex="0" aria-label="${html(card.name || "卡牌")}">
+    <div class="mobile-icon-tile mobile-card-compact mobile-icon-only mobile-card-mobile" tabindex="0" aria-label="${html(card.name || "阿爾卡納")}">
       ${card.icon ? `<img class="mobile-thumb grade-${html(card.grade)}" src="${html(card.icon)}" alt="" />` : `<div class="mobile-thumb grade-${html(card.grade)}"></div>`}
       <div class="mobile-detail-popover mobile-detail-popover--right">${renderCardItem(card)}</div>
     </div>
-    <div class="mobile-icon-tile mobile-card-tile mobile-card-desktop" tabindex="0" aria-label="${html(card.name || "卡牌")}">
+    <div class="mobile-icon-tile mobile-card-tile mobile-card-desktop" tabindex="0" aria-label="${html(card.name || "阿爾卡納")}">
       ${card.icon ? `<img class="mobile-thumb grade-${html(card.grade)}" src="${html(card.icon)}" alt="" />` : `<div class="mobile-thumb grade-${html(card.grade)}"></div>`}
       <div class="mobile-skill-info">
-        <span class="mobile-skill-name grade-${html(card.grade)}">${html(card.name || "卡牌")}${card.enchantLevel ? ` +${html(card.enchantLevel)}` : ""}</span>
+        <span class="mobile-skill-name grade-${html(card.grade)}">${html(card.name || "阿爾卡納")}${card.enchantLevel ? ` +${html(card.enchantLevel)}` : ""}</span>
         <span class="mobile-skill-level">${html(slotLabel(card))}</span>
         ${stats.map((s) => `<span class="mobile-skill-level">${html(s.name)} ${html(s.value || "")}</span>`).join("")}
         ${skills.map((s) => `<span class="mobile-skill-level">${html(s.name)} Lv.${html(s.level ?? "-")}</span>`).join("")}
@@ -2760,9 +2975,19 @@ function isCardItem(item) {
 }
 
 function slotLabel(item) {
+  if (isCardItem(item)) return cardSlotLabel(item);
   const base = SLOT_CN[item.slotPosName] || item.slotPosName || "";
   const category = equipmentCategoryLabel(item);
   return category ? `${base}-${category}` : base;
+}
+
+function cardSlotLabel(item) {
+  const slot = String(item.slotPosName || "");
+  const match = slot.match(/^Arcana(\d+)$/);
+  const fallback = match ? `Arcana${match[1]}` : (slot || "Arcana");
+  const category = String(item.categoryName || item.equipCategory || item.slotName || "").trim();
+  if (!category || category === "卡牌" || category === "阿爾卡納" || category === "Arcana") return fallback;
+  return category;
 }
 
 function equipmentCategoryLabel(item) {
@@ -2773,10 +2998,11 @@ function equipmentCategoryLabel(item) {
 }
 
 function renderCompactEquipItem(item) {
+  const mainBlock = renderMainStatLines(item);
   const soulBlock = renderSoulBindLines(item);
   const growthBlock = renderGrowthLines(item);
   const magicBlock = renderMagicStoneLines(item);
-  const wordBlocks = [soulBlock, growthBlock, magicBlock].filter(Boolean).join("");
+  const wordBlocks = [mainBlock, soulBlock, growthBlock, magicBlock].filter(Boolean).join("");
   return `
     <article class="compact-equip-item">
       <div class="equip-card-main">
@@ -2795,6 +3021,20 @@ function renderCompactEquipItem(item) {
       </div>
       ${wordBlocks ? `<div class="equip-word-rows">${wordBlocks}</div>` : ""}
     </article>
+  `;
+}
+
+function renderMainStatLines(item) {
+  if (!NO_STONE_SLOTS.has(item.slotPosName)) return "";
+  const stats = []
+    .concat(item.mainStatsNormal || [])
+    .concat(item.mainStatsExceed || []);
+  if (!stats.length) return "";
+  return `
+    <section class="equip-word-block main-stat-block">
+      <h5>基礎能力值</h5>
+      ${stats.map((stat) => renderEquipWordLine(stat, stat.grade || stat.gradeName || item.grade)).join("")}
+    </section>
   `;
 }
 
@@ -2875,11 +3115,13 @@ function renderMagicStoneLines(item) {
 
 function renderEquipWordLine(stat, grade) {
   const name = stat.desc || stat.name || "詞條";
-  const value = stat.value || stat.extra || "";
+  const value = stat.value || "";
+  const extra = stat.extra && String(stat.extra) !== "0" && String(stat.extra) !== "0%" ? `(+${stat.extra})` : "";
+  const valueText = `${value}${extra}` || stat.extra || "";
   return `
     <div class="equip-word-line">
       <span class="grade-${html(grade || "")}">${html(name)}</span>
-      ${value ? `<strong class="grade-${html(grade || "")}">${html(value)}</strong>` : ""}
+      ${valueText ? `<strong class="grade-${html(grade || "")}">${html(valueText)}</strong>` : ""}
     </div>
   `;
 }
@@ -2892,7 +3134,7 @@ function renderCardItem(item) {
       ${item.icon ? `<img class="card-icon grade-${html(item.grade)}" src="${html(item.icon)}" alt="" />` : `<div class="card-icon grade-${html(item.grade)}"></div>`}
       <div class="card-body">
         <div class="card-title-line">
-          <strong class="grade-${html(item.grade)}">${html(item.name || "未知卡牌")}</strong>
+          <strong class="grade-${html(item.grade)}">${html(item.name || "未知阿爾卡納")}</strong>
           <span>${html(slotLabel(item))}${item.enchantLevel ? ` · +${html(item.enchantLevel)}` : ""}</span>
         </div>
         ${mainStats.length ? `<div class="card-detail-lines">${mainStats.map((stat) => `<span>${html(stat.name)} ${html(stat.value || "")}${stat.extra && stat.extra !== "0" ? `(+${html(stat.extra)})` : ""}</span>`).join("")}</div>` : ""}
@@ -3136,6 +3378,14 @@ function bindEvents() {
   });
 
   els.resultsList.addEventListener("click", (event) => {
+    const favorite = event.target.closest("[data-result-favorite-index]");
+    if (favorite) {
+      event.preventDefault();
+      event.stopPropagation();
+      const char = state.results[Number(favorite.dataset.resultFavoriteIndex)];
+      toggleFavoriteCharacter(char);
+      return;
+    }
     const card = event.target.closest(".result-card");
     if (!card) return;
     const char = state.results[Number(card.dataset.index)];
@@ -3149,9 +3399,25 @@ function bindEvents() {
       renderHistory();
       return;
     }
-    const button = event.target.closest("[data-history-index]");
-    if (!button) return;
-    const item = state.history[Number(button.dataset.historyIndex)];
+    const favoriteHistory = event.target.closest("[data-favorite-history-index]");
+    if (favoriteHistory) {
+      const item = state.history[Number(favoriteHistory.dataset.favoriteHistoryIndex)];
+      toggleFavoriteCharacter(item);
+      return;
+    }
+    const favoritePinned = event.target.closest("[data-favorite-favorite-index]");
+    if (favoritePinned) {
+      const item = state.favorites[Number(favoritePinned.dataset.favoriteFavoriteIndex)];
+      toggleFavoriteCharacter(item);
+      return;
+    }
+    const historyButton = event.target.closest("[data-history-index]");
+    const favoriteButton = event.target.closest("[data-favorite-index]");
+    const item = historyButton
+      ? state.history[Number(historyButton.dataset.historyIndex)]
+      : favoriteButton
+        ? state.favorites[Number(favoriteButton.dataset.favoriteIndex)]
+        : null;
     if (!item) return;
     state.results = [item];
     state.selectedId = "";
@@ -3190,6 +3456,16 @@ function bindEvents() {
     if (petToggle) {
       state.petSimulator.enabled = !state.petSimulator.enabled;
       savePetSimulatorConfig();
+      renderDetail(currentViewDetail(), currentViewAnalysis());
+      return;
+    }
+    const wingBonusToggle = event.target.closest("[data-wing-bonus-toggle]");
+    if (wingBonusToggle) {
+      state.wingBonusEnabled = !state.wingBonusEnabled;
+      saveWingBonusEnabled();
+      if (state.wingBonusEnabled && !state.wingBonusCatalog) {
+        loadWingBonusCatalog().then(() => renderDetail(currentViewDetail(), currentViewAnalysis()));
+      }
       renderDetail(currentViewDetail(), currentViewAnalysis());
       return;
     }
@@ -3310,7 +3586,12 @@ function bindEvents() {
 
 renderServers();
 loadHistory();
+loadFavorites();
 renderHistory();
+setCollapseButtonIcon();
 applyTheme(localStorage.getItem("aion2-theme") || "dark");
 bindEvents();
 loadPetSimulatorFromCloud();
+loadWingBonusCatalog().then(() => {
+  if (state.selectedDetail && state.selectedAttack) renderDetail(currentViewDetail(), currentViewAnalysis());
+});

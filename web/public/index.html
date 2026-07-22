@@ -76,7 +76,9 @@
             <div class="panel-head">
               <h3>搜索結果</h3>
               <span id="resultCount">0 筆</span>
-              <button id="collapseResultsBtn" class="panel-collapse-btn" type="button" title="收起搜索結果">‹</button>
+              <button id="collapseResultsBtn" class="panel-collapse-btn" type="button" title="收起搜索結果">
+                <i data-lucide="panel-left-close" aria-hidden="true"></i>
+              </button>
             </div>
             <div id="historyPanel" class="history-panel"></div>
             <div id="resultsList" class="results-list">
@@ -99,6 +101,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
     <script src="/app.js"></script>
     <script>
       if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {

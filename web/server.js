@@ -203,19 +203,73 @@ function proxyNcsoft(apiPath) {
   });
 }
 
+function inferRaceFromServerId(serverId) {
+  const id = Number(serverId);
+  if (id >= 1000 && id < 2000) return "1";
+  if (id >= 2000 && id < 3000) return "2";
+  return "";
+}
+
+function ncSearchPath(qs, raceOverride = "") {
+  const keyword = qs.get("keyword");
+  if (!keyword) return null;
+  const params = new URLSearchParams({
+    keyword,
+    page: qs.get("page") || "1",
+    size: qs.get("size") || "30",
+    sort: qs.get("sort") || "desc",
+  });
+  if (qs.get("serverId")) params.set("serverId", qs.get("serverId"));
+  const race = raceOverride || (qs.get("race") && qs.get("race") !== "0" ? qs.get("race") : inferRaceFromServerId(qs.get("serverId")));
+  if (race) params.set("race", race);
+  return `/aion2/api/search/character?${params.toString()}`;
+}
+
+async function handleCharacterSearch(req, res, url) {
+  const qs = url.searchParams;
+  const hasRace = qs.get("race") && qs.get("race") !== "0";
+  const hasServer = !!qs.get("serverId");
+  const inferredRace = inferRaceFromServerId(qs.get("serverId"));
+  const races = hasRace || hasServer ? [qs.get("race") || inferredRace].filter(Boolean) : ["1", "2"];
+
+  try {
+    const responses = await Promise.all(races.map((race) => proxyNcsoft(ncSearchPath(qs, race))));
+    const lists = [];
+    let total = 0;
+    let status = 200;
+    for (const response of responses) {
+      status = response.status >= 400 ? response.status : status;
+      const data = JSON.parse(String(response.body || "{}").replace(/\0/g, "").trim() || "{}");
+      if (Array.isArray(data.list)) lists.push(...data.list);
+      total += Number(data.pagination && data.pagination.total || data.list && data.list.length || 0);
+    }
+    send(res, status, JSON.stringify({
+      list: lists,
+      pagination: {
+        page: Number(qs.get("page") || 1),
+        size: Number(qs.get("size") || 30),
+        total,
+        endPage: Math.max(1, ...responses.map((response) => {
+          try {
+            return Number((JSON.parse(response.body || "{}").pagination || {}).endPage || 1);
+          } catch (_) {
+            return 1;
+          }
+        })),
+      },
+    }), {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "public, max-age=30",
+    });
+  } catch (error) {
+    send(res, 502, JSON.stringify({ success: false, error: error.message }), jsonHeaders());
+  }
+}
+
 function ncPathFromRoute(url) {
   const qs = url.searchParams;
   if (url.pathname === "/api/search") {
-    const keyword = qs.get("keyword");
-    if (!keyword) return null;
-    const params = new URLSearchParams({
-      keyword,
-      page: qs.get("page") || "1",
-      size: qs.get("size") || "30",
-    });
-    if (qs.get("serverId")) params.set("serverId", qs.get("serverId"));
-    if (qs.get("race") && qs.get("race") !== "0") params.set("race", qs.get("race"));
-    return `/aion2/api/search/aion2tw/search/v2/character?${params.toString()}`;
+    return ncSearchPath(qs);
   }
 
   if (url.pathname === "/api/info") {
@@ -290,6 +344,11 @@ async function handleApi(req, res, url) {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
     });
+    return;
+  }
+
+  if (url.pathname === "/api/search") {
+    await handleCharacterSearch(req, res, url);
     return;
   }
 
