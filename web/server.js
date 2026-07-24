@@ -2,6 +2,7 @@ const fs = require("fs");
 const http = require("http");
 const https = require("https");
 const path = require("path");
+const crypto = require("crypto");
 const { URL } = require("url");
 
 loadEnv(path.join(__dirname, ".env"));
@@ -20,6 +21,12 @@ const DEV_USER_UUID = process.env.DEV_USER_UUID || "00000000-0000-4000-8000-0000
 const rateStore = new Map();
 const RATE_LIMIT = 180;
 const RATE_WINDOW_MS = 60_000;
+const AUTO_REFRESH_ENABLED = process.env.AUTO_REFRESH_SNAPSHOTS !== "false";
+const AUTO_REFRESH_AFTER_MS = Number(process.env.AUTO_REFRESH_AFTER_MS || 24 * 60 * 60 * 1000);
+const AUTO_REFRESH_INTERVAL_MS = Number(process.env.AUTO_REFRESH_INTERVAL_MS || 60 * 60 * 1000);
+const AUTO_REFRESH_BATCH_SIZE = Math.max(1, Math.min(20, Number(process.env.AUTO_REFRESH_BATCH_SIZE || 5)));
+const AUTO_REFRESH_DELAY_MS = Number(process.env.AUTO_REFRESH_DELAY_MS || 2500);
+let autoRefreshRunning = false;
 
 const reloadClients = new Set();
 let reloadTimer = null;
@@ -58,7 +65,7 @@ function readJsonBody(req) {
     let body = "";
     req.on("data", (chunk) => {
       body += chunk;
-      if (body.length > 1024 * 1024) {
+      if (body.length > 5 * 1024 * 1024) {
         reject(new Error("request body too large"));
         req.destroy();
       }
@@ -203,6 +210,20 @@ function proxyNcsoft(apiPath) {
   });
 }
 
+function parseNcJson(body) {
+  return JSON.parse(String(body || "{}").replace(/\0/g, "").trim() || "{}");
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchNcJson(apiPath) {
+  const upstream = await proxyNcsoft(apiPath);
+  if (upstream.status >= 400) throw new Error(`NCSoft API returned HTTP ${upstream.status}`);
+  return parseNcJson(upstream.body);
+}
+
 function inferRaceFromServerId(serverId) {
   const id = Number(serverId);
   if (id >= 1000 && id < 2000) return "1";
@@ -239,7 +260,7 @@ async function handleCharacterSearch(req, res, url) {
     let status = 200;
     for (const response of responses) {
       status = response.status >= 400 ? response.status : status;
-      const data = JSON.parse(String(response.body || "{}").replace(/\0/g, "").trim() || "{}");
+      const data = parseNcJson(response.body);
       if (Array.isArray(data.list)) lists.push(...data.list);
       total += Number(data.pagination && data.pagination.total || data.list && data.list.length || 0);
     }
@@ -251,7 +272,7 @@ async function handleCharacterSearch(req, res, url) {
         total,
         endPage: Math.max(1, ...responses.map((response) => {
           try {
-            return Number((JSON.parse(response.body || "{}").pagination || {}).endPage || 1);
+            return Number((parseNcJson(response.body).pagination || {}).endPage || 1);
           } catch (_) {
             return 1;
           }
@@ -264,6 +285,318 @@ async function handleCharacterSearch(req, res, url) {
   } catch (error) {
     send(res, 502, JSON.stringify({ success: false, error: error.message }), jsonHeaders());
   }
+}
+
+function intOrNull(value) {
+  const num = Number(value);
+  return Number.isFinite(num) ? Math.round(num) : null;
+}
+
+function textOrNull(value, max = 160) {
+  const text = String(value || "").trim();
+  return text ? text.slice(0, max) : null;
+}
+
+function hashText(value) {
+  const text = String(value || "").trim();
+  if (!text) return null;
+  const salt = process.env.ANALYTICS_HASH_SALT || DEV_USER_UUID;
+  return crypto.createHash("sha256").update(`${salt}:${text}`).digest("hex");
+}
+
+function requestIp(req) {
+  return ((req.headers["x-forwarded-for"] || "").split(",")[0].trim()) || req.socket.remoteAddress || "";
+}
+
+function sanitizeAnalyticsBody(body) {
+  const profile = body.profile || {};
+  const detail = body.detail || {};
+  const characterId = textOrNull(body.characterId || profile.characterId || detail.characterId, 512);
+  const characterName = textOrNull(body.characterName || profile.characterName || detail.characterName, 80);
+  return {
+    characterId,
+    characterName,
+    serverId: intOrNull(body.serverId || profile.serverId || detail.serverId),
+    serverName: textOrNull(body.serverName || profile.serverName || detail.serverName, 80),
+    race: intOrNull(body.race || profile.raceId || profile.race || detail.race),
+    className: textOrNull(body.className || profile.className || detail.className, 80),
+    level: intOrNull(body.level || profile.characterLevel || profile.level || detail.level),
+    combatPower: intOrNull(body.combatPower || profile.combatPower),
+    itemLevel: intOrNull(body.itemLevel || detail.itemLevel),
+    snapshotType: textOrNull(body.snapshotType, 24),
+    querySource: textOrNull(body.querySource || "detail", 40) || "detail",
+    queryKeyword: textOrNull(body.queryKeyword, 120),
+    profileJson: body.profile || null,
+    equipmentJson: body.equipment || null,
+    analysisJson: body.analysis || null,
+    detailJson: body.detail || null,
+  };
+}
+
+async function recordCharacterNameSnapshot(data) {
+  if (!prisma || !data.characterId || !data.characterName || !data.serverId) return;
+  await prisma.characterNameSnapshot.upsert({
+    where: {
+      characterId_serverId_characterName: {
+        characterId: data.characterId,
+        serverId: data.serverId,
+        characterName: data.characterName,
+      },
+    },
+    update: {
+      serverName: data.serverName,
+      race: data.race,
+      className: data.className,
+      level: data.level,
+      seenCount: { increment: 1 },
+    },
+    create: {
+      characterId: data.characterId,
+      serverId: data.serverId,
+      characterName: data.characterName,
+      serverName: data.serverName,
+      race: data.race,
+      className: data.className,
+      level: data.level,
+    },
+  });
+}
+
+async function handleCharacterAnalytics(req, res) {
+  if (!prisma) {
+    send(res, 503, JSON.stringify({ success: false, error: "database is not configured" }), jsonHeaders());
+    return;
+  }
+  if (req.method !== "POST") {
+    send(res, 405, JSON.stringify({ success: false, error: "method not allowed" }), jsonHeaders({ Allow: "POST" }));
+    return;
+  }
+
+  const body = sanitizeAnalyticsBody(await readJsonBody(req));
+  if (!body.characterId || !body.characterName) {
+    send(res, 400, JSON.stringify({ success: false, error: "characterId and characterName are required" }), jsonHeaders());
+    return;
+  }
+
+  let user = null;
+  try {
+    user = await currentUser();
+  } catch (_) {}
+
+  await prisma.characterQueryLog.create({
+    data: {
+      userId: user ? user.id : null,
+      characterId: body.characterId,
+      characterName: body.characterName,
+      serverId: body.serverId,
+      serverName: body.serverName,
+      race: body.race,
+      className: body.className,
+      level: body.level,
+      combatPower: body.combatPower,
+      itemLevel: body.itemLevel,
+      snapshotType: body.snapshotType,
+      querySource: body.querySource,
+      queryKeyword: body.queryKeyword,
+      clientIpHash: hashText(requestIp(req)),
+      userAgentHash: hashText(req.headers["user-agent"] || ""),
+    },
+  });
+  await recordCharacterNameSnapshot(body);
+
+  if (body.detailJson || body.analysisJson || body.profileJson || body.equipmentJson) {
+    await prisma.characterSnapshot.create({
+      data: {
+        userId: user ? user.id : null,
+        characterId: body.characterId,
+        characterName: body.characterName,
+        serverId: body.serverId,
+        serverName: body.serverName,
+        race: body.race,
+        className: body.className,
+        level: body.level,
+        combatPower: body.combatPower,
+        itemLevel: body.itemLevel,
+        snapshotType: body.snapshotType,
+        profileJson: body.profileJson,
+        equipmentJson: body.equipmentJson,
+        analysisJson: body.analysisJson,
+        detailJson: body.detailJson,
+      },
+    });
+  }
+
+  send(res, 200, JSON.stringify({ success: true }), jsonHeaders());
+}
+
+function profileFromInfo(info, fallback = {}) {
+  const profile = info.profile || info.character || info.characterInfo || info;
+  return {
+    characterId: fallback.characterId || profile.characterId || "",
+    characterName: profile.characterName || profile.name || fallback.characterName || "",
+    serverId: intOrNull(profile.serverId || fallback.serverId),
+    serverName: textOrNull(profile.serverName || fallback.serverName, 80),
+    race: intOrNull(profile.raceId || profile.race || fallback.race),
+    className: textOrNull(profile.className || fallback.className, 80),
+    level: intOrNull(profile.characterLevel || profile.level || fallback.level),
+    combatPower: intOrNull(profile.combatPower || fallback.combatPower),
+    profile,
+  };
+}
+
+async function refreshCharacterSnapshot(row) {
+  const characterId = row.characterId;
+  const serverId = row.serverId;
+  if (!characterId || !serverId) return false;
+  const params = `lang=zh&characterId=${encodeURIComponent(characterId)}&serverId=${encodeURIComponent(serverId)}`;
+  const [info, equipment] = await Promise.all([
+    fetchNcJson(`/aion2/api/character/info?${params}`),
+    fetchNcJson(`/aion2/api/character/equipment?${params}`),
+  ]);
+  const profile = profileFromInfo(info, row);
+  const characterName = profile.characterName || row.characterName;
+  const refreshMeta = {
+    characterId,
+    characterName,
+    serverId: profile.serverId || serverId,
+    serverName: profile.serverName || row.serverName,
+    race: profile.race || row.race,
+    className: profile.className || row.className,
+    level: profile.level || row.level,
+  };
+  await prisma.characterQueryLog.create({
+    data: {
+      userId: row.userId || null,
+      characterId,
+      characterName,
+      serverId: refreshMeta.serverId,
+      serverName: refreshMeta.serverName,
+      race: refreshMeta.race,
+      className: refreshMeta.className,
+      level: refreshMeta.level,
+      combatPower: profile.combatPower || row.combatPower,
+      itemLevel: row.itemLevel || null,
+      snapshotType: row.snapshotType || null,
+      querySource: "auto-refresh",
+      queryKeyword: null,
+      clientIpHash: null,
+      userAgentHash: null,
+    },
+  });
+  await recordCharacterNameSnapshot(refreshMeta);
+  await prisma.characterSnapshot.create({
+    data: {
+      userId: row.userId || null,
+      characterId,
+      characterName,
+      serverId: refreshMeta.serverId,
+      serverName: refreshMeta.serverName,
+      race: refreshMeta.race,
+      className: refreshMeta.className,
+      level: refreshMeta.level,
+      combatPower: profile.combatPower || row.combatPower,
+      itemLevel: row.itemLevel || null,
+      snapshotType: row.snapshotType || null,
+      profileJson: profile.profile || info,
+      equipmentJson: equipment,
+      analysisJson: null,
+      detailJson: {
+        source: "auto-refresh",
+        info,
+        equipment,
+      },
+    },
+  });
+  return true;
+}
+
+async function autoRefreshSnapshots() {
+  if (!prisma || !AUTO_REFRESH_ENABLED || autoRefreshRunning) return;
+  autoRefreshRunning = true;
+  try {
+    const staleBefore = new Date(Date.now() - AUTO_REFRESH_AFTER_MS);
+    const candidates = await prisma.characterQueryLog.findMany({
+      distinct: ["characterId", "serverId"],
+      where: {
+        characterId: { not: "" },
+        serverId: { not: null },
+        querySource: { not: "auto-refresh" },
+      },
+      orderBy: { createdAt: "desc" },
+      take: AUTO_REFRESH_BATCH_SIZE * 4,
+    });
+
+    let refreshed = 0;
+    for (const row of candidates) {
+      if (refreshed >= AUTO_REFRESH_BATCH_SIZE) break;
+      const latestSnapshot = await prisma.characterSnapshot.findFirst({
+        where: { characterId: row.characterId, serverId: row.serverId },
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      });
+      if (latestSnapshot && latestSnapshot.createdAt > staleBefore) continue;
+      try {
+        const ok = await refreshCharacterSnapshot(row);
+        if (ok) refreshed += 1;
+      } catch (error) {
+        console.warn(`[analytics] auto refresh failed for ${row.characterName || row.characterId}: ${error.message}`);
+      }
+      if (refreshed < AUTO_REFRESH_BATCH_SIZE) await sleep(AUTO_REFRESH_DELAY_MS);
+    }
+    if (refreshed) console.log(`[analytics] auto refreshed ${refreshed} character snapshot(s)`);
+  } catch (error) {
+    console.warn(`[analytics] auto refresh skipped: ${error.message}`);
+  } finally {
+    autoRefreshRunning = false;
+  }
+}
+
+function rankingCandidatePaths(qs) {
+  const params = new URLSearchParams({
+    lang: "zh",
+    rankingContentsType: qs.get("rankingContentsType") || "1",
+    rankingType: qs.get("rankingType") || "0",
+    serverId: qs.get("serverId") || "1001",
+    page: qs.get("page") || "1",
+    size: qs.get("size") || "100",
+    sort: qs.get("sort") || "desc",
+  });
+  if (qs.get("searchCharacterName")) params.set("searchCharacterName", qs.get("searchCharacterName"));
+  if (qs.get("className")) params.set("className", qs.get("className"));
+
+  const query = params.toString();
+  return [
+    `/aion2/api/ranking?${query}`,
+    `/aion2/api/ranking/list?${query}`,
+    `/aion2/api/character/ranking?${query}`,
+    `/aion2/api/character/ranking/list?${query}`,
+  ];
+}
+
+async function handleRanking(req, res, url) {
+  const errors = [];
+  for (const path of rankingCandidatePaths(url.searchParams)) {
+    try {
+      const upstream = await proxyNcsoft(path);
+      const body = String(upstream.body || "").replace(/\0/g, "").trim();
+      if (upstream.status < 400 && body) {
+        send(res, 200, body, {
+          "Content-Type": upstream.type.includes("json") ? upstream.type : "application/json; charset=utf-8",
+          "Cache-Control": "public, max-age=30",
+          "X-AION2-Ranking-Path": path.split("?")[0],
+        });
+        return;
+      }
+      errors.push(`${path.split("?")[0]} -> HTTP ${upstream.status}`);
+    } catch (error) {
+      errors.push(`${path.split("?")[0]} -> ${error.message}`);
+    }
+  }
+  send(res, 502, JSON.stringify({
+    success: false,
+    error: "ranking api not available",
+    tried: errors,
+  }), jsonHeaders());
 }
 
 function ncPathFromRoute(url) {
@@ -325,6 +658,15 @@ async function handleApi(req, res, url) {
     return;
   }
 
+  if (url.pathname === "/api/analytics/character-query") {
+    try {
+      await handleCharacterAnalytics(req, res);
+    } catch (error) {
+      send(res, 500, JSON.stringify({ success: false, error: error.message }), jsonHeaders());
+    }
+    return;
+  }
+
   if (url.pathname !== "/api/convert") {
     const ip = ((req.headers["x-forwarded-for"] || "").split(",")[0].trim()) || req.socket.remoteAddress || "unknown";
     const wait = checkRate(ip);
@@ -349,6 +691,11 @@ async function handleApi(req, res, url) {
 
   if (url.pathname === "/api/search") {
     await handleCharacterSearch(req, res, url);
+    return;
+  }
+
+  if (url.pathname === "/api/ranking") {
+    await handleRanking(req, res, url);
     return;
   }
 
@@ -424,4 +771,8 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`AION2 web MVP running at http://localhost:${PORT}`);
+  if (AUTO_REFRESH_ENABLED) {
+    setTimeout(autoRefreshSnapshots, 30_000).unref();
+    setInterval(autoRefreshSnapshots, AUTO_REFRESH_INTERVAL_MS).unref();
+  }
 });

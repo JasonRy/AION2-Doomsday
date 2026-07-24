@@ -40,6 +40,27 @@ const DEMON_SERVERS = [
   { serverId: 2018, serverName: "巴巴隆" },
 ];
 
+const CLASS_OPTIONS = [
+  { id: "0", label: "所有職業", names: [] },
+  { id: "2", label: "劍星", names: ["劍星"] },
+  { id: "3", label: "守護星", names: ["守護星"] },
+  { id: "4", label: "弓星", names: ["弓星"] },
+  { id: "5", label: "殺星", names: ["殺星"] },
+  { id: "6", label: "精靈星", names: ["精靈星"] },
+  { id: "7", label: "魔道星", names: ["魔道星"] },
+  { id: "8", label: "治癒星", names: ["治癒星"] },
+  { id: "9", label: "護法星", names: ["護法星"] },
+];
+
+const RANKING_TYPES = [
+  { key: "abyss", label: "深淵", contentsType: 1 },
+  { key: "arenaOfSolitude", label: "孤獨競技場", contentsType: 2 },
+  { key: "arenaOfCooperation", label: "協力競技場", contentsType: 3 },
+  { key: "nightmare", label: "惡夢", contentsType: 4 },
+  { key: "transcendence", label: "超越", contentsType: 5 },
+  { key: "ascensionTrial", label: "覺醒戰", contentsType: 6 },
+];
+
 const SLOT_CN = {
   MainHand: "主手",
   SubHand: "副手",
@@ -102,6 +123,8 @@ const BASIC_COMBAT_STAT_DEFS = [
   { key: "soulstoneDamage",  label: "封魂石額外傷害",   names: ["封魂石額外傷害", "封魂石额外伤害"],       ids: ["SoulStoneAdditionalDamage", "SoulStoneDamage", "SealStoneAddDamage"], isPct: false },
   { key: "criticalAttack",   label: "暴擊攻擊力",       names: ["暴擊攻擊力", "暴击攻击力"],               ids: ["CriticalAttack", "CriticalDamage"],        isPct: false },
   { key: "criticalDefense",  label: "暴擊防禦力",       names: ["暴擊防禦力", "暴击防御力"],               ids: ["CriticalDefense"],                         isPct: false },
+  { key: "frontAttack",      label: "前方攻擊力",       names: ["前方攻擊力", "前方攻击力"],               ids: ["FrontAttack", "FrontDamage"],              isPct: false },
+  { key: "frontDefense",     label: "前方防禦力",       names: ["前方防禦力", "前方防御力"],               ids: ["FrontAttackDefense", "FrontDefense"],      isPct: false },
   { key: "backAttack",       label: "後方攻擊力",       names: ["後方攻擊力", "后方攻击力"],               ids: ["BackAttack", "BackDamage"],                isPct: false },
   { key: "backDefense",      label: "後方防禦力",       names: ["後方防禦力", "后方防御力"],               ids: ["BackDefense"],                             isPct: false },
 ];
@@ -139,10 +162,22 @@ const ENV_COMBAT_AMP_STAT_DEFS = [
 ];
 const ABNORMAL_STAT_DEFS = [
   { key: "shockHit", label: "衝擊系擊中", names: ["衝擊系擊中", "冲击系击中"], ids: ["ShockHit", "ImpactHit"], isPct: true },
+  { key: "shockResist", label: "衝擊系抵抗", names: ["衝擊系抵抗", "冲击系抵抗"], ids: ["ShockResist", "ImpactResist", "ShockPropertyResist"], isPct: true },
   { key: "statusHit", label: "異常狀態擊中", names: ["異常狀態擊中", "异常状态击中"], ids: ["AbnormalStatusHit", "AbnormalHit"], isPct: true },
   { key: "pStatusResist", label: "異常狀態抵抗增加", names: ["異常狀態抵抗增加", "异常状态抵抗增加", "異常狀態抵抗", "异常状态抵抗"], ids: ["AbnormalStatusResistRatio", "AbnormalResistRatio"], isPct: true },
 ];
 const OTHER_STAT_DEFS = [
+  { key: "flightPower",       label: "飛行力",         names: ["飛行力", "飞行力"],                       ids: ["FP", "FPMax", "FlightPower"],              isPct: false },
+  { key: "flightRegen",        label: "飛行力自然恢復", names: ["飛行力自然恢復", "飞行力自然恢复"],       ids: ["SPRegen", "FlightPowerRegen"],              isPct: false },
+  { key: "battleHpRegen",      label: "戰鬥中生命力自然恢復", names: ["戰鬥中生命力自然恢復", "战斗中生命力自然恢复"], ids: ["BattleHPRegen"], isPct: false },
+  { key: "battleMpRegen",      label: "戰鬥中精神力自然恢復", names: ["戰鬥中精神力自然恢復", "战斗中精神力自然恢复"], ids: ["BattleMPRegen"], isPct: false },
+  { key: "battleFlightRegen",  label: "戰鬥中飛行力自然恢復", names: ["戰鬥中飛行力自然恢復", "战斗中飞行力自然恢复"], ids: ["BattleSPRegen"], isPct: false },
+  { key: "restHpRegen",        label: "休息中生命力自然恢復", names: ["休息中生命力自然恢復", "休息中生命力自然恢复"], ids: ["RestHPRegen"], isPct: false },
+  { key: "restMpRegen",        label: "休息中精神力自然恢復", names: ["休息中精神力自然恢復", "休息中精神力自然恢复"], ids: ["RestMPRegen"], isPct: false },
+  { key: "restFlightRegen",    label: "休息中飛行力自然恢復", names: ["休息中飛行力自然恢復", "休息中飞行力自然恢复"], ids: ["RestSPRegen"], isPct: false },
+  { key: "weaponDamage",       label: "武器傷害",       names: ["武器傷害", "武器伤害"],                 ids: ["WeaponDamage"], isPct: false },
+  { key: "mpRegen",           label: "精神力自然恢復", names: ["精神力自然恢復", "精神力自然恢复"],         ids: ["NaturalMPRegen", "MPRegen"],               isPct: false },
+  { key: "mpCostReduce",      label: "精神力消耗量減少", names: ["精神力消耗量減少", "精神力消耗量减少"],   ids: ["MPUseDecrease", "MpCostReduction"],        isPct: true  },
   { key: "multiHit",          label: "多段打擊擊中",   names: ["多段打擊擊中", "多段打击击中"],         ids: ["MultiHit", "MultipleHit", "AdditionalHitRate"], isPct: true  },
   { key: "multiHitResist",    label: "多段打擊抵抗",   names: ["多段打擊抵抗", "多段打击抵抗"],         ids: ["MultiHitResist", "MultipleHitResist"],  isPct: true  },
   { key: "ironWallPen",       label: "鐵壁貫穿",       names: ["鐵壁貫穿", "铁壁贯穿"],                 ids: ["IronWallPenetration", "IronWallBreak"],  isPct: true  },
@@ -151,6 +186,8 @@ const OTHER_STAT_DEFS = [
   { key: "regen",             label: "再生",           names: ["再生"],                                 ids: ["Regeneration", "Regen"],               isPct: true  },
   { key: "healingReceived",    label: "所受治療量",     names: ["所受治療量", "受到治療量"],             ids: ["HealingReceived", "ReceivedHealing"],   isPct: true  },
   { key: "hpRegen",            label: "生命力自然恢復", names: ["生命力自然恢復", "生命力自然恢复"],     ids: ["NaturalHPRegen", "HPRegen"],           isPct: false },
+  { key: "hpPotionRate",       label: "生命力藥水恢復率", names: ["生命力藥水恢復率", "生命力药水恢复率"], ids: ["HPPotionRate", "HPPotionRecoveryRate"], isPct: true },
+  { key: "hpPotionRegen",      label: "生命力藥水恢復量", names: ["生命力藥水恢復量", "生命力药水恢复量"], ids: ["HPPotionRegen", "HPPotionRecovery"],    isPct: false },
   { key: "perfect",           label: "完美",           names: ["完美"],                                 ids: ["Perfect", "PerfectAttack"],            isPct: true  },
   { key: "perfectResist",     label: "完美抵抗",       names: ["完美抵抗"],                             ids: ["PerfectResist", "PerfectDefense"],      isPct: true  },
   { key: "powerStrike",       label: "強擊",           names: ["強擊", "强击"],                         ids: ["PowerStrike", "StrongAttack", "HardHit"], isPct: true  },
@@ -224,6 +261,29 @@ const HISTORY_KEY = "aion2-query-history";
 const FAVORITES_KEY = "aion2-favorite-characters";
 const PET_SIM_KEY = "aion2-pet-simulator";
 const WING_BONUS_KEY = "aion2-wing-bonus-enabled";
+const WING_SELECTION_KEY = "aion2-wing-selection";
+const WING_LEVEL_KEY = "aion2-wing-levels";
+const WARDROBE_BONUS_KEY = "aion2-wardrobe-bonus-enabled";
+const WARDROBE_CONFIG_KEY = "aion2-wardrobe-config";
+const TITLE_BONUS_KEY = "aion2-title-bonus-enabled";
+const TITLE_SELECTION_KEY = "aion2-title-selection";
+const WARDROBE_CATEGORIES = [
+  { key: "weapon", label: "武器", max: 250, source: "主武器", parts: [{ key: "MainHand", label: "主武器" }], stats: [{ statKey: "attack", label: "主武器基礎攻擊力", value: 25 }] },
+  { key: "armor", label: "防具", max: 500, source: "頭盔、肩甲、上衣、下衣、手套、鞋子、披風", parts: [
+    { key: "Helmet", label: "頭盔" },
+    { key: "Shoulder", label: "肩甲" },
+    { key: "Torso", label: "上衣" },
+    { key: "Pants", label: "下衣" },
+    { key: "Gloves", label: "手套" },
+    { key: "Boots", label: "鞋子" },
+    { key: "Cape", label: "披風" },
+  ], stats: [{ statKey: "defense", label: "防具基礎防禦力", value: 50 }] },
+  { key: "accessory", label: "飾品", max: 250, source: "項鍊、耳環、戒指", parts: [
+    { key: "Necklace", label: "項鍊" },
+    { key: "Earring", label: "耳環" },
+    { key: "Ring", label: "戒指" },
+  ], stats: [{ statKey: "attack", label: "飾品基礎攻擊力", value: 25 }, { statKey: "defense", label: "飾品基礎防禦力", value: 25 }] },
+];
 const PET_DISK_TYPES = {
   normal: "普通盤",
   special: "特殊盤",
@@ -261,25 +321,68 @@ const PET_SPECIAL_ONLY_OPTIONS = [
   { key: "penetration", label: "貫穿", bucket: "basicCombatStats", statKey: "penetration", max: 160, maxCount: 9, isPct: false },
 ];
 const WING_BONUS_EFFECT_OPTIONS = {
+  "攻擊力": { label: "攻擊力", bucket: "primaryStats", statKey: "attack", isPct: false },
+  "防禦力": { label: "防禦力", bucket: "primaryStats", statKey: "defense", isPct: false },
+  "命中": { label: "命中", bucket: "primaryStats", statKey: "hit", isPct: false },
+  "迴避": { label: "迴避", bucket: "primaryStats", statKey: "evasion", isPct: false },
   "額外攻擊力": { label: "額外攻擊力", bucket: "primaryStats", statKey: "extraAttack", isPct: false },
-  "強擊": { label: "強擊", bucket: "otherStats", statKey: "powerStrike", isPct: true },
-  "傷害增幅": { label: "傷害增幅", bucket: "basicCombatAmpStats", statKey: "damageAmp", isPct: true },
-  "武器傷害增幅": { label: "武器傷害增幅", bucket: "basicCombatAmpStats", statKey: "weaponDamageAmp", isPct: true },
+  "額外防禦力": { label: "額外防禦力", bucket: "primaryStats", statKey: "extraDefense", isPct: false },
+  "強擊": { label: "強擊", bucket: "otherStats", statKey: "powerStrike", isPct: true, scale: 0.01 },
+  "傷害增幅": { label: "傷害增幅", bucket: "basicCombatAmpStats", statKey: "damageAmp", isPct: true, scale: 0.01 },
+  "傷害耐性": { label: "傷害耐性", bucket: "basicCombatAmpStats", statKey: "damageResist", isPct: true, scale: 0.01 },
+  "武器傷害增幅": { label: "武器傷害增幅", bucket: "basicCombatAmpStats", statKey: "weaponDamageAmp", isPct: true, scale: 0.01 },
   "PVE攻擊力": { label: "PVE攻擊力", bucket: "envCombatAmpStats", statKey: "pveAttack", isPct: false },
-  "PVE傷害增幅": { label: "PVE傷害增幅", bucket: "envCombatAmpStats", statKey: "pveDamageAmp", isPct: true },
-  "暴擊": { label: "暴擊", bucket: "primaryStats", statKey: "critical", isPct: false },
-  "額外命中": { label: "額外命中", bucket: "primaryStats", statKey: "extraHit", isPct: false },
-  "貫穿": { label: "貫穿", bucket: "basicCombatStats", statKey: "penetration", isPct: false },
-  "所受治療量": { label: "所受治療量", bucket: "otherStats", statKey: "healingReceived", isPct: true },
-  "異常狀態抵抗": { label: "異常狀態抵抗", bucket: "abnormalStats", statKey: "pStatusResist", isPct: true },
-  "最大攻擊力": { label: "最大攻擊力", bucket: "primaryStats", statKey: "attack", isPct: false, scale: 0.5, note: "按平均攻擊力折算 50%" },
   "PVE防禦力": { label: "PVE防禦力", bucket: "envCombatAmpStats", statKey: "pveDefense", isPct: false },
+  "PVE命中": { label: "PVE命中", bucket: "envCombatAmpStats", statKey: "pveHit", isPct: false },
+  "PVE傷害增幅": { label: "PVE傷害增幅", bucket: "envCombatAmpStats", statKey: "pveDamageAmp", isPct: true, scale: 0.01 },
+  "PVE傷害耐性": { label: "PVE傷害耐性", bucket: "envCombatAmpStats", statKey: "pveDamageResist", isPct: true, scale: 0.01 },
+  "首領攻擊力": { label: "首領攻擊力", bucket: "envCombatAmpStats", statKey: "bossAttack", isPct: false },
+  "首領防禦力": { label: "首領防禦力", bucket: "envCombatAmpStats", statKey: "bossDefense", isPct: false },
+  "首領傷害增幅": { label: "首領傷害增幅", bucket: "envCombatAmpStats", statKey: "bossDamageAmp", isPct: true, scale: 0.01 },
+  "首領傷害耐性": { label: "首領傷害耐性", bucket: "envCombatAmpStats", statKey: "bossDamageResist", isPct: true, scale: 0.01 },
+  "暴擊": { label: "暴擊", bucket: "primaryStats", statKey: "critical", isPct: false },
   "暴擊抵抗": { label: "暴擊抵抗", bucket: "primaryStats", statKey: "criticalResist", isPct: false },
+  "額外命中": { label: "額外命中", bucket: "primaryStats", statKey: "extraHit", isPct: false },
   "額外迴避": { label: "額外迴避", bucket: "primaryStats", statKey: "extraEvasion", isPct: false },
+  "貫穿": { label: "貫穿", bucket: "basicCombatStats", statKey: "penetration", isPct: false },
+  "前方攻擊力": { label: "前方攻擊力", bucket: "basicCombatStats", statKey: "frontAttack", isPct: false },
+  "前方防禦力": { label: "前方防禦力", bucket: "basicCombatStats", statKey: "frontDefense", isPct: false },
+  "前方傷害增幅": { label: "前方傷害增幅", bucket: "basicCombatAmpStats", statKey: "frontDamageAmp", isPct: true, scale: 0.01 },
+  "後方攻擊力": { label: "後方攻擊力", bucket: "basicCombatStats", statKey: "backAttack", isPct: false },
+  "後方暴擊抵抗": { label: "後方暴擊抵抗", bucket: "otherStats", statKey: "backCritResist", isPct: false },
+  "所受治療量": { label: "所受治療量", bucket: "otherStats", statKey: "healingReceived", isPct: true, scale: 0.01 },
+  "異常狀態擊中": { label: "異常狀態擊中", bucket: "abnormalStats", statKey: "statusHit", isPct: true, scale: 0.01 },
+  "異常狀態抵抗": { label: "異常狀態抵抗", bucket: "abnormalStats", statKey: "pStatusResist", isPct: true, scale: 0.01 },
+  "衝擊系擊中": { label: "衝擊系擊中", bucket: "abnormalStats", statKey: "shockHit", isPct: true, scale: 0.01 },
+  "衝擊系抵抗": { label: "衝擊系抵抗", bucket: "abnormalStats", statKey: "shockResist", isPct: true, scale: 0.01 },
+  "最大攻擊力": { label: "最大攻擊力", bucket: "primaryStats", statKey: "attack", isPct: false, scale: 0.5, note: "按平均攻擊力折算 50%" },
   "格擋": { label: "格擋", bucket: "otherStats", statKey: "block", isPct: false },
-  "再生": { label: "再生", bucket: "otherStats", statKey: "regen", isPct: true },
+  "格擋貫穿": { label: "格擋貫穿", bucket: "otherStats", statKey: "blockPen", isPct: false },
+  "鐵壁": { label: "鐵壁", bucket: "otherStats", statKey: "ironWall", isPct: true, scale: 0.01 },
+  "暴擊攻擊力": { label: "暴擊攻擊力", bucket: "basicCombatStats", statKey: "criticalAttack", isPct: false },
+  "再生": { label: "再生", bucket: "otherStats", statKey: "regen", isPct: true, scale: 0.01 },
   "生命力": { label: "生命力", bucket: "primaryStats", statKey: "hp", isPct: false },
-  "生命力自然恢復": { label: "生命力自然恢復", bucket: "otherStats", statKey: "hpRegen", isPct: false }
+  "精神力": { label: "精神力", bucket: "primaryStats", statKey: "mp", isPct: false },
+  "戰鬥速度": { label: "戰鬥速度", bucket: "primaryStats", statKey: "combatSpeed", isPct: true, scale: 0.01 },
+  "移動速度": { label: "移動速度", bucket: "primaryStats", statKey: "moveSpeed", isPct: true, scale: 0.01 },
+  "飛行力": { label: "飛行力", bucket: "otherStats", statKey: "flightPower", isPct: false, scale: 0.01 },
+  "生命力自然恢復": { label: "生命力自然恢復", bucket: "otherStats", statKey: "hpRegen", isPct: false },
+  "生命力藥水恢復率": { label: "生命力藥水恢復率", bucket: "otherStats", statKey: "hpPotionRate", isPct: true, scale: 0.01 },
+  "生命力藥水恢復量": { label: "生命力藥水恢復量", bucket: "otherStats", statKey: "hpPotionRegen", isPct: false },
+  "精神力自然恢復": { label: "精神力自然恢復", bucket: "otherStats", statKey: "mpRegen", isPct: false },
+  "精神力消耗量減少": { label: "精神力消耗量減少", bucket: "otherStats", statKey: "mpCostReduce", isPct: true, scale: 0.01 },
+  "冷卻時間減少": { label: "冷卻時間減少", bucket: "pctStats", statKey: "cooldownReduce", isPct: true, scale: 0.01 },
+  "完美": { label: "完美", bucket: "otherStats", statKey: "perfect", isPct: true, scale: 0.01 }
+};
+const TITLE_STAT_KEY_MAP = {
+  accuracy: "額外命中", additionalhitrate: "多段打擊擊中", additionalhitresistrate: "多段打擊抵抗", critical: "暴擊", criticalresist: "暴擊抵抗", hpmax: "生命力", mpmax: "精神力", defense: "防禦力", evasion: "額外迴避", combatspeed: "戰鬥速度", movespeed: "移動速度",
+  pveadddamage: "PVE攻擊力", pvedamagedefense: "PVE防禦力", pveaccuracy: "PVE命中", pveevasion: "PVE迴避", pveamplifydamage: "PVE傷害增幅", pvedecreasedamage: "PVE傷害耐性",
+  pvpadddamage: "PVP攻擊力", pvpdamagedefense: "PVP防禦力", pvpaccuracy: "PVP命中", pvpevasion: "PVP迴避", pvpcritical: "PVP暴擊", pvpcriticalresist: "PVP暴擊抵抗", pvpamplifydamage: "PVP傷害增幅", pvpdecreasedamage: "PVP傷害耐性",
+  bossnpcamplifydamage: "首領傷害增幅", bossnpcdecreasedamage: "首領傷害耐性", bossnpcadddamage: "首領攻擊力", bossnpcdamagedefense: "首領防禦力",
+  amplifyalldamage: "傷害增幅", decreasedamage: "傷害耐性", amplifyweapondamage: "武器傷害增幅", decreaseweapondamage: "武器傷害耐性", amplifycriticaldamage: "暴擊傷害增幅", decreasecriticaldamage: "暴擊傷害耐性", amplifybackattack: "後方傷害增幅", decreasebackattack: "後方傷害耐性", amplifyfrontattack: "前方傷害增幅", decreasefrontattack: "前方傷害耐性",
+  backattackdamage: "後方攻擊力", backattackdefense: "後方防禦力", frontattackdamage: "前方攻擊力", frontattackdefense: "前方防禦力", frontattackcritical: "後方暴擊", frontattackcriticalresist: "後方暴擊抵抗", backattackcritical: "後方暴擊", backattackcriticalresist: "後方暴擊抵抗",
+  defensepierce: "貫穿", sealstoneadddamage: "封魂石額外傷害", criticaladddamage: "暴擊攻擊力", criticaldamagedefense: "暴擊防禦力", block: "格擋", blockpierce: "格擋貫穿", ironwall: "鐵壁", hardhit: "強擊", hardhitresist: "強擊抵抗", perfect: "完美", perfectresist: "完美抵抗",
+  flyspeed: "飛行力", spmax: "飛行力", spregen: "飛行力自然恢復", battlehpregen: "戰鬥中生命力自然恢復", battlempregen: "戰鬥中精神力自然恢復", battlespregen: "戰鬥中飛行力自然恢復", resthpregen: "休息中生命力自然恢復", restmpregen: "休息中精神力自然恢復", restspregen: "休息中飛行力自然恢復", weapondamage: "武器傷害", ignorerestoration: "再生貫穿", maxhpratio: "生命力增加", maxmpratio: "精神力增加", hpregen: "生命力自然恢復", hppotionrate: "生命力藥水恢復率", hppotionregen: "生命力藥水恢復量", mpregen: "精神力自然恢復", mpusedecrease: "精神力消耗量減少", cooltimedecrease: "冷卻時間減少", restoration: "再生", fixingdamage: "攻擊力"
 };
 const EQUIP_SLOT_ORDER = [
   "MainHand", "SubHand",
@@ -337,6 +440,8 @@ const state = {
   race: 0,
   serverId: 0,
   results: [],
+  hasSearched: false,
+  searchToken: 0,
   selectedId: "",
   selectedChar: null,
   selectedDetail: null,
@@ -351,11 +456,41 @@ const state = {
   mobileIconMode: false,
   petSimulator: loadPetSimulatorConfig(),
   wingBonusEnabled: loadWingBonusEnabled(),
+  selectedWingIds: loadSelectedWingIds(),
+  wingLevels: loadWingLevels(),
+  wingSelectionInitialized: hasSavedWingSelection(),
+  wardrobeBonusEnabled: loadWardrobeBonusEnabled(),
+  wardrobeConfig: loadWardrobeConfig(),
+  wardrobeUndoStack: [],
+  wardrobeActiveUndo: null,
+  titleBonusEnabled: loadTitleBonusEnabled(),
+  selectedTitleIds: loadSelectedTitleIds(),
+  titleSelectionInitialized: hasSavedTitleSelection(),
+  activeTitleCategory: "attack",
+  activeTitleRace: "all",
+  titleSearchKeyword: "",
+  titleSearchFocused: false,
+  titleSearchCursor: 0,
+  titleSearchComposing: false,
   wingBonusCatalog: null,
+  titleCatalog: null,
+  view: viewFromHash(location.hash),
+  ranking: {
+    activeType: "abyss",
+    race: 1,
+    serverId: 1001,
+    classId: "0",
+    keyword: "",
+    rows: [],
+    season: null,
+    loading: false,
+    error: "",
+  },
 };
 
 let wingEffectCatalogPromise = null;
 let wingBonusCatalogPromise = null;
+let titleCatalogPromise = null;
 let resultsCollapsed = false;
 let lastDetailLoadTime = 0;
 const DETAIL_COOLDOWN_MS = 5000;
@@ -403,24 +538,80 @@ function setResultsCollapsed(collapse) {
   }
 }
 
+function resetSearchPageLayout() {
+  resultsCollapsed = false;
+  if (els.contentGrid) els.contentGrid.classList.remove("results-collapsed");
+  const panel = els.resultsPanel;
+  if (panel) panel.style.width = "";
+  [
+    panel && panel.querySelector(".panel-head h3"),
+    panel && panel.querySelector("#resultCount"),
+    els.historyPanel,
+    els.resultsList,
+  ].filter(Boolean).forEach((el) => {
+    el.style.display = "";
+    el.style.opacity = "";
+    el.style.visibility = "";
+  });
+  document.querySelectorAll(".detail-side.visible").forEach((el) => el.classList.remove("visible"));
+  setCollapseButtonIcon();
+}
+
 const els = {
   body: document.body,
   raceTabs: document.querySelector("#raceTabs"),
   serverSelect: document.querySelector("#serverSelect"),
   keywordInput: document.querySelector("#keywordInput"),
   convertButton: document.querySelector("#convertButton"),
+  resetSearchButton: document.querySelector("#resetSearchButton"),
   searchButton: document.querySelector("#searchButton"),
   historyPanel: document.querySelector("#historyPanel"),
   resultsList: document.querySelector("#resultsList"),
   resultCount: document.querySelector("#resultCount"),
+  resultsPanelHead: document.querySelector("#resultsPanelHead"),
+  clearResultsBtn: document.querySelector("#clearResultsBtn"),
   detailPanel: document.querySelector("#detailPanel"),
   resultsPanel: document.querySelector("#resultsPanel"),
   contentGrid: document.querySelector(".content-grid"),
   collapseResultsBtn: document.querySelector("#collapseResultsBtn"),
+  viewEyebrow: document.querySelector("#viewEyebrow"),
+  viewTitle: document.querySelector("#viewTitle"),
+  globalBreadcrumb: document.querySelector("#globalBreadcrumb"),
   statusText: document.querySelector("#statusText"),
   themeToggle: document.querySelector("#themeToggle"),
   themeIcon: document.querySelector("#themeIcon"),
   themeLabel: document.querySelector("#themeLabel"),
+  navCharacter: document.querySelector("#navCharacter"),
+  navRanking: document.querySelector("#navRanking"),
+  navSimulationGroup: document.querySelector("#navSimulationGroup"),
+  navWings: document.querySelector("#navWings"),
+  navPetInsight: document.querySelector("#navPetInsight"),
+  navWardrobe: document.querySelector("#navWardrobe"),
+  navTitles: document.querySelector("#navTitles"),
+  characterDetailView: document.querySelector("#characterDetailView"),
+  rankingView: document.querySelector("#rankingView"),
+  wingSimulatorView: document.querySelector("#wingSimulatorView"),
+  petInsightView: document.querySelector("#petInsightView"),
+  wardrobeView: document.querySelector("#wardrobeView"),
+  titleSimulatorView: document.querySelector("#titleSimulatorView"),
+  wingCatalogList: document.querySelector("#wingCatalogList"),
+  wingSelectionCount: document.querySelector("#wingSelectionCount"),
+  selectAllWingsBtn: document.querySelector("#selectAllWingsBtn"),
+  clearWingsBtn: document.querySelector("#clearWingsBtn"),
+  petInsightContent: document.querySelector("#petInsightContent"),
+  wardrobeContent: document.querySelector("#wardrobeContent"),
+  titleCatalogList: document.querySelector("#titleCatalogList"),
+  titleSelectionCount: document.querySelector("#titleSelectionCount"),
+  selectAllTitlesBtn: document.querySelector("#selectAllTitlesBtn"),
+  clearTitlesBtn: document.querySelector("#clearTitlesBtn"),
+  rankingTabs: document.querySelector("#rankingTabs"),
+  rankingStatus: document.querySelector("#rankingStatus"),
+  rankingRaceSelect: document.querySelector("#rankingRaceSelect"),
+  rankingServerSelect: document.querySelector("#rankingServerSelect"),
+  rankingClassSelect: document.querySelector("#rankingClassSelect"),
+  rankingKeywordInput: document.querySelector("#rankingKeywordInput"),
+  rankingSearchButton: document.querySelector("#rankingSearchButton"),
+  rankingTableBody: document.querySelector("#rankingTableBody"),
 };
 
 function html(value) {
@@ -501,6 +692,26 @@ function setStatus(text) {
   els.statusText.textContent = text;
 }
 
+function viewHash(view) {
+  return view === "ranking" ? "#ranking"
+    : view === "wings" ? "#wings"
+      : view === "petInsight" ? "#pet-insight"
+        : view === "titles" ? "#titles"
+          : view === "wardrobe" ? "#wardrobe"
+            : view === "characterDetail" ? "#character-detail"
+            : "#characters";
+}
+
+function viewFromHash(hash) {
+  if (hash === "#ranking") return "ranking";
+  if (hash === "#wings" || hash === "#wing-simulator") return "wings";
+  if (hash === "#pet-insight") return "petInsight";
+  if (hash === "#titles" || hash === "#title-simulator") return "titles";
+  if (hash === "#wardrobe") return "wardrobe";
+  if (hash === "#character-detail" || hash === "#characterDetail") return "characterDetail";
+  return "characters";
+}
+
 function loadingMarkup(title, body = "") {
   return `
     <div class="loading-state" aria-live="polite">
@@ -557,6 +768,8 @@ function toStoredCharacter(char) {
     className: char.className,
     race: char.race,
     level: char.level,
+    profileImage: char.profileImage || char.avatar || char.image || "",
+    combatPower: char.combatPower || "",
   };
 }
 
@@ -588,12 +801,19 @@ function pushHistory(char) {
 
 function renderMiniCharacterCard(item, index, type) {
   const favorited = isFavoriteCharacter(item.characterId);
+  const raceLabel = item.race === 1 ? "天" : item.race === 2 ? "魔" : "?";
+  const serverText = `${raceLabel}${item.serverName ? ` · ${item.serverName}` : ""}`;
   return `
     <div class="history-card race-${item.race}">
       <button type="button" class="history-chip" data-${type}-index="${index}" title="查看角色">
-        <span>${item.race === 1 ? "天" : item.race === 2 ? "魔" : "?"}</span>
-        <strong>${html(item.characterName)}</strong>
-        <small>${html(item.serverName)}${item.level ? ` · Lv.${html(item.level)}` : ""}</small>
+        <span class="history-avatar">
+          ${item.profileImage ? `<img src="${html(item.profileImage)}" alt="" />` : `<b>${html(raceLabel)}</b>`}
+        </span>
+        <span class="history-info">
+          <strong>${html(item.characterName)}</strong>
+          <small>${html(serverText)}${item.level ? ` · Lv.${html(item.level)}` : ""}</small>
+          <em>戰力 ${html(item.combatPower ? formatKm(item.combatPower) : "-")}</em>
+        </span>
       </button>
       <button type="button" class="favorite-button ${favorited ? "active" : ""}" data-favorite-${type}-index="${index}" title="${favorited ? "取消收藏" : "收藏角色"}" aria-label="${favorited ? "取消收藏" : "收藏角色"}">
         <i data-lucide="star" aria-hidden="true"></i>
@@ -641,6 +861,757 @@ function renderServers() {
   els.serverSelect.value = String(state.serverId);
 }
 
+function setView(view) {
+  state.view = view === "ranking" ? "ranking"
+    : view === "wings" ? "wings"
+      : view === "petInsight" ? "petInsight"
+        : view === "titles" ? "titles"
+          : view === "wardrobe" ? "wardrobe"
+            : view === "characterDetail" ? "characterDetail"
+            : "characters";
+  const isSimulationView = ["wings", "petInsight", "titles", "wardrobe"].includes(state.view);
+  document.querySelectorAll(".character-search-view").forEach((el) => { el.hidden = state.view !== "characters"; });
+  if (els.characterDetailView) els.characterDetailView.hidden = state.view !== "characterDetail";
+  if (els.rankingView) els.rankingView.hidden = state.view !== "ranking";
+  if (els.wingSimulatorView) els.wingSimulatorView.hidden = state.view !== "wings";
+  if (els.petInsightView) els.petInsightView.hidden = state.view !== "petInsight";
+  if (els.wardrobeView) els.wardrobeView.hidden = state.view !== "wardrobe";
+  if (els.titleSimulatorView) els.titleSimulatorView.hidden = state.view !== "titles";
+  els.navCharacter.classList.toggle("active", state.view === "characters" || state.view === "characterDetail");
+  els.navRanking.classList.toggle("active", state.view === "ranking");
+  if (els.navSimulationGroup) els.navSimulationGroup.open = isSimulationView || els.navSimulationGroup.open;
+  if (els.navWings) els.navWings.classList.toggle("active", state.view === "wings");
+  if (els.navPetInsight) els.navPetInsight.classList.toggle("active", state.view === "petInsight");
+  if (els.navWardrobe) els.navWardrobe.classList.toggle("active", state.view === "wardrobe");
+  if (els.navTitles) els.navTitles.classList.toggle("active", state.view === "titles");
+  if (els.viewEyebrow) els.viewEyebrow.textContent = state.view === "ranking" ? "Official Ranking" : isSimulationView ? "Data Simulation" : state.view === "characterDetail" ? "Character Detail" : "Character Search";
+  if (els.viewTitle) {
+    els.viewTitle.textContent = state.view === "ranking" ? "排名"
+      : state.view === "wings" ? "翅膀"
+        : state.view === "petInsight" ? "寵物理解度"
+          : state.view === "titles" ? "稱號"
+            : state.view === "wardrobe" ? "衣櫃"
+              : state.view === "characterDetail" ? "角色詳情"
+              : "角色查詢";
+  }
+  if (els.globalBreadcrumb) {
+    if (state.view === "characterDetail") {
+      els.globalBreadcrumb.hidden = false;
+      els.globalBreadcrumb.innerHTML = `
+        <button type="button" data-back-to-search>角色查詢</button>
+        <span>/</span>
+        <strong>角色詳情</strong>
+      `;
+    } else {
+      els.globalBreadcrumb.hidden = true;
+      els.globalBreadcrumb.innerHTML = "";
+    }
+  }
+  if (location.hash !== viewHash(state.view)) history.replaceState(null, "", viewHash(state.view));
+  setStatus(state.view === "ranking" ? "查看排名" : state.view === "wings" ? "選擇翅膀" : state.view === "petInsight" ? "待補充" : state.view === "titles" ? "選擇稱號" : state.view === "wardrobe" ? "待補充" : state.view === "characterDetail" ? "角色詳情" : "待查詢");
+  if (state.view === "characters") resetSearchPageLayout();
+  if (state.view === "ranking" && !state.ranking.rows.length && !state.ranking.loading) loadRanking();
+  if (state.view === "wings") {
+    loadWingBonusCatalog().then(() => renderWingSimulator());
+  }
+  if (state.view === "petInsight") {
+    renderPetInsightSimulator();
+  }
+  if (state.view === "wardrobe") {
+    renderWardrobeView();
+  }
+  if (state.view === "titles") {
+    loadTitleCatalog().then(() => renderTitleSimulator());
+  }
+}
+
+function renderRankingControls() {
+  if (!els.rankingTabs) return;
+  els.rankingTabs.innerHTML = RANKING_TYPES.map((type) => `
+    <button type="button" class="${state.ranking.activeType === type.key ? "active" : ""}" data-ranking-type="${html(type.key)}">
+      ${html(type.label)}
+    </button>
+  `).join("");
+  state.ranking.race = Number(state.ranking.serverId) >= 2000 ? 2 : 1;
+  const rankingServers = state.ranking.race === 2 ? DEMON_SERVERS : ANGEL_SERVERS;
+  if (!rankingServers.some((server) => Number(server.serverId) === Number(state.ranking.serverId))) {
+    state.ranking.serverId = rankingServers[0] ? rankingServers[0].serverId : state.ranking.serverId;
+  }
+  els.rankingRaceSelect.value = String(state.ranking.race);
+  els.rankingServerSelect.innerHTML = rankingServers.map((server) => `
+    <option value="${server.serverId}">${server.serverName}</option>
+  `).join("");
+  els.rankingServerSelect.value = String(state.ranking.serverId);
+  els.rankingClassSelect.innerHTML = CLASS_OPTIONS.map((job) => `<option value="${html(job.id)}">${html(job.label)}</option>`).join("");
+  els.rankingClassSelect.value = state.ranking.classId;
+  els.rankingKeywordInput.value = state.ranking.keyword;
+}
+
+function wingStatText(stat) {
+  const option = WING_BONUS_EFFECT_OPTIONS[stat.effect] || WING_BONUS_EFFECT_OPTIONS[stat.key];
+  const value = option ? wingBonusValue(stat, option) : toNum(String(stat.value || "").replace("%", ""));
+  const rounded = Math.round(value * 10) / 10;
+  return `${stat.effect || stat.key} ${rounded > 0 ? "+" : ""}${rounded}${option && option.isPct ? "%" : ""}`;
+}
+
+function renderWingStatRow(label, stats, className) {
+  const content = stats.length
+    ? stats.map((stat) => `<span>${html(wingStatText(stat))}</span>`).join("")
+    : `<span>-</span>`;
+  return `
+    <div class="wing-stat-row ${className}">
+      <b>${html(label)}</b>
+      <div>${content}</div>
+    </div>
+  `;
+}
+
+function renderPetInsightSimulator() {
+  if (!els.petInsightContent) return;
+  els.petInsightContent.innerHTML = `
+    <div class="wing-sim-head">
+      <div>
+        <h3>寵物理解度</h3>
+        <p>調整寵物盤模板；PVE 戰鬥面板開啟寵物後，會套用這裡保存的數據。</p>
+      </div>
+    </div>
+    ${renderPetSimulatorEditor()}
+  `;
+}
+
+function wardrobeValue(key) {
+  const category = WARDROBE_CATEGORIES.find((item) => item.key === key);
+  const max = category ? category.max : 0;
+  return clampInt((state.wardrobeConfig || {})[key], 0, max);
+}
+
+function wardrobePartKey(category, part) {
+  return `${category.key}:${part.key}`;
+}
+
+function wardrobePartValue(category, part) {
+  const key = wardrobePartKey(category, part);
+  const saved = (state.wardrobeConfig || {})[key];
+  return clampInt(saved === undefined ? wardrobeValue(category.key) : saved, 0, category.max);
+}
+
+function wardrobeCategoryAverageValue(category) {
+  const parts = category.parts && category.parts.length ? category.parts : [{ key: category.key }];
+  const total = parts.reduce((sum, part) => sum + wardrobePartValue(category, part), 0);
+  return parts.length ? total / parts.length : 0;
+}
+
+function wardrobePercent(category, stat, part = null) {
+  if (!category || !stat) return 0;
+  const value = part ? wardrobePartValue(category, part) : wardrobeCategoryAverageValue(category);
+  return value / category.max * stat.value;
+}
+
+function formatWardrobePct(value) {
+  return `${Math.round(toNum(value) * 10) / 10}%`;
+}
+
+function wardrobeCollectionPercent(category) {
+  const parts = category.parts && category.parts.length ? category.parts : [{ key: category.key }];
+  const ratios = parts.map((part) => {
+    const value = wardrobePartValue(category, part);
+    return category.max ? value / category.max : 0;
+  });
+  const average = ratios.length ? ratios.reduce((sum, value) => sum + value, 0) / ratios.length : 0;
+  return Math.max(0, Math.min(100, average * 100));
+}
+
+function renderWardrobeCollectionRings() {
+  return `
+    <div class="wardrobe-collection">
+      ${WARDROBE_CATEGORIES.map((category) => {
+        const percent = Math.round(wardrobeCollectionPercent(category) * 10) / 10;
+        return `
+          <div class="wardrobe-ring-card">
+            <div class="wardrobe-ring" style="--value:${html(percent)}" data-wardrobe-ring="${html(category.key)}">
+              <span>${html(percent)}%</span>
+            </div>
+            <strong>${html(category.label)}</strong>
+            <small>${html(category.key === "weapon" ? "單項收集度" : "部位平均收集度")}</small>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function wardrobeRuleText(category, stat) {
+  return `${stat.label} × ${formatWardrobePct(wardrobePercent(category, stat))}`;
+}
+
+function renderWardrobePartControl(category, part) {
+  const value = wardrobePartValue(category, part);
+  const percent = category.max ? value / category.max * 100 : 0;
+  return `
+    <div class="wardrobe-part-row">
+      <div class="wardrobe-part-meta">
+        <span>${html(part.label)}</span>
+        <strong class="wardrobe-part-value">${html(value)}/${html(category.max)}P</strong>
+      </div>
+      <input class="wardrobe-range" style="--range-percent:${html(percent)}%" type="range" min="0" max="${html(category.max)}" step="1" value="${html(value)}" data-wardrobe-part-range="${html(wardrobePartKey(category, part))}" />
+    </div>
+  `;
+}
+
+function renderWardrobeBulkControl(category) {
+  if (category.key === "weapon") return "";
+  const value = Math.round(wardrobeCategoryAverageValue(category));
+  const percent = category.max ? value / category.max * 100 : 0;
+  return `
+    <div class="wardrobe-bulk-row">
+      <div class="wardrobe-part-meta">
+        <span>整體收集度</span>
+        <strong class="wardrobe-bulk-value">${html(value)}/${html(category.max)}P</strong>
+      </div>
+      <input class="wardrobe-range wardrobe-bulk-range" style="--range-percent:${html(percent)}%" type="range" min="0" max="${html(category.max)}" step="1" value="${html(value)}" data-wardrobe-bulk-range="${html(category.key)}" />
+    </div>
+  `;
+}
+
+function renderWardrobeSummary() {
+  return `
+    <div class="wardrobe-summary">
+      ${WARDROBE_CATEGORIES.map((category) => {
+        const value = Math.round(wardrobeCategoryAverageValue(category) * 10) / 10;
+        return `
+          <span class="wardrobe-summary-chip wardrobe-summary-${html(category.key)}" data-wardrobe-summary="${html(category.key)}">
+            <b data-wardrobe-summary-average>${html(category.label)}平均 ${html(value)}/${html(category.max)}P</b>
+            <span class="wardrobe-summary-effects" data-wardrobe-summary-effects>
+              ${category.stats.map((stat) => `
+                <i>${html(stat.label)}</i>
+                <strong>× ${html(formatWardrobePct(wardrobePercent(category, stat)))}</strong>
+              `).join("")}
+            </span>
+          </span>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function wardrobeDisplayAverage(category) {
+  return Math.round(wardrobeCategoryAverageValue(category) * 10) / 10;
+}
+
+function wardrobeDisplayPercent(category) {
+  return Math.round(wardrobeCollectionPercent(category) * 10) / 10;
+}
+
+function wardrobeSummaryEffectsHtml(category) {
+  return category.stats.map((stat) => `
+    <i>${html(stat.label)}</i>
+    <strong>× ${html(formatWardrobePct(wardrobePercent(category, stat)))}</strong>
+  `).join("");
+}
+
+function updateWardrobeLiveDisplays(category = null) {
+  const root = els.wardrobeContent || document;
+  const categories = category ? [category] : WARDROBE_CATEGORIES;
+  categories.forEach((item) => {
+    const average = wardrobeDisplayAverage(item);
+    const percent = wardrobeDisplayPercent(item);
+    const ring = root.querySelector(`[data-wardrobe-ring="${item.key}"]`);
+    if (ring) {
+      ring.style.setProperty("--value", percent);
+      const ringValue = ring.querySelector("span");
+      if (ringValue) ringValue.textContent = `${percent}%`;
+    }
+    const cardAverage = root.querySelector(`[data-wardrobe-average="${item.key}"]`);
+    if (cardAverage) cardAverage.textContent = `平均 ${average}P`;
+    const summary = root.querySelector(`[data-wardrobe-summary="${item.key}"]`);
+    if (summary) {
+      const summaryAverage = summary.querySelector("[data-wardrobe-summary-average]");
+      if (summaryAverage) summaryAverage.textContent = `${item.label}平均 ${average}/${item.max}P`;
+      const summaryEffects = summary.querySelector("[data-wardrobe-summary-effects]");
+      if (summaryEffects) summaryEffects.innerHTML = wardrobeSummaryEffectsHtml(item);
+    }
+  });
+}
+
+function renderWardrobeView() {
+  if (!els.wardrobeContent) return;
+  els.wardrobeContent.innerHTML = `
+    <div class="wing-sim-head">
+      <div>
+        <h3>衣櫃</h3>
+        <p>設定三類衣櫃分數；PVE 戰鬥面板開啟衣櫃後，會按裝備基礎能力折算為固定數值。</p>
+      </div>
+      <div class="wing-sim-actions">
+        <button type="button" data-wardrobe-max>滿分</button>
+        <button type="button" data-wardrobe-reset>重置</button>
+      </div>
+    </div>
+    ${renderWardrobeCollectionRings()}
+    ${renderWardrobeSummary()}
+    <div class="wardrobe-grid">
+      ${WARDROBE_CATEGORIES.map((category) => {
+        const average = wardrobeDisplayAverage(category);
+        return `
+          <article class="wardrobe-card">
+            <div class="wardrobe-card-head">
+              <div>
+                <h4>${html(category.label)}</h4>
+                <small>${html(category.source)}</small>
+              </div>
+              <strong class="wardrobe-average-value" data-wardrobe-average="${html(category.key)}">平均 ${html(average)}P</strong>
+            </div>
+            ${renderWardrobeBulkControl(category)}
+            <div class="wardrobe-part-list">
+              ${(category.parts || [{ key: category.key, label: category.label }]).map((part) => renderWardrobePartControl(category, part)).join("")}
+            </div>
+            <div class="wardrobe-effects">
+              ${category.stats.map((stat) => `<span>${html(wardrobeRuleText(category, stat))}</span>`).join("")}
+            </div>
+          </article>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function renderWingSimulator() {
+  if (!els.wingCatalogList) return;
+  const rows = wingCatalogRows();
+  ensureDefaultWingSelection();
+  const selected = selectedWingSet();
+  if (els.wingSelectionCount) els.wingSelectionCount.textContent = `${selected.size} / ${rows.length}`;
+  if (!rows.length) {
+    els.wingCatalogList.innerHTML = loadingMarkup("翅膀資料載入中", "正在讀取本地翅膀資料表。");
+    return;
+  }
+  els.wingCatalogList.innerHTML = rows.map((wing) => {
+    const id = wingId(wing);
+    const checked = selected.has(id);
+    const level = wingLevel(id, wing);
+    const holdingStats = wingHoldingStats(wing, level);
+    const enchantStats = wingEnchantStats(wing, level);
+    const levelOptions = Array.from({ length: (Number(wing.maxLevel) || 10) + 1 }, (_, index) => `
+      <option value="${index}" ${index === level ? "selected" : ""}>+${index}</option>
+    `).join("");
+    return `
+      <article class="wing-card${checked ? " selected" : ""}">
+        <img class="wing-icon" src="${html(wing.icon || "")}" alt="" />
+        <div class="wing-info">
+          <div class="wing-title">
+            <strong>${html(wing.name)}</strong>
+            <select class="wing-level-select" data-wing-level="${html(id)}" aria-label="${html(wing.name)} 強化等級">
+              ${levelOptions}
+            </select>
+          </div>
+        </div>
+        <label class="wing-check">
+          <input type="checkbox" data-wing-select="${html(id)}" ${checked ? "checked" : ""} />
+          <span></span>
+        </label>
+        <div class="wing-stats">
+          ${renderWingStatRow("持有效果", holdingStats, "wing-stat-row--base")}
+          ${renderWingStatRow(`強化效果 +${level}`, enchantStats, "wing-stat-row--enchant")}
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+
+function titleId(row) {
+  return String(row && (row.titleId || row.id || row.name) || "");
+}
+
+async function loadTitleCatalog() {
+  if (!titleCatalogPromise) {
+    titleCatalogPromise = fetch("/data/title-catalog.json", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : { titles: [] }))
+      .catch(() => ({ titles: [] }));
+  }
+  state.titleCatalog = await titleCatalogPromise;
+  ensureDefaultTitleSelection();
+  return state.titleCatalog;
+}
+
+function titleCatalogRows() {
+  return ((state.titleCatalog || {}).titles || []).filter(Boolean);
+}
+
+async function ensureTitleCatalogReady() {
+  if (!state.titleBonusEnabled || state.titleCatalog) return;
+  await loadTitleCatalog();
+}
+
+function selectedTitleSet() {
+  return new Set((state.selectedTitleIds || []).map(String));
+}
+
+function ensureDefaultTitleSelection() {
+  if (state.titleSelectionInitialized) return;
+  state.selectedTitleIds = [];
+  state.titleSelectionInitialized = true;
+  saveSelectedTitleIds();
+}
+
+function titleRaceLabel(race) {
+  return { light: "天族", dark: "魔族", all: "通用" }[String(race || "").toLowerCase()] || "通用";
+}
+
+function titleRaceKey(row) {
+  const race = String((row && row.race) || "all").toLowerCase();
+  return race === "light" || race === "dark" ? race : "all";
+}
+
+function titleRaceFilterLabel(race) {
+  return { all: "全部", light: "天族", dark: "魔族" }[String(race || "all").toLowerCase()] || "全部";
+}
+
+function titleVisibleByRace(row, race) {
+  const filter = String(race || "all").toLowerCase();
+  if (filter === "all") return true;
+  const rowRace = titleRaceKey(row);
+  return rowRace === "all" || rowRace === filter;
+}
+
+function selectedTitleRace(selectedIds) {
+  const ids = selectedIds || selectedTitleSet();
+  const selectedRows = titleCatalogRows().filter((row) => ids.has(titleId(row)));
+  const hasLight = selectedRows.some((row) => titleRaceKey(row) === "light");
+  const hasDark = selectedRows.some((row) => titleRaceKey(row) === "dark");
+  if (hasLight && !hasDark) return "light";
+  if (hasDark && !hasLight) return "dark";
+  return "";
+}
+
+function selectedOppositeTitleRace(selectedIds, nextRace) {
+  const race = String(nextRace || "").toLowerCase();
+  if (race !== "light" && race !== "dark") return "";
+  const opposite = race === "light" ? "dark" : "light";
+  const ids = selectedIds || selectedTitleSet();
+  return titleCatalogRows().some((row) => titleRaceKey(row) === opposite && ids.has(titleId(row))) ? opposite : "";
+}
+
+function clearSelectedTitleRace(ids, race) {
+  const targetRace = String(race || "").toLowerCase();
+  if (targetRace !== "light" && targetRace !== "dark") return ids;
+  titleCatalogRows().forEach((row) => {
+    if (titleRaceKey(row) === targetRace) ids.delete(titleId(row));
+  });
+  return ids;
+}
+
+function confirmTitleRaceSwitch(nextRace, currentRace) {
+  if (!nextRace || !currentRace || nextRace === currentRace) return true;
+  return window.confirm(`當前已選中${titleRaceLabel(currentRace)}稱號，勾選${titleRaceLabel(nextRace)}稱號後會清空${titleRaceLabel(currentRace)}目前勾選內容。是否繼續？`);
+}
+
+function titleCategoryLabelLocal(category) {
+  const key = String(category || "").toLowerCase();
+  return { attack: "攻擊稱號", defense: "防禦稱號", utility: "其他稱號", special: "特殊稱號", "": "特殊稱號" }[key] || "特殊稱號";
+}
+
+function titleCategoryIcon(category) {
+  const key = String(category || "").toLowerCase();
+  if (key === "attack") return "https://assets.playnccdn.com/static-aion2/characters/img/info/title_icon_attack.png";
+  if (key === "defense") return "https://assets.playnccdn.com/static-aion2/characters/img/info/title_icon_defense.png";
+  return "https://assets.playnccdn.com/static-aion2/characters/img/info/title_icon_etc.png";
+}
+
+function titleIconUrl(icon) {
+  const src = String(icon || "").trim();
+  if (!src) return "";
+  if (/^https?:\/\//i.test(src)) return src;
+  if (src.startsWith("assets/")) return `https://assets.playnccdn.com/static-aion2-gamedata/resources/${src.split("/").pop()}`;
+  return src;
+}
+
+function optionFromDefinition(def, bucket) {
+  if (!def) return null;
+  return { label: def.label, bucket, statKey: def.key, isPct: !!def.isPct, scale: def.isPct ? 0.01 : 1 };
+}
+
+function titleOptionForKey(key) {
+  const normalized = String(key || "").toLowerCase();
+  const label = TITLE_STAT_KEY_MAP[normalized];
+  if (label && WING_BONUS_EFFECT_OPTIONS[label]) return WING_BONUS_EFFECT_OPTIONS[label];
+  const byLabel = (defs, bucket) => optionFromDefinition(defs.find((def) => def.label === label), bucket);
+  return byLabel(PRIMARY_STAT_DEFS, "primaryStats")
+    || byLabel(PCT_STAT_DEFS, "pctStats")
+    || byLabel(BASIC_COMBAT_STAT_DEFS, "basicCombatStats")
+    || byLabel(BASIC_COMBAT_AMP_STAT_DEFS, "basicCombatAmpStats")
+    || byLabel(ENV_COMBAT_AMP_STAT_DEFS, "envCombatAmpStats")
+    || byLabel(ABNORMAL_STAT_DEFS, "abnormalStats")
+    || byLabel(OTHER_STAT_DEFS, "otherStats")
+    || null;
+}
+
+function titleStatRows(stats, group) {
+  return Object.entries(stats || {})
+    .filter(([, value]) => Number(value) !== 0)
+    .map(([key, value]) => ({ key, effect: (titleOptionForKey(key) || {}).label || key, value: Number(value), group }));
+}
+
+function titleStatText(stat) {
+  const option = titleOptionForKey(stat.key);
+  const value = option ? wingBonusValue(stat, option) : toNum(stat.value);
+  const rounded = Math.round(value * 10) / 10;
+  return `${stat.effect || stat.key} ${rounded > 0 ? "+" : ""}${rounded}${option && option.isPct ? "%" : ""}`;
+}
+
+function normalizeTitleSearchText(value) {
+  return toTraditional(value).toLowerCase().replace(/\s+/g, "");
+}
+
+function titleMatchesSearch(row, keyword) {
+  const query = normalizeTitleSearchText(keyword);
+  if (!query) return true;
+  const statText = [
+    ...titleStatRows(row.holdingStats, "holding").map(titleStatText),
+    ...titleStatRows(row.equipStats, "equip").map(titleStatText),
+  ].join(" ");
+  const haystack = normalizeTitleSearchText([
+    row.name,
+    row.description,
+    titleRaceLabel(row.race),
+    titleCategoryLabelLocal(row.equipCategory),
+    statText,
+  ].join(" "));
+  return haystack.includes(query);
+}
+
+function sameTitleEffectKey(row) {
+  return [
+    row.name || titleId(row),
+    row.equipCategory || "",
+    JSON.stringify(row.holdingStats || {}),
+    JSON.stringify(row.equipStats || {}),
+  ].join("|");
+}
+
+function renderTitleStatRow(label, stats, className) {
+  const content = stats.length ? stats.map((stat) => `<span>${html(titleStatText(stat))}</span>`).join("") : `<span>-</span>`;
+  return `
+    <div class="wing-stat-row ${className}">
+      <b>${html(label)}</b>
+      <div>${content}</div>
+    </div>
+  `;
+}
+
+function renderTitleSimulator() {
+  if (!els.titleCatalogList) return;
+  const rows = titleCatalogRows();
+  const selected = selectedTitleSet();
+  if (els.titleSelectionCount) els.titleSelectionCount.textContent = `${selected.size} / ${rows.length}`;
+  if (!rows.length) {
+    els.titleCatalogList.innerHTML = loadingMarkup("稱號資料載入中", "正在讀取本地稱號資料表。");
+    return;
+  }
+  const activeRace = ["all", "light", "dark"].includes(state.activeTitleRace) ? state.activeTitleRace : "all";
+  state.activeTitleRace = activeRace;
+  const keyword = String(state.titleSearchKeyword || "");
+  const searchedRows = rows.filter((row) => titleMatchesSearch(row, keyword));
+  const visibleRows = searchedRows.filter((row) => titleVisibleByRace(row, activeRace));
+  const groups = ["attack", "defense", "utility", "special"].map((category) => ({
+    category,
+    rows: visibleRows.filter((row) => String(row.equipCategory || "special").toLowerCase() === category),
+  }));
+  const activeCategory = groups.some((group) => group.category === state.activeTitleCategory)
+    ? state.activeTitleCategory
+    : "attack";
+  state.activeTitleCategory = activeCategory;
+  const activeGroup = groups.find((group) => group.category === activeCategory) || groups[0];
+  els.titleCatalogList.innerHTML = `
+    <div class="title-search-bar">
+      <label>
+        <span>搜尋稱號</span>
+        <input type="search" value="${html(keyword)}" placeholder="輸入稱號、效果或描述" data-title-search />
+      </label>
+      ${keyword ? `<button type="button" data-title-search-clear>清空</button>` : ""}
+    </div>
+    <div class="title-race-filter">
+      ${["all", "light", "dark"].map((race) => `
+        <button type="button" class="${race === activeRace ? "active" : ""}" data-title-race="${html(race)}">
+          <span>${html(titleRaceFilterLabel(race))}</span>
+          <b>${searchedRows.filter((row) => titleVisibleByRace(row, race)).length}</b>
+        </button>
+      `).join("")}
+    </div>
+    <div class="title-category-tabs">
+      ${groups.map((group) => `
+        <button type="button" class="${group.category === activeCategory ? "active" : ""}" data-title-category="${html(group.category)}">
+          <img src="${html(titleCategoryIcon(group.category))}" alt="" />
+          <span>${html(titleCategoryLabelLocal(group.category))}</span>
+          <b>${group.rows.length}</b>
+        </button>
+      `).join("")}
+    </div>
+    <section class="title-group">
+      <div class="title-group-head">
+        <h4>${html(titleCategoryLabelLocal(activeGroup.category))}</h4>
+        <span>${activeGroup.rows.length} 個</span>
+      </div>
+      <div class="title-card-grid">
+        ${activeGroup.rows.map((row) => {
+            const id = titleId(row);
+            const checked = selected.has(id);
+            const holdingStats = titleStatRows(row.holdingStats, "holding");
+            const equipStats = titleStatRows(row.equipStats, "equip");
+            return `
+              <article class="title-card${checked ? " selected" : ""}">
+                <label class="wing-check title-check">
+                  <input type="checkbox" data-title-select="${html(id)}" ${checked ? "checked" : ""} />
+                  <span></span>
+              </label>
+              <div class="title-card-main">
+                <div class="title-card-name">
+                    <strong class="grade-${html(row.grade || "")}">${html(row.name || "稱號")}</strong>
+                    <small>${html(titleRaceLabel(row.race))} · ${html(titleCategoryLabelLocal(row.equipCategory))}</small>
+                  </div>
+                </div>
+                <div class="wing-stats title-stats">
+                  ${renderTitleStatRow("持有效果", holdingStats, "wing-stat-row--base")}
+                  ${renderTitleStatRow("裝備效果", equipStats, "wing-stat-row--enchant")}
+                </div>
+              </article>
+            `;
+          }).join("")}
+      </div>
+    </section>
+  `;
+  if (state.titleSearchFocused) {
+    const search = els.titleCatalogList.querySelector("[data-title-search]");
+    if (search) {
+      search.focus();
+      const cursor = Math.min(search.value.length, state.titleSearchCursor ?? search.value.length);
+      try { search.setSelectionRange(cursor, cursor); } catch (_) {}
+    }
+  }
+}
+
+function addTitleValue(analysis, row) {
+  titleStatRows(row.holdingStats, "holding").forEach((stat) => {
+    const option = titleOptionForKey(stat.key);
+    if (!option) return;
+    addSimulatedValue(analysis, option, wingBonusValue(stat, option), 1, `稱號模擬 · ${row.name}`, `持有效果 · ${option.label}`);
+  });
+}
+
+function activeTitleRows() {
+  const selected = selectedTitleSet();
+  const deduped = new Map();
+  titleCatalogRows().filter((row) => selected.has(titleId(row))).forEach((row) => {
+    const key = sameTitleEffectKey(row);
+    if (!deduped.has(key)) deduped.set(key, row);
+  });
+  return Array.from(deduped.values());
+}
+
+function activeSimulationHref() {
+  if (state.wardrobeBonusEnabled) return "#wardrobe";
+  if (state.petSimulator.enabled) return "#pet-insight";
+  if (state.titleBonusEnabled) return "#titles";
+  return "#wings";
+}
+function rankingTypeDef() {
+  return RANKING_TYPES.find((type) => type.key === state.ranking.activeType) || RANKING_TYPES[0];
+}
+
+function normalizeRankingRows(data) {
+  const source = data && (data.rankingList || data.list || data.result || data.characters || []);
+  return Array.isArray(source) ? source.map((row, index) => {
+    const record = row || {};
+    const extra = record.extraDataMap || {};
+    return {
+      rank: record.rank ?? record.ranking ?? record.rankNo ?? index + 1,
+      previousRank: record.previousRank ?? record.prevRank ?? record.lastSeasonRank ?? record.beforeRank ?? "-",
+      name: stripHtml(record.characterName || record.name || record.character || ""),
+      guild: stripHtml(record.guildName || record.legionName || record.guild || record.legion || ""),
+      className: stripHtml(record.className || record.jobName || record.class || record.job || ""),
+      score: record.rankingPoint ?? record.rankPoint ?? record.score ?? record.point ?? record.points ?? "",
+      grade: record.gradeName || record.rankGradeName || record.grade || "",
+      kill: record.killCount ?? extra.killCount ?? record.kills ?? record.k ?? "",
+      death: record.deathCount ?? extra.deathCount ?? record.deaths ?? record.d ?? "",
+      assist: record.assistCount ?? extra.assistCount ?? record.assists ?? record.a ?? "",
+      characterId: record.characterId || record.encryptedCharacterId || "",
+      serverId: record.serverId || state.ranking.serverId,
+      raw: record,
+    };
+  }) : [];
+}
+
+function formatRankNumber(value) {
+  if (value === "" || value === null || value === undefined) return "-";
+  const num = Number(String(value).replaceAll(",", ""));
+  return Number.isFinite(num) ? num.toLocaleString("en-US") : String(value);
+}
+
+function renderRankingRows() {
+  if (state.ranking.loading) {
+    els.rankingTableBody.innerHTML = `<tr><td colspan="7">${loadingMarkup("載入排名", "正在讀取官方排行資料。")}</td></tr>`;
+    els.rankingStatus.textContent = "載入中...";
+    return;
+  }
+  if (state.ranking.error) {
+    els.rankingTableBody.innerHTML = `<tr><td colspan="7"><div class="error-box">排名載入失敗：${html(state.ranking.error)}</div></td></tr>`;
+    els.rankingStatus.textContent = "載入失敗";
+    return;
+  }
+  if (!state.ranking.rows.length) {
+    els.rankingTableBody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-mark">◇</div><p>暫無排名資料</p></div></td></tr>`;
+    els.rankingStatus.textContent = "0 件";
+    return;
+  }
+  els.rankingStatus.textContent = `${state.ranking.rows.length} 件`;
+  els.rankingTableBody.innerHTML = state.ranking.rows.map((row) => `
+    <tr>
+      <td><strong class="rank-num">${html(row.rank)}</strong></td>
+      <td>
+        <button type="button" class="ranking-char-link" data-ranking-character-id="${html(row.characterId)}" data-ranking-server-id="${html(row.serverId)}" ${row.characterId ? "" : "disabled"}>
+          <strong>${html(row.name || "-")}</strong>
+          ${row.guild ? `<small>${html(row.guild)}</small>` : ""}
+        </button>
+      </td>
+      <td>${html(row.className || "-")}</td>
+      <td><strong>${html(formatRankNumber(row.score))}</strong></td>
+      <td class="ranking-record">
+        <span>K ${html(formatRankNumber(row.kill))}</span>
+        <span>D ${html(formatRankNumber(row.death))}</span>
+        <span>A ${html(formatRankNumber(row.assist))}</span>
+      </td>
+      <td>${html(row.grade || "-")}</td>
+      <td>${html(row.previousRank || "-")}</td>
+    </tr>
+  `).join("");
+}
+
+async function loadRanking() {
+  state.ranking.loading = true;
+  state.ranking.error = "";
+  renderRankingControls();
+  renderRankingRows();
+  const type = rankingTypeDef();
+  const params = new URLSearchParams({
+    rankingContentsType: String(type.contentsType),
+    rankingType: state.ranking.classId === "0" ? "0" : state.ranking.classId,
+    serverId: String(state.ranking.serverId),
+    page: "1",
+    size: "100",
+  });
+  if (state.ranking.keyword.trim()) params.set("searchCharacterName", state.ranking.keyword.trim());
+  try {
+    const data = await getJson(`/api/ranking?${params.toString()}`, 30000);
+    state.ranking.rows = normalizeRankingRows(data);
+    state.ranking.season = data.season || null;
+  } catch (error) {
+    state.ranking.rows = [];
+    state.ranking.error = error.message;
+  } finally {
+    state.ranking.loading = false;
+    renderRankingRows();
+  }
+}
+
 function cleanChar(raw) {
   let characterId = stripHtml(raw.characterId || raw.id || "");
   try { characterId = decodeURIComponent(characterId); } catch (_) {}
@@ -652,6 +1623,8 @@ function cleanChar(raw) {
     className: stripHtml(raw.className || raw.class || raw.classText || ""),
     race: raw.race || raw.raceId || 0,
     level: raw.level || raw.characterLevel || "",
+    profileImage: raw.profileImage || raw.characterImage || raw.image || raw.avatar || "",
+    combatPower: raw.combatPower || raw.power || "",
   };
 }
 
@@ -686,6 +1659,85 @@ async function getJson(path, timeoutMs = 25000) {
   return data;
 }
 
+function profileImageFromInfo(info) {
+  const profile = info && (info.profile || info.character || info.characterInfo || info);
+  if (!profile) return "";
+  return profile.profileImage || profile.characterImage || profile.image || profile.avatar || profile.thumbnailUrl || "";
+}
+
+async function enrichSearchResultImages(searchToken) {
+  const missing = state.results
+    .map((char, index) => ({ char, index }))
+    .filter(({ char }) => char.characterId && char.serverId && !char.profileImage)
+    .slice(0, 12);
+  if (!missing.length) return;
+  let changed = false;
+  await mapLimit(missing, 4, async ({ char, index }) => {
+    const params = new URLSearchParams({
+      characterId: char.characterId,
+      serverId: String(char.serverId),
+    });
+    try {
+      const info = await getJson(`/api/info?${params.toString()}`, 20000);
+      const profile = (info && info.profile) || {};
+      const profileImage = profileImageFromInfo(info);
+      if (!profileImage || searchToken !== state.searchToken || !state.results[index]) return;
+      state.results[index] = {
+        ...state.results[index],
+        profileImage,
+        combatPower: state.results[index].combatPower || profile.combatPower || "",
+      };
+      changed = true;
+    } catch (_) {}
+  });
+  if (changed && searchToken === state.searchToken) renderResults();
+}
+
+function trackCharacterQuery(char, detail, analysis, querySource = "detail") {
+  if (!char || !char.characterId || !detail) return;
+  const profile = detail.profile || {};
+  const payload = {
+    characterId: char.characterId,
+    characterName: profile.characterName || char.characterName,
+    serverId: profile.serverId || char.serverId,
+    serverName: profile.serverName || char.serverName,
+    race: profile.raceId || char.race,
+    className: profile.className || char.className,
+    level: profile.characterLevel || char.level,
+    combatPower: profile.combatPower || char.combatPower,
+    itemLevel: detail.itemLevel,
+    snapshotType: state.snapshotTab || detectSnapshotType(detail),
+    querySource,
+    queryKeyword: els.keywordInput ? els.keywordInput.value.trim() : "",
+    profile,
+    equipment: {
+      items: detail.detailEquipItems || [],
+      sets: detail.detailSetBonuses || [],
+      petwing: detail.petwing || {},
+    },
+    analysis,
+    detail: {
+      profile,
+      itemLevel: detail.itemLevel,
+      detailDataComplete: detail.detailDataComplete,
+      detailStatBasic: detail.detailStatBasic || [],
+      detailStatSecondary: detail.detailStatSecondary || [],
+      detailSkillActive: detail.detailSkillActive || [],
+      detailSkillPassive: detail.detailSkillPassive || [],
+      detailSkillStigma: detail.detailSkillStigma || [],
+      detailDaevanion: detail.detailDaevanion || [],
+      title: (detail.info || {}).title || null,
+      ranking: (detail.info || {}).ranking || null,
+    },
+  };
+  fetch("/api/analytics/character-query", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    keepalive: true,
+  }).catch(() => {});
+}
+
 async function getJsonRetry(path, timeoutMs = 25000, attempts = 3) {
   let lastError = null;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
@@ -711,6 +1763,9 @@ async function searchCharacters() {
   }
 
   state.loading = true;
+  state.hasSearched = true;
+  state.searchToken += 1;
+  const searchToken = state.searchToken;
   setStatus("查詢中...");
   els.searchButton.disabled = true;
   els.resultsList.innerHTML = loadingMarkup("查詢中", "正在匹配角色與伺服器資料。");
@@ -736,6 +1791,7 @@ async function searchCharacters() {
     state.results = raw.map(cleanChar);
     renderResults();
     setStatus(state.results.length ? `找到 ${state.results.length} 筆` : "未找到結果");
+    enrichSearchResultImages(searchToken);
   } catch (error) {
     els.resultsList.innerHTML = `<div class="error-box">查詢失敗：${html(error.message)}</div>`;
     els.resultCount.textContent = "0 筆";
@@ -748,31 +1804,38 @@ async function searchCharacters() {
 
 function renderResults() {
   els.resultCount.textContent = `${state.results.length} 筆`;
+  if (els.resultsPanelHead) els.resultsPanelHead.hidden = !state.hasSearched;
+  if (!state.hasSearched) {
+    els.resultsList.innerHTML = "";
+    return;
+  }
   if (!state.results.length) {
     els.resultsList.innerHTML = `<div class="empty-state"><div class="empty-mark">✦</div><p>未找到匹配角色</p></div>`;
     return;
   }
 
-  els.resultsList.innerHTML = state.results.map((char, index) => `
-    <button class="result-card race-${char.race} ${state.selectedId === char.characterId ? "active" : ""}"
-      type="button" data-index="${index}">
-      <span class="avatar-dot">${char.race === 1 ? "天" : char.race === 2 ? "魔" : "?"}</span>
-      <span>
-        <span class="char-name">${html(char.characterName)}</span>
-        <span class="char-meta">
-          <span>${html(char.serverName)}</span>
-          <span>·</span>
-          <span>${html(char.className)}</span>
-          <span>Lv.${html(char.level)}</span>
-        </span>
-      </span>
-      <span class="favorite-button result-favorite ${isFavoriteCharacter(char.characterId) ? "active" : ""}" data-result-favorite-index="${index}" title="${isFavoriteCharacter(char.characterId) ? "取消收藏" : "收藏角色"}" aria-label="${isFavoriteCharacter(char.characterId) ? "取消收藏" : "收藏角色"}">
-        <i data-lucide="star" aria-hidden="true"></i>
-      </span>
-      <span class="chevron">›</span>
-    </button>
-  `).join("");
+  els.resultsList.innerHTML = `
+    <div class="history-list result-card-list">
+      ${state.results.map((char, index) => renderMiniCharacterCard(char, index, "result")).join("")}
+    </div>
+  `;
   refreshIcons();
+}
+
+function clearSearchResults() {
+  state.results = [];
+  state.hasSearched = false;
+  state.searchToken += 1;
+  state.race = 0;
+  state.serverId = 0;
+  state.selectedId = "";
+  els.keywordInput.value = "";
+  els.raceTabs.querySelectorAll("button").forEach((button) => {
+    button.classList.toggle("active", Number(button.dataset.race) === 0);
+  });
+  renderServers();
+  renderResults();
+  setStatus("待查詢");
 }
 
 function detectSnapshotType(detail) {
@@ -910,6 +1973,179 @@ function saveWingBonusEnabled() {
   try { localStorage.setItem(WING_BONUS_KEY, state.wingBonusEnabled ? "1" : "0"); } catch (_) {}
 }
 
+function loadSelectedWingIds() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(WING_SELECTION_KEY) || "null");
+    if (!saved || !Array.isArray(saved.ids)) return [];
+    return saved.ids.map(String).filter(Boolean);
+  } catch (_) {
+    return [];
+  }
+}
+
+function hasSavedWingSelection() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(WING_SELECTION_KEY) || "null");
+    return !!saved && Array.isArray(saved.ids);
+  } catch (_) {
+    return false;
+  }
+}
+
+function saveSelectedWingIds() {
+  try {
+    localStorage.setItem(WING_SELECTION_KEY, JSON.stringify({ ids: state.selectedWingIds.map(String) }));
+  } catch (_) {}
+}
+
+function loadWingLevels() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(WING_LEVEL_KEY) || "null");
+    if (!saved || typeof saved !== "object") return {};
+    return Object.fromEntries(Object.entries(saved).map(([key, value]) => [String(key), clampInt(value, 0, 10)]));
+  } catch (_) {
+    return {};
+  }
+}
+
+function saveWingLevels() {
+  try {
+    localStorage.setItem(WING_LEVEL_KEY, JSON.stringify(state.wingLevels || {}));
+  } catch (_) {}
+}
+
+function loadWardrobeBonusEnabled() {
+  try { return localStorage.getItem(WARDROBE_BONUS_KEY) === "1"; } catch (_) { return false; }
+}
+
+function saveWardrobeBonusEnabled() {
+  try { localStorage.setItem(WARDROBE_BONUS_KEY, state.wardrobeBonusEnabled ? "1" : "0"); } catch (_) {}
+}
+
+function defaultWardrobeConfig() {
+  const entries = [];
+  WARDROBE_CATEGORIES.forEach((category) => {
+    entries.push([category.key, 0]);
+    (category.parts || []).forEach((part) => entries.push([`${category.key}:${part.key}`, 0]));
+  });
+  return Object.fromEntries(entries);
+}
+
+function normalizeWardrobeConfig(value) {
+  const source = value && typeof value === "object" ? value : {};
+  const legacyAverage = (keys) => {
+    const values = keys
+      .map((key) => source[key])
+      .filter((item) => item !== undefined && item !== null && item !== "");
+    if (!values.length) return undefined;
+    return values.reduce((sum, item) => sum + toNum(item), 0) / values.length;
+  };
+  const entries = [];
+  WARDROBE_CATEGORIES.forEach((category) => {
+    const categoryValue = clampInt(source[category.key], 0, category.max);
+    entries.push([category.key, categoryValue]);
+    (category.parts || []).forEach((part) => {
+      const key = `${category.key}:${part.key}`;
+      const legacyValue = category.key === "accessory" && part.key === "Earring"
+        ? legacyAverage(["accessory:Earring1", "accessory:Earring2"])
+        : category.key === "accessory" && part.key === "Ring"
+          ? legacyAverage(["accessory:Ring1", "accessory:Ring2"])
+          : undefined;
+      const value = source[key] === undefined ? (legacyValue === undefined ? categoryValue : legacyValue) : source[key];
+      entries.push([key, clampInt(value, 0, category.max)]);
+    });
+  });
+  return Object.fromEntries(entries);
+}
+
+function loadWardrobeConfig() {
+  try {
+    return normalizeWardrobeConfig(JSON.parse(localStorage.getItem(WARDROBE_CONFIG_KEY) || "null"));
+  } catch (_) {
+    return defaultWardrobeConfig();
+  }
+}
+
+function saveWardrobeConfig() {
+  try { localStorage.setItem(WARDROBE_CONFIG_KEY, JSON.stringify(normalizeWardrobeConfig(state.wardrobeConfig))); } catch (_) {}
+}
+
+function cloneWardrobeConfig(config = state.wardrobeConfig) {
+  return normalizeWardrobeConfig({ ...(config || {}) });
+}
+
+function wardrobeConfigSignature(config) {
+  return JSON.stringify(cloneWardrobeConfig(config));
+}
+
+function pushWardrobeUndoSnapshot(config = state.wardrobeConfig) {
+  const snapshot = cloneWardrobeConfig(config);
+  const signature = wardrobeConfigSignature(snapshot);
+  const last = state.wardrobeUndoStack[state.wardrobeUndoStack.length - 1];
+  if (last && wardrobeConfigSignature(last) === signature) return;
+  state.wardrobeUndoStack.push(snapshot);
+  if (state.wardrobeUndoStack.length > 30) state.wardrobeUndoStack.shift();
+}
+
+function beginWardrobeUndoSnapshot() {
+  if (!state.wardrobeActiveUndo) state.wardrobeActiveUndo = cloneWardrobeConfig();
+}
+
+function commitWardrobeUndoSnapshot() {
+  if (!state.wardrobeActiveUndo) return;
+  const before = state.wardrobeActiveUndo;
+  state.wardrobeActiveUndo = null;
+  if (wardrobeConfigSignature(before) !== wardrobeConfigSignature(state.wardrobeConfig)) {
+    pushWardrobeUndoSnapshot(before);
+  }
+}
+
+function undoWardrobeConfig() {
+  let snapshot = state.wardrobeActiveUndo;
+  if (snapshot && wardrobeConfigSignature(snapshot) === wardrobeConfigSignature(state.wardrobeConfig)) {
+    state.wardrobeActiveUndo = null;
+    snapshot = null;
+  }
+  if (snapshot) state.wardrobeActiveUndo = null;
+  else snapshot = state.wardrobeUndoStack.pop();
+  if (!snapshot) return false;
+  state.wardrobeConfig = cloneWardrobeConfig(snapshot);
+  saveWardrobeConfig();
+  renderWardrobeView();
+  if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+  return true;
+}
+
+function loadTitleBonusEnabled() {
+  try { return localStorage.getItem(TITLE_BONUS_KEY) === "1"; } catch (_) { return false; }
+}
+
+function saveTitleBonusEnabled() {
+  try { localStorage.setItem(TITLE_BONUS_KEY, state.titleBonusEnabled ? "1" : "0"); } catch (_) {}
+}
+
+function loadSelectedTitleIds() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(TITLE_SELECTION_KEY) || "null");
+    if (!saved || !Array.isArray(saved.ids)) return [];
+    return saved.ids.map(String).filter(Boolean);
+  } catch (_) {
+    return [];
+  }
+}
+
+function hasSavedTitleSelection() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(TITLE_SELECTION_KEY) || "null");
+    return !!saved && Array.isArray(saved.ids);
+  } catch (_) {
+    return false;
+  }
+}
+
+function saveSelectedTitleIds() {
+  try { localStorage.setItem(TITLE_SELECTION_KEY, JSON.stringify({ ids: state.selectedTitleIds.map(String) })); } catch (_) {}
+}
 let petSyncTimer = null;
 function syncPetSimulatorConfig() {
   clearTimeout(petSyncTimer);
@@ -946,6 +2182,7 @@ async function loadPetSimulatorFromCloud() {
     state.petSimulator = next;
     try { localStorage.setItem(PET_SIM_KEY, JSON.stringify(state.petSimulator)); } catch (_) {}
     if (state.selectedDetail && state.selectedAttack) renderDetail(currentViewDetail(), currentViewAnalysis());
+    if (state.view === "petInsight") renderPetInsightSimulator();
   } catch (_) {}
 }
 
@@ -1055,20 +2292,94 @@ function wingBonusValue(row, option) {
 }
 
 function addWingBonusValue(analysis, row) {
-  const option = WING_BONUS_EFFECT_OPTIONS[row.effect];
-  if (!option) return;
-  const value = wingBonusValue(row, option);
-  addSimulatedValue(
-    analysis,
-    option,
-    value,
-    1,
-    `翅膀滿增幅 · ${row.name}`,
-    `滿級增幅 · ${option.label}${option.note ? `（${option.note}）` : ""}`
-  );
+  const level = wingLevel(wingId(row), row);
+  const statRows = wingStatsForLevel(row);
+  statRows.forEach((stat) => {
+    const option = WING_BONUS_EFFECT_OPTIONS[stat.effect] || WING_BONUS_EFFECT_OPTIONS[stat.key];
+    if (!option) return;
+    const value = wingBonusValue(stat, option);
+    const groupLabel = stat.group === "holding" ? "持有效果" : `強化效果 +${level}`;
+    addSimulatedValue(
+      analysis,
+      option,
+      value,
+      1,
+      `翅膀模擬 · ${row.name}`,
+      `${groupLabel} · ${option.label}${option.note ? `（${option.note}）` : ""}`
+    );
+  });
 }
 
-function analysisWithSimulators(analysis) {
+function addWardrobeValues(analysis, detail = currentViewDetail()) {
+  const items = (detail && detail.detailEquipItems) || [];
+  const wardrobeSlotLabel = (item) => ({
+    MainHand: "主武器",
+    Helmet: "頭盔",
+    Shoulder: "肩甲",
+    Torso: "上衣",
+    Pants: "下衣",
+    Gloves: "手套",
+    Boots: "鞋子",
+    Cape: "披風",
+    Necklace: "項鍊",
+    Earring1: "耳環1",
+    Earring2: "耳環2",
+    Ring1: "戒指1",
+    Ring2: "戒指2",
+  })[item.slotPosName] || slotLabel(item) || item.name || "部位";
+  const baseStatValue = (stat, statKey) => {
+    const id = stat && stat.id;
+    if (statKey === "attack" && id !== "WeaponFixingDamage") return 0;
+    if (statKey === "defense" && !["Defense", "ArmorDefense"].includes(id)) return 0;
+    if (statKey === "attack") {
+      const minValue = toNum(stat.minValue);
+      const maxValue = toNum(stat.value);
+      return minValue > 0 ? (minValue + maxValue) / 2 : maxValue;
+    }
+    return toNum(stat.value);
+  };
+  const itemBaseTotal = (item, statKey) => (item.mainStatsNormal || [])
+    .reduce((sum, stat) => sum + baseStatValue(stat, statKey), 0);
+  const categoryItems = (categoryKey) => {
+    if (categoryKey === "weapon") {
+      const item = items.find((equip) => equip.slotPosName === "MainHand");
+      return item ? [item] : [];
+    }
+    const slots = categoryKey === "armor"
+      ? ["Helmet", "Shoulder", "Torso", "Pants", "Gloves", "Boots", "Cape"]
+      : ["Necklace", "Earring1", "Earring2", "Ring1", "Ring2"];
+    return items.filter((item) => slots.includes(item.slotPosName));
+  };
+  const categoryPartForItem = (category, item) => {
+    if (category.key === "accessory") {
+      if (["Earring1", "Earring2"].includes(item.slotPosName)) return category.parts.find((part) => part.key === "Earring");
+      if (["Ring1", "Ring2"].includes(item.slotPosName)) return category.parts.find((part) => part.key === "Ring");
+    }
+    return (category.parts || []).find((entry) => entry.key === item.slotPosName) || { key: item.slotPosName, label: wardrobeSlotLabel(item) };
+  };
+  WARDROBE_CATEGORIES.forEach((category) => {
+    const parts = category.parts || [{ key: category.key, label: category.label }];
+    if (!parts.some((part) => wardrobePartValue(category, part) > 0)) return;
+    category.stats.forEach((stat) => {
+      categoryItems(category.key).forEach((item) => {
+        const part = categoryPartForItem(category, item);
+        const base = itemBaseTotal(item, stat.statKey);
+        const percent = wardrobePercent(category, stat, part);
+        const value = base * (percent / 100);
+        addSimulatedValue(
+          analysis,
+          { bucket: "primaryStats", statKey: stat.statKey, isPct: false },
+          value,
+          1,
+          `衣櫃模擬 · ${category.label} · ${wardrobeSlotLabel(item)}`,
+          `${wardrobePartValue(category, part)}/${category.max}P · ${stat.label} ${Math.round(base * 10) / 10} × ${formatWardrobePct(percent)}`
+        );
+      });
+    });
+  });
+}
+
+function analysisWithSimulators(analysis, detail = currentViewDetail()) {
   const next = cloneAnalysis(analysis);
   if (!next.primaryStats) return next;
   if (state.petSimulator.enabled) {
@@ -1080,12 +2391,19 @@ function analysisWithSimulators(analysis) {
     });
   }
   if (state.wingBonusEnabled) {
-    ((state.wingBonusCatalog || {}).wings || []).forEach((row) => addWingBonusValue(next, row));
+    activeWingRows().forEach((row) => addWingBonusValue(next, row));
+  }
+  if (state.titleBonusEnabled) {
+    activeTitleRows().forEach((row) => addTitleValue(next, row));
+  }
+  if (state.wardrobeBonusEnabled) {
+    addWardrobeValues(next, detail);
   }
   return next;
 }
 
-async function loadDetail(char) {
+async function loadDetail(char, querySource = "detail") {
+  setView("characterDetail");
   state.selectedChar = char;
   const SNAP_TTL_MS = 30 * 60 * 1000;
   const cached = loadSnapshots(char.characterId);
@@ -1099,9 +2417,11 @@ async function loadDetail(char) {
     state.snapshotTab = isUsableSnapshot(cached.pvp, SNAP_TTL_MS) ? "pvp" : "pve";
     state.selectedDetail = (cached[state.snapshotTab] || {}).detail || null;
     state.selectedAttack = (cached[state.snapshotTab] || {}).analysis || null;
+    await ensureTitleCatalogReady();
     renderResults();
     renderDetail(currentViewDetail(), currentViewAnalysis());
     if (window.innerWidth > 980) setResultsCollapsed(true);
+    trackCharacterQuery(char, currentViewDetail(), currentViewAnalysis(), querySource);
     setStatus("已顯示快照");
     return;
   }
@@ -1157,8 +2477,10 @@ async function loadDetail(char) {
     const snapType = detectSnapshotType(detail);
     state.snapshots = detail.detailDataComplete ? saveSnapshot(char.characterId, snapType, detail, attributes) : loadSnapshots(char.characterId);
     state.snapshotTab = snapType;
+    await ensureTitleCatalogReady();
     renderDetail(currentViewDetail(), currentViewAnalysis());
     if (window.innerWidth > 980) setResultsCollapsed(true);
+    trackCharacterQuery(char, detail, attributes, querySource);
     pushHistory({
       ...char,
       characterName: detail.profile.characterName || char.characterName,
@@ -1167,6 +2489,8 @@ async function loadDetail(char) {
       level: detail.profile.characterLevel || char.level,
       serverName: detail.profile.serverName || char.serverName,
       serverId: detail.profile.serverId || char.serverId,
+      profileImage: detail.profile.profileImage || char.profileImage,
+      combatPower: detail.profile.combatPower || char.combatPower,
     });
     setStatus(detail.detailDataComplete ? "詳情已載入" : "詳情已載入（部分資料缺失，未保存快照）");
   } catch (error) {
@@ -1180,6 +2504,7 @@ async function loadDetail(char) {
         state.selectedAttack = snap.analysis;
         renderDetail(currentViewDetail(), currentViewAnalysis());
         if (window.innerWidth > 980) setResultsCollapsed(true);
+        trackCharacterQuery(char, currentViewDetail(), currentViewAnalysis(), `${querySource}:fallback-snapshot`);
         setStatus("已顯示快照（請求受限）");
         return;
       }
@@ -1279,7 +2604,83 @@ async function loadWingBonusCatalog() {
       .catch(() => ({ wings: [] }));
   }
   state.wingBonusCatalog = await wingBonusCatalogPromise;
+  ensureDefaultWingSelection();
   return state.wingBonusCatalog;
+}
+
+function wingId(row) {
+  return String(row && (row.wingId || row.id || row.name) || "");
+}
+
+function wingCatalogRows() {
+  return ((state.wingBonusCatalog || {}).wings || []).filter(Boolean);
+}
+
+function wingMaxLevel(row) {
+  const max = row && row.maxLevel !== undefined ? row.maxLevel : 10;
+  return clampInt(max, 0, 10);
+}
+
+function wingLevel(id, row = null) {
+  const maxLevel = wingMaxLevel(row || wingCatalogRows().find((item) => wingId(item) === String(id)) || {});
+  const saved = state.wingLevels && state.wingLevels[String(id)];
+  return clampInt(saved === undefined ? maxLevel : saved, 0, maxLevel);
+}
+
+function wingEnchantStats(row, level = wingLevel(wingId(row), row)) {
+  const byLevel = row && row.enchantStatsByLevel;
+  const stats = byLevel && byLevel[String(level)];
+  return Array.isArray(stats) ? stats : (Array.isArray(row && row.stats) ? row.stats : []);
+}
+
+function wingHoldingStats(row, level = wingLevel(wingId(row), row)) {
+  const byLevel = row && row.holdingStatsByLevel;
+  const levelStats = byLevel && byLevel[String(level)];
+  if (Array.isArray(levelStats) && levelStats.length) return levelStats;
+  return Array.isArray(row && row.holdingStats) ? row.holdingStats : [];
+}
+
+function wingStatsForLevel(row) {
+  const level = wingLevel(wingId(row), row);
+  return [
+    ...wingHoldingStats(row, level),
+    ...wingEnchantStats(row, level),
+  ];
+}
+
+function ensureDefaultWingSelection() {
+  const rows = wingCatalogRows();
+  if (!rows.length) return;
+  let levelsChanged = false;
+  rows.forEach((row) => {
+    const id = wingId(row);
+    if (!id) return;
+    if (!state.wingLevels) state.wingLevels = {};
+    if (state.wingLevels[id] === undefined) {
+      state.wingLevels[id] = wingMaxLevel(row);
+      levelsChanged = true;
+    }
+  });
+  if (levelsChanged) saveWingLevels();
+  if (state.wingSelectionInitialized) return;
+  state.selectedWingIds = rows.map(wingId).filter(Boolean);
+  state.wingSelectionInitialized = true;
+  saveSelectedWingIds();
+}
+
+function selectedWingSet() {
+  return new Set((state.selectedWingIds || []).map(String));
+}
+
+function activeWingRows() {
+  const selected = selectedWingSet();
+  return wingCatalogRows().filter((row) => selected.has(wingId(row)));
+}
+
+function refreshSimulatorDependentViews() {
+  if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+  if (state.view === "petInsight") renderPetInsightSimulator();
+  if (state.view === "wings") renderWingSimulator();
 }
 
 function normalizeSoulBindStats(detail) {
@@ -1534,16 +2935,21 @@ function calcAttributes(detail) {
 
   function addValue(key, value, isPct, sourceLabel = "其他來源", detailLabel = "能力值") {
     const target = values[key];
-    const parsed = toNum(value);
-    const allowPct = key === "combatSpeed" || key === "moveSpeed";
-    if (!target || !Number.isFinite(parsed) || parsed === 0 || (isPct && !allowPct)) return;
-    if (isPct) target.pct += parsed;
+    let parsed = toNum(value);
+    let usePct = isPct;
+    const isSpeedStat = key === "combatSpeed" || key === "moveSpeed";
+    if (isSpeedStat && !usePct) {
+      parsed = parsed / 10;
+      usePct = true;
+    }
+    if (!target || !Number.isFinite(parsed) || parsed === 0 || (usePct && !isSpeedStat)) return;
+    if (usePct) target.pct += parsed;
     else target.flat += parsed;
     target.count += 1;
     const source = findSource(target, sourceLabel);
-    if (isPct) source.pct += parsed;
+    if (usePct) source.pct += parsed;
     else source.flat += parsed;
-    source.details.push({ label: detailLabel, value: parsed, isPct });
+    source.details.push({ label: detailLabel, value: parsed, isPct: usePct });
   }
 
   function addConfiguredValue(targetMap, key, value, isPct, sourceLabel, detailLabel) {
@@ -2074,6 +3480,8 @@ function aggregateSourceDetails(details) {
 
 function renderCombatPanel(analysis) {
   const isPvp = state.snapshotTab === "pvp";
+  const selectedWingCount = activeWingRows().length;
+  const selectedTitleCount = activeTitleRows().length;
 
   function gs(arr, key) {
     return arr.find((s) => s.key === key) || { flat: 0, pct: 0 };
@@ -2120,10 +3528,9 @@ function renderCombatPanel(analysis) {
   const envCritLabel = isPvp ? "PVP暴擊" : "專項暴擊";
   const envCritResistLabel = isPvp ? "PVP暴擊抵抗" : "專項暴擊抵抗";
   const fspd = (f, p) => {
-    const parts = [];
-    if (f) parts.push(String(Math.round(f)));
-    if (p) parts.push(`+${Math.round(p * 10) / 10}%`);
-    return parts.length ? parts.join(" / ") : "—";
+    const convertedFlat = f ? f / 10 : 0;
+    const total = convertedFlat + p;
+    return total ? `+${Math.round(total * 10) / 10}%` : "—";
   };
 
   const stats = [
@@ -2176,13 +3583,13 @@ function renderCombatPanel(analysis) {
       { label: "生命力增加", value: fp(pct("pHp").pct) },
     ]) },
     { label: "冷卻時間減少", value: fp(cooldownReduce), tooltip: tip("百分比增加：冷卻時間減少", [{ label: "冷卻時間減少", value: fp(cooldownReduce) }]) },
-    { label: "戰鬥速度", value: fspd(csFlat, csPct), tooltip: tip("戰鬥速度：固定值 / 百分比", [
-      { label: "固定值", value: csFlat ? String(fnum(csFlat)) : "" },
-      { label: "百分比", value: csPct ? fp(csPct) : "" },
+    { label: "戰鬥速度", value: fspd(csFlat, csPct), tooltip: tip("戰鬥速度：面板值 ÷ 10 + 百分比", [
+      { label: "面板值換算", value: csFlat ? fp(csFlat / 10) : "" },
+      { label: "百分比來源", value: csPct ? fp(csPct) : "" },
     ]) },
-    { label: "移動速度", value: fspd(msFlat, msPct), tooltip: tip("移動速度：固定值 / 百分比", [
-      { label: "固定值", value: msFlat ? String(fnum(msFlat)) : "" },
-      { label: "百分比", value: msPct ? fp(msPct) : "" },
+    { label: "移動速度", value: fspd(msFlat, msPct), tooltip: tip("移動速度：面板值 ÷ 10 + 百分比", [
+      { label: "面板值換算", value: msFlat ? fp(msFlat / 10) : "" },
+      { label: "百分比來源", value: msPct ? fp(msPct) : "" },
     ]) },
   ];
 
@@ -2191,18 +3598,26 @@ function renderCombatPanel(analysis) {
       <div class="combat-panel-head">
         <div class="combat-panel-title">
           <span>${isPvp ? "PVP" : "PVE"} 戰鬥面板</span>
-          <button type="button" class="pet-sim-help" aria-label="戰鬥面板模擬說明" data-tooltip="普通盤默認：額外命中35×3、額外攻擊力14×3、強擊2.0%×2、傷害耐性2.0%×1&#10;特殊盤默認：額外攻擊力14×6、強擊2.0%×2、傷害耐性2.0%×1&#10;翅膀打開後預設提供所有翅膀+10數據">?</button>
+          <button type="button" class="pet-sim-help" aria-label="戰鬥面板模擬說明" data-tooltip="普通盤默認：額外命中35×3、額外攻擊力14×3、強擊2.0%×2、傷害耐性2.0%×1&#10;特殊盤默認：額外攻擊力14×6、強擊2.0%×2、傷害耐性2.0%×1&#10;翅膀/稱號/衣櫃：開啟後分別套用已選翅膀持有與強化、已選稱號持有效果、衣櫃基礎能力折算。">?</button>
         </div>
+      </div>
+      <div class="combat-panel-toggles">
         <div class="pet-sim-actions">
           <button type="button" class="pet-sim-toggle${state.petSimulator.enabled ? " active" : ""}" data-pet-sim-toggle aria-pressed="${state.petSimulator.enabled ? "true" : "false"}">
             <i></i>${state.petSimulator.enabled ? "寵物" : "寵物"}
           </button>
-          <button type="button" class="pet-sim-toggle wing-bonus-toggle${state.wingBonusEnabled ? " active" : ""}" data-wing-bonus-toggle aria-pressed="${state.wingBonusEnabled ? "true" : "false"}" title="全翅膀滿增幅：開啟後把資料表中 28 個可強化翅膀滿級增幅全部加入屬性分析與綜合評級">
+          <button type="button" class="pet-sim-toggle wing-bonus-toggle${state.wingBonusEnabled ? " active" : ""}" data-wing-bonus-toggle aria-pressed="${state.wingBonusEnabled ? "true" : "false"}" title="翅膀模擬：開啟後把已選 ${selectedWingCount} 個翅膀的自身屬性與所選強化等級加入屬性分析與綜合評級">
             <i></i>${state.wingBonusEnabled ? "翅膀" : "翅膀"}
+          </button>
+          <button type="button" class="pet-sim-toggle title-bonus-toggle${state.titleBonusEnabled ? " active" : ""}" data-title-bonus-toggle aria-pressed="${state.titleBonusEnabled ? "true" : "false"}" title="稱號模擬：開啟後把已選 ${selectedTitleCount} 個稱號的持有效果與裝備效果加入屬性分析與綜合評級">
+            <i></i>稱號
+          </button>
+          <button type="button" class="pet-sim-toggle wardrobe-bonus-toggle${state.wardrobeBonusEnabled ? " active" : ""}" data-wardrobe-bonus-toggle aria-pressed="${state.wardrobeBonusEnabled ? "true" : "false"}" title="衣櫃加成：武器最多+25%攻擊力，防具最多+50%防禦力，飾品最多+25%攻擊力與防禦力">
+            <i></i>衣櫃
           </button>
         </div>
       </div>
-      ${state.petSimulator.enabled ? `<a class="pet-sim-link" href="#pet-simulator" data-pet-editor-link>前往寵物盤屬性選擇</a>` : ""}
+      ${(state.petSimulator.enabled || state.wingBonusEnabled || state.titleBonusEnabled || state.wardrobeBonusEnabled) ? `<a class="pet-sim-link" href="${html(activeSimulationHref())}" data-simulation-link>前往模擬界面</a>` : ""}
       <div class="combat-grid">
         ${stats.map((s) => `
           <div class="combat-stat${s.tooltip ? " has-tooltip" : ""}" ${s.tooltip ? `data-tooltip="${html(s.tooltip)}"` : ""}>
@@ -2229,7 +3644,6 @@ const SECONDARY_PANEL_ORDER = ["正義", "自由", "幻象", "生命", "時間",
 function renderSidePanels(detail, analysis) {
   return `
     ${renderCombatPanel(analysis)}
-    ${state.petSimulator.enabled ? renderPetSimulatorEditor() : ""}
     ${renderStatOverviewPanel("基礎能力", BASIC_PANEL_ORDER.map((def) => {
       const stat = (detail.detailStatBasic || []).find((item) => item.type === def.type || item.name === def.label);
       return statOverviewItem(def.label, stat, true);
@@ -2363,7 +3777,7 @@ function statTooltipHtml(stat, applyCap = false) {
         const sign = pctMatch[1];
         const pre = html(text.substring(0, pctMatch.index));
         const suf = html(text.substring(pctMatch.index + pctMatch[0].length));
-        return `<div class="pop-row">${pre}<b class="pop-eff">${sign}${PCT_CAP}%</b> <s class="pop-raw">${html(pctMatch[0])}</s>${suf}</div>`;
+        return `<div class="pop-row">${pre}<b class="pop-eff">${sign}${PCT_CAP}%</b> <span class="pop-raw">${html(pctMatch[0])}</span>${suf}</div>`;
       }
     }
     return `<div class="pop-row">${html(text)}</div>`;
@@ -2428,11 +3842,8 @@ function activePetTotalText() {
   });
   const parts = Object.values(totals)
     .filter((item) => item.value)
-    .slice(0, 4)
     .map((item) => `${item.option.label} +${formatPetValue(item.option, item.value)}`);
-  const count = Object.values(totals).filter((item) => item.value).length;
-  if (!parts.length) return "未配置";
-  return count > parts.length ? `${parts.join(" / ")} / 等 ${count} 項` : parts.join(" / ");
+  return parts.length ? parts.join(" / ") : "未配置";
 }
 
 function renderPetSimulatorEditor() {
@@ -2443,7 +3854,8 @@ function renderPetSimulatorEditor() {
       <div class="side-stat-head pet-sim-head">
         <div>
           <span>寵物盤模擬</span>
-          <small>${html(template.name || `模板 ${state.petSimulator.activeTemplate + 1}`)} · ${html(activePetTotalText())}</small>
+          <small>${html(template.name || `模板 ${state.petSimulator.activeTemplate + 1}`)}</small>
+          <div class="pet-template-summary">${html(activePetTotalText())}</div>
         </div>
         <div class="pet-sim-head-actions">
           <button type="button" data-pet-collapse>${collapsed ? "展開" : "收起"}</button>
@@ -2519,9 +3931,99 @@ function renderPetRowEditor(disk, diskIndex, row, rowIndex) {
   `;
 }
 
+function handlePetSimulatorClick(event) {
+  if (event.target.closest("[data-pet-collapse]")) {
+    state.petSimulator.collapsed = !state.petSimulator.collapsed;
+    savePetSimulatorConfig();
+    refreshSimulatorDependentViews();
+    return true;
+  }
+  if (event.target.closest("[data-pet-reset]")) {
+    resetActivePetTemplate();
+    savePetSimulatorConfig();
+    refreshSimulatorDependentViews();
+    return true;
+  }
+  const petTemplateButton = event.target.closest("[data-pet-template]");
+  if (petTemplateButton) {
+    state.petSimulator.activeTemplate = clampInt(petTemplateButton.dataset.petTemplate, 0, 2);
+    savePetSimulatorConfig();
+    refreshSimulatorDependentViews();
+    return true;
+  }
+  const addPetRow = event.target.closest("[data-pet-add-row]");
+  if (addPetRow) {
+    const disk = activePetDisks()[Number(addPetRow.dataset.petAddRow)];
+    if (!disk || petDiskUsedCount(disk) >= 9) return true;
+    const option = petOptionsForType(disk.type).find((item) => item.maxCount > 0);
+    disk.rows.push({ statKey: option.key, count: 1, value: option.max });
+    disk.rows = normalizePetRows(disk.rows, disk.type);
+    savePetSimulatorConfig();
+    refreshSimulatorDependentViews();
+    return true;
+  }
+  const deletePetRow = event.target.closest("[data-pet-delete-row]");
+  if (deletePetRow) {
+    const [diskIndex, rowIndex] = deletePetRow.dataset.petDeleteRow.split(":").map(Number);
+    const disk = activePetDisks()[diskIndex];
+    if (!disk) return true;
+    disk.rows.splice(rowIndex, 1);
+    savePetSimulatorConfig();
+    refreshSimulatorDependentViews();
+    return true;
+  }
+  return false;
+}
+
+function handlePetSimulatorChange(event) {
+  const templateName = event.target.closest("[data-pet-template-name]");
+  if (templateName) {
+    activePetTemplate().name = String(templateName.value || "").trim().slice(0, 12) || `模板 ${state.petSimulator.activeTemplate + 1}`;
+    savePetSimulatorConfig();
+    refreshSimulatorDependentViews();
+    return true;
+  }
+  const field = event.target.closest("[data-pet-field]");
+  if (!field) return false;
+  const rowEl = field.closest("[data-pet-disk][data-pet-row]");
+  if (!rowEl) return false;
+  const disk = activePetDisks()[Number(rowEl.dataset.petDisk)];
+  const row = disk && disk.rows[Number(rowEl.dataset.petRow)];
+  if (!disk || !row) return true;
+  if (field.dataset.petField === "statKey") {
+    const option = petOption(disk.type, field.value);
+    const rowIndex = Number(rowEl.dataset.petRow);
+    const rowCount = clampInt(row.count, 0, 9);
+    const usedWithoutCurrent = petDiskUsedCount(disk) - rowCount;
+    const currentRowFillsDisk = rowCount >= 9 && usedWithoutCurrent <= 0;
+    if (
+      currentRowFillsDisk ||
+      petStatUsedCount(disk, option.key, rowIndex) >= option.maxCount ||
+      usedWithoutCurrent + rowCount > 9 ||
+      rowCount > option.maxCount
+    ) {
+      refreshSimulatorDependentViews();
+      return true;
+    }
+    row.statKey = option.key;
+    row.count = Math.min(row.count, option.maxCount);
+    row.value = Math.min(row.value, option.max);
+  } else if (field.dataset.petField === "count") {
+    const option = petOption(disk.type, row.statKey);
+    row.count = clampInt(field.value, 1, Math.min(option.maxCount, 9));
+  } else if (field.dataset.petField === "value") {
+    const option = petOption(disk.type, row.statKey);
+    row.value = clampNum(field.value, 0, option.max);
+  }
+  disk.rows = normalizePetRows(disk.rows, disk.type);
+  savePetSimulatorConfig();
+  refreshSimulatorDependentViews();
+  return true;
+}
+
 function renderDetail(detail, analysis) {
   const profile = detail.profile || {};
-  const displayAnalysis = analysisWithSimulators(analysis);
+  const displayAnalysis = analysisWithSimulators(analysis, detail);
   const simulatedScore = estimateCombatScore(displayAnalysis);
   els.detailPanel.innerHTML = `
     <article>
@@ -2629,6 +4131,7 @@ function renderAttributeAnalysis(analysis) {
   const basicCombatStats = orderStatsForPairs(allBasicCombatStats, [
     "penetration", "soulstoneDamage",
     "criticalAttack", "criticalDefense",
+    "frontAttack", "frontDefense",
     "backAttack", "backDefense",
   ]);
   const basicCombatAmpStats = orderStatsForPairs(allBasicCombatAmpStats, [
@@ -2652,10 +4155,12 @@ function renderAttributeAnalysis(analysis) {
     "pvpDamageAmp", "pvpDamageResist",
   ]);
   const otherStats = orderStatsForPairs(allOtherStats, [
+    "flightPower", "mpRegen",
+    "mpCostReduce", "healingReceived",
     "multiHit", "multiHitResist",
     "ironWallPen", "ironWall",
     "regenPen", "regen",
-    "healingReceived", "hpRegen",
+    "hpRegen",
     "perfect", "perfectResist",
     "powerStrike", "powerStrikeResist",
     "backCrit", "backCritResist",
@@ -2818,7 +4323,7 @@ function renderStandardEquipmentMode(detail, equipmentItems, cardItems) {
             ${renderEquipmentModeToggle()}
           </div>
         </div>
-        ${mainEquipmentItems.length ? `<div class="compact-equip-grid">${mainEquipmentItems.map(renderCompactEquipItem).join("")}</div>` : `<p class="muted">暫無裝備資料</p>`}
+        ${mainEquipmentItems.length ? `<div class="compact-equip-grid">${renderCompactEquipmentGridItems(mainEquipmentItems)}</div>` : `<p class="muted">暫無裝備資料</p>`}
         ${renderLowerEquipmentSection(lowerEquipmentItems)}
       </section>
 
@@ -2887,6 +4392,29 @@ function renderLowerEquipmentSection(items) {
       ${items.map(renderCompactEquipItem).join("")}
     </div>
   `;
+}
+
+function isRuneItem(item) {
+  return ["Rune1", "Rune2"].includes(item.slotPosName);
+}
+
+function renderCompactEquipmentGridItems(items) {
+  const parts = [];
+  for (let index = 0; index < items.length; index += 1) {
+    const item = items[index];
+    if (isRuneItem(item) && isRuneItem(items[index + 1])) {
+      parts.push(`
+        <div class="rune-pair-row">
+          ${renderCompactEquipItem(item)}
+          ${renderCompactEquipItem(items[index + 1])}
+        </div>
+      `);
+      index += 1;
+      continue;
+    }
+    parts.push(renderCompactEquipItem(item));
+  }
+  return parts.join("");
 }
 
 function renderMobileEquipSlot(slot, label, equipmentItems) {
@@ -3038,7 +4566,7 @@ function renderCompactEquipItem(item) {
   const magicBlock = renderMagicStoneLines(item);
   const wordBlocks = [mainBlock, soulBlock, growthBlock, magicBlock].filter(Boolean).join("");
   return `
-    <article class="compact-equip-item">
+    <article class="compact-equip-item${isRuneItem(item) ? " compact-equip-item--rune" : ""}">
       <div class="equip-card-main">
         <div class="equip-icon-stack">
           ${item.icon ? `<img class="equip-icon grade-${html(item.grade)}" src="${html(item.icon)}" alt="" />` : `<div class="equip-icon grade-${html(item.grade)}"></div>`}
@@ -3377,6 +4905,363 @@ function applyTheme(theme) {
 }
 
 function bindEvents() {
+  els.navCharacter.addEventListener("click", (event) => {
+    event.preventDefault();
+    setView("characters");
+  });
+
+  els.navRanking.addEventListener("click", (event) => {
+    event.preventDefault();
+    setView("ranking");
+  });
+  els.navWings?.addEventListener("click", (event) => {
+    event.preventDefault();
+    setView("wings");
+  });
+  els.navPetInsight?.addEventListener("click", (event) => {
+    event.preventDefault();
+    setView("petInsight");
+  });
+  els.navWardrobe?.addEventListener("click", (event) => {
+    event.preventDefault();
+    setView("wardrobe");
+  });
+  els.navTitles?.addEventListener("click", (event) => {
+    event.preventDefault();
+    setView("titles");
+  });
+
+  els.wingCatalogList?.addEventListener("change", (event) => {
+    const levelSelect = event.target.closest("[data-wing-level]");
+    if (levelSelect) {
+      const id = String(levelSelect.dataset.wingLevel || "");
+      const row = wingCatalogRows().find((item) => wingId(item) === id);
+      if (!id || !row) return;
+      state.wingLevels[id] = clampInt(levelSelect.value, 0, wingMaxLevel(row));
+      saveWingLevels();
+      renderWingSimulator();
+      if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+      return;
+    }
+    const input = event.target.closest("[data-wing-select]");
+    if (!input) return;
+    const ids = selectedWingSet();
+    const id = String(input.dataset.wingSelect || "");
+    if (!id) return;
+    if (input.checked) ids.add(id); else ids.delete(id);
+    state.selectedWingIds = Array.from(ids);
+    state.wingSelectionInitialized = true;
+    saveSelectedWingIds();
+    renderWingSimulator();
+    if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+  });
+
+  els.selectAllWingsBtn?.addEventListener("click", () => {
+    const rows = wingCatalogRows();
+    state.selectedWingIds = rows.map(wingId).filter(Boolean);
+    rows.forEach((row) => {
+      const id = wingId(row);
+      if (id && state.wingLevels[id] === undefined) state.wingLevels[id] = wingMaxLevel(row);
+    });
+    state.wingSelectionInitialized = true;
+    saveSelectedWingIds();
+    saveWingLevels();
+    renderWingSimulator();
+    if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+  });
+
+  els.clearWingsBtn?.addEventListener("click", () => {
+    state.selectedWingIds = [];
+    state.wingSelectionInitialized = true;
+    saveSelectedWingIds();
+    renderWingSimulator();
+    if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+  });
+
+  els.wardrobeView?.addEventListener("click", (event) => {
+    if (event.target.closest("[data-wardrobe-max]")) {
+      state.wardrobeActiveUndo = null;
+      pushWardrobeUndoSnapshot();
+      state.wardrobeConfig = Object.fromEntries(WARDROBE_CATEGORIES.flatMap((category) => [
+        [category.key, category.max],
+        ...(category.parts || []).map((part) => [wardrobePartKey(category, part), category.max]),
+      ]));
+      saveWardrobeConfig();
+      renderWardrobeView();
+      if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+      return;
+    }
+    if (event.target.closest("[data-wardrobe-reset]")) {
+      state.wardrobeActiveUndo = null;
+      pushWardrobeUndoSnapshot();
+      state.wardrobeConfig = defaultWardrobeConfig();
+      saveWardrobeConfig();
+      renderWardrobeView();
+      if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+    }
+  });
+
+  els.wardrobeView?.addEventListener("pointerdown", (event) => {
+    if (event.target.closest("[data-wardrobe-range], [data-wardrobe-part-range], [data-wardrobe-bulk-range]")) {
+      beginWardrobeUndoSnapshot();
+    }
+  });
+
+  els.wardrobeView?.addEventListener("focusin", (event) => {
+    if (event.target.closest("[data-wardrobe-range], [data-wardrobe-part-range], [data-wardrobe-bulk-range]")) {
+      beginWardrobeUndoSnapshot();
+    }
+  });
+
+  els.wardrobeView?.addEventListener("keydown", (event) => {
+    if (!event.target.closest("[data-wardrobe-range], [data-wardrobe-part-range], [data-wardrobe-bulk-range]")) return;
+    if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"].includes(event.key)) {
+      beginWardrobeUndoSnapshot();
+    }
+  });
+
+  els.wardrobeView?.addEventListener("input", (event) => {
+    const input = event.target.closest("[data-wardrobe-range], [data-wardrobe-part-range], [data-wardrobe-bulk-range]");
+    if (!input) return;
+    beginWardrobeUndoSnapshot();
+    const bulkKey = input.dataset.wardrobeBulkRange;
+    if (bulkKey) {
+      const category = WARDROBE_CATEGORIES.find((item) => item.key === bulkKey);
+      if (!category) return;
+      const value = clampInt(input.value, 0, category.max);
+      const card = input.closest(".wardrobe-card");
+      const percent = category.max ? value / category.max * 100 : 0;
+      state.wardrobeConfig = normalizeWardrobeConfig({
+        ...state.wardrobeConfig,
+        [category.key]: value,
+        ...Object.fromEntries((category.parts || []).map((part) => [wardrobePartKey(category, part), value])),
+      });
+      input.style.setProperty("--range-percent", `${percent}%`);
+      input.closest(".wardrobe-bulk-row")?.querySelector(".wardrobe-part-meta strong")?.replaceChildren(document.createTextNode(`${value}/${category.max}P`));
+      card?.querySelectorAll("[data-wardrobe-part-range]").forEach((range) => {
+        range.value = value;
+        range.style.setProperty("--range-percent", `${percent}%`);
+        range.closest(".wardrobe-part-row")?.querySelector(".wardrobe-part-meta strong")?.replaceChildren(document.createTextNode(`${value}/${category.max}P`));
+      });
+      updateWardrobeLiveDisplays(category);
+      saveWardrobeConfig();
+      return;
+    }
+    const key = input.dataset.wardrobeRange || input.dataset.wardrobePartRange;
+    const categoryKey = String(key || "").split(":")[0];
+    const category = WARDROBE_CATEGORIES.find((item) => item.key === categoryKey);
+    if (!category) return;
+    const value = clampInt(input.value, 0, category.max);
+    const percent = category.max ? value / category.max * 100 : 0;
+    state.wardrobeConfig = normalizeWardrobeConfig({
+      ...state.wardrobeConfig,
+      [key]: value,
+    });
+    input.style.setProperty("--range-percent", `${percent}%`);
+    input.closest(".wardrobe-part-row")?.querySelector(".wardrobe-part-meta strong")?.replaceChildren(document.createTextNode(`${value}/${category.max}P`));
+    updateWardrobeLiveDisplays(category);
+    saveWardrobeConfig();
+  });
+
+  els.wardrobeView?.addEventListener("change", (event) => {
+    if (!event.target.closest("[data-wardrobe-range], [data-wardrobe-part-range], [data-wardrobe-bulk-range]")) return;
+    commitWardrobeUndoSnapshot();
+    renderWardrobeView();
+    if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === "z" && state.view === "wardrobe") {
+      if (undoWardrobeConfig()) event.preventDefault();
+    }
+  });
+
+  els.titleCatalogList?.addEventListener("click", (event) => {
+    const clearSearch = event.target.closest("[data-title-search-clear]");
+    if (clearSearch) {
+      state.titleSearchKeyword = "";
+      state.titleSearchFocused = true;
+      state.titleSearchCursor = 0;
+      renderTitleSimulator();
+      return;
+    }
+    const raceTab = event.target.closest("[data-title-race]");
+    if (raceTab) {
+      state.activeTitleRace = String(raceTab.dataset.titleRace || "all");
+      renderTitleSimulator();
+      return;
+    }
+    const tab = event.target.closest("[data-title-category]");
+    if (!tab) return;
+    state.activeTitleCategory = String(tab.dataset.titleCategory || "attack");
+    renderTitleSimulator();
+  });
+
+  els.titleCatalogList?.addEventListener("input", (event) => {
+    const search = event.target.closest("[data-title-search]");
+    if (!search) return;
+    if (state.titleSearchComposing) return;
+    state.titleSearchKeyword = search.value;
+    state.titleSearchFocused = true;
+    state.titleSearchCursor = search.selectionStart ?? search.value.length;
+    renderTitleSimulator();
+  });
+
+  els.titleCatalogList?.addEventListener("compositionstart", (event) => {
+    if (!event.target.closest("[data-title-search]")) return;
+    state.titleSearchComposing = true;
+  });
+
+  els.titleCatalogList?.addEventListener("compositionend", (event) => {
+    const search = event.target.closest("[data-title-search]");
+    if (!search) return;
+    state.titleSearchComposing = false;
+    state.titleSearchKeyword = search.value;
+    state.titleSearchFocused = true;
+    state.titleSearchCursor = search.selectionStart ?? search.value.length;
+    renderTitleSimulator();
+  });
+
+  els.titleCatalogList?.addEventListener("change", (event) => {
+    const selectedInput = event.target.closest("[data-title-select]");
+    if (selectedInput) {
+      const ids = selectedTitleSet();
+      const id = String(selectedInput.dataset.titleSelect || "");
+      if (!id) return;
+      const row = titleCatalogRows().find((item) => titleId(item) === id);
+      const nextRace = titleRaceKey(row);
+      if (selectedInput.checked) {
+        if (nextRace === "light" || nextRace === "dark") {
+          const currentRace = selectedOppositeTitleRace(ids, nextRace) || selectedTitleRace(ids);
+          if (currentRace && currentRace !== nextRace) {
+            if (!confirmTitleRaceSwitch(nextRace, currentRace)) {
+              selectedInput.checked = false;
+              return;
+            }
+            clearSelectedTitleRace(ids, currentRace);
+          }
+        }
+        ids.add(id);
+      } else ids.delete(id);
+      state.selectedTitleIds = Array.from(ids);
+      state.titleSelectionInitialized = true;
+      saveSelectedTitleIds();
+      renderTitleSimulator();
+      if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+    }
+  });
+
+  els.selectAllTitlesBtn?.addEventListener("click", () => {
+    const category = state.activeTitleCategory || "attack";
+    const race = state.activeTitleRace || "all";
+    const ids = selectedTitleSet();
+    const targetRows = titleCatalogRows()
+      .filter((row) => String(row.equipCategory || "special").toLowerCase() === category)
+      .filter((row) => titleVisibleByRace(row, race))
+      .filter((row) => titleMatchesSearch(row, state.titleSearchKeyword));
+    const targetRaces = new Set(targetRows.map(titleRaceKey).filter((rowRace) => rowRace === "light" || rowRace === "dark"));
+    if (race === "all" && targetRaces.size > 1) {
+      window.alert("請先選擇天族或魔族篩選後再全選稱號，避免同時勾選天魔稱號。");
+      return;
+    }
+    const nextRace = targetRaces.values().next().value || "";
+    const currentRace = selectedOppositeTitleRace(ids, nextRace) || selectedTitleRace(ids);
+    if (nextRace && currentRace && currentRace !== nextRace) {
+      if (!confirmTitleRaceSwitch(nextRace, currentRace)) return;
+      clearSelectedTitleRace(ids, currentRace);
+    }
+    targetRows.forEach((row) => ids.add(titleId(row)));
+    state.selectedTitleIds = Array.from(ids);
+    state.titleSelectionInitialized = true;
+    saveSelectedTitleIds();
+    renderTitleSimulator();
+    if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+  });
+
+  els.clearTitlesBtn?.addEventListener("click", () => {
+    const category = state.activeTitleCategory || "attack";
+    const race = state.activeTitleRace || "all";
+    const ids = selectedTitleSet();
+    titleCatalogRows()
+      .filter((row) => String(row.equipCategory || "special").toLowerCase() === category)
+      .filter((row) => titleVisibleByRace(row, race))
+      .filter((row) => titleMatchesSearch(row, state.titleSearchKeyword))
+      .forEach((row) => {
+        const id = titleId(row);
+        ids.delete(id);
+      });
+    state.selectedTitleIds = Array.from(ids);
+    state.titleSelectionInitialized = true;
+    saveSelectedTitleIds();
+    renderTitleSimulator();
+    if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+  });
+
+  els.petInsightView?.addEventListener("click", (event) => {
+    handlePetSimulatorClick(event);
+  });
+
+  els.petInsightView?.addEventListener("change", (event) => {
+    handlePetSimulatorChange(event);
+  });
+
+  window.addEventListener("hashchange", () => {
+    setView(viewFromHash(location.hash));
+  });
+
+  els.rankingTabs.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-ranking-type]");
+    if (!button) return;
+    state.ranking.activeType = button.dataset.rankingType;
+    loadRanking();
+  });
+
+  els.rankingRaceSelect.addEventListener("change", () => {
+    state.ranking.race = Number(els.rankingRaceSelect.value) || 1;
+    const servers = state.ranking.race === 2 ? DEMON_SERVERS : ANGEL_SERVERS;
+    state.ranking.serverId = servers[0] ? servers[0].serverId : state.ranking.serverId;
+    loadRanking();
+  });
+
+  els.rankingServerSelect.addEventListener("change", () => {
+    state.ranking.serverId = Number(els.rankingServerSelect.value);
+    loadRanking();
+  });
+
+  els.rankingClassSelect.addEventListener("change", () => {
+    state.ranking.classId = els.rankingClassSelect.value;
+    loadRanking();
+  });
+
+  els.rankingSearchButton.addEventListener("click", () => {
+    state.ranking.keyword = els.rankingKeywordInput.value.trim();
+    loadRanking();
+  });
+
+  els.rankingKeywordInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      state.ranking.keyword = els.rankingKeywordInput.value.trim();
+      loadRanking();
+    }
+  });
+
+  els.rankingTableBody.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-ranking-character-id]");
+    if (!button || !button.dataset.rankingCharacterId) return;
+    const row = state.ranking.rows.find((item) => String(item.characterId) === button.dataset.rankingCharacterId);
+    if (!row) return;
+    const char = cleanChar({
+      characterId: row.characterId,
+      serverId: row.serverId,
+      characterName: row.name,
+      className: row.className,
+    });
+    state.results = [char];
+    state.hasSearched = true;
+    renderResults();
+    loadDetail(char, "ranking");
+  });
+
   els.raceTabs.addEventListener("click", (event) => {
     const button = event.target.closest("button[data-race]");
     if (!button) return;
@@ -3408,23 +5293,25 @@ function bindEvents() {
   });
 
   els.searchButton.addEventListener("click", searchCharacters);
+  els.resetSearchButton?.addEventListener("click", clearSearchResults);
+  els.clearResultsBtn.addEventListener("click", clearSearchResults);
   els.keywordInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") searchCharacters();
   });
 
   els.resultsList.addEventListener("click", (event) => {
-    const favorite = event.target.closest("[data-result-favorite-index]");
+    const favorite = event.target.closest("[data-favorite-result-index]");
     if (favorite) {
       event.preventDefault();
       event.stopPropagation();
-      const char = state.results[Number(favorite.dataset.resultFavoriteIndex)];
+      const char = state.results[Number(favorite.dataset.favoriteResultIndex)];
       toggleFavoriteCharacter(char);
       return;
     }
-    const card = event.target.closest(".result-card");
+    const card = event.target.closest("[data-result-index]");
     if (!card) return;
-    const char = state.results[Number(card.dataset.index)];
-    if (char) loadDetail(char);
+    const char = state.results[Number(card.dataset.resultIndex)];
+    if (char) loadDetail(char, "search-result");
   });
 
   els.historyPanel.addEventListener("click", (event) => {
@@ -3464,13 +5351,17 @@ function bindEvents() {
     });
     renderServers();
     renderResults();
-    loadDetail(item);
+    loadDetail(item, historyButton ? "history" : "favorite");
   });
 
   els.detailPanel.addEventListener("click", (event) => {
+    if (event.target.closest("[data-back-to-search]")) {
+      setView("characters");
+      return;
+    }
     if (event.target.closest("[data-refresh-detail]")) {
       if (!state.selectedChar) return;
-      loadDetail({ ...state.selectedChar, _forceRefresh: true });
+      loadDetail({ ...state.selectedChar, _forceRefresh: true }, "refresh");
       return;
     }
     const snapButton = event.target.closest("[data-snapshot-tab]");
@@ -3504,6 +5395,26 @@ function bindEvents() {
       renderDetail(currentViewDetail(), currentViewAnalysis());
       return;
     }
+    const titleBonusToggle = event.target.closest("[data-title-bonus-toggle]");
+    if (titleBonusToggle) {
+      state.titleBonusEnabled = !state.titleBonusEnabled;
+      saveTitleBonusEnabled();
+      if (state.titleBonusEnabled && !state.titleCatalog) {
+        loadTitleCatalog().then(() => {
+          if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+        });
+        return;
+      }
+      renderDetail(currentViewDetail(), currentViewAnalysis());
+      return;
+    }
+    const wardrobeBonusToggle = event.target.closest("[data-wardrobe-bonus-toggle]");
+    if (wardrobeBonusToggle) {
+      state.wardrobeBonusEnabled = !state.wardrobeBonusEnabled;
+      saveWardrobeBonusEnabled();
+      renderDetail(currentViewDetail(), currentViewAnalysis());
+      return;
+    }
     if (event.target.closest("[data-pet-collapse]")) {
       state.petSimulator.collapsed = !state.petSimulator.collapsed;
       savePetSimulatorConfig();
@@ -3511,7 +5422,11 @@ function bindEvents() {
       return;
     }
     if (event.target.closest("[data-pet-editor-link]")) {
-      requestAnimationFrame(() => document.getElementById("pet-simulator")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+      setView("petInsight");
+      return;
+    }
+    if (event.target.closest("[data-wing-editor-link]")) {
+      setView("wings");
       return;
     }
     if (event.target.closest("[data-pet-reset]")) {
@@ -3553,6 +5468,14 @@ function bindEvents() {
     state.detailTab = button.dataset.detailTab;
     renderDetail(currentViewDetail(), currentViewAnalysis());
   });
+
+  if (els.globalBreadcrumb) {
+    els.globalBreadcrumb.addEventListener("click", (event) => {
+      if (event.target.closest("[data-back-to-search]")) {
+        setView("characters");
+      }
+    });
+  }
 
   els.detailPanel.addEventListener("change", (event) => {
     const templateName = event.target.closest("[data-pet-template-name]");
@@ -3620,13 +5543,34 @@ function bindEvents() {
 }
 
 renderServers();
+renderRankingControls();
+renderRankingRows();
 loadHistory();
 loadFavorites();
 renderHistory();
 setCollapseButtonIcon();
 applyTheme(localStorage.getItem("aion2-theme") || "dark");
 bindEvents();
+setView(state.view);
 loadPetSimulatorFromCloud();
 loadWingBonusCatalog().then(() => {
   if (state.selectedDetail && state.selectedAttack) renderDetail(currentViewDetail(), currentViewAnalysis());
 });
+if (state.titleBonusEnabled) {
+  loadTitleCatalog().then(() => {
+    if (state.selectedDetail && state.selectedAttack) renderDetail(currentViewDetail(), currentViewAnalysis());
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
