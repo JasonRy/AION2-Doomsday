@@ -13,8 +13,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  accounts  OAuthAccount[]
-  templates PetTemplate[]
+  accounts   OAuthAccount[]
+  templates  PetTemplate[]
+  queryLogs  CharacterQueryLog[]
+  snapshots  CharacterSnapshot[]
 }
 
 model OAuthAccount {
@@ -44,4 +46,75 @@ model PetTemplate {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, slotIndex])
+}
+
+model CharacterQueryLog {
+  id             Int      @id @default(autoincrement())
+  userId         Int?
+  characterId    String
+  characterName  String
+  serverId       Int?
+  serverName     String?
+  race           Int?
+  className      String?
+  level          Int?
+  combatPower    Int?
+  itemLevel      Int?
+  snapshotType   String?
+  querySource    String
+  queryKeyword   String?
+  clientIpHash   String?
+  userAgentHash  String?
+  createdAt      DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([characterId, serverId])
+  @@index([querySource])
+  @@index([createdAt])
+}
+
+model CharacterSnapshot {
+  id             Int      @id @default(autoincrement())
+  userId         Int?
+  characterId    String
+  characterName  String
+  serverId       Int?
+  serverName     String?
+  race           Int?
+  className      String?
+  level          Int?
+  combatPower    Int?
+  itemLevel      Int?
+  snapshotType   String?
+  profileJson    Json?
+  equipmentJson  Json?
+  analysisJson   Json?
+  detailJson     Json?
+  createdAt      DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([characterId, serverId])
+  @@index([snapshotType])
+  @@index([createdAt])
+}
+
+model CharacterNameSnapshot {
+  id             Int      @id @default(autoincrement())
+  characterId    String
+  serverId       Int
+  characterName  String
+  serverName     String?
+  race           Int?
+  className      String?
+  level          Int?
+  firstSeenAt    DateTime @default(now())
+  lastSeenAt     DateTime @updatedAt
+  seenCount      Int      @default(1)
+
+  @@unique([characterId, serverId, characterName])
+  @@index([characterId, serverId])
+  @@index([characterName])
+  @@index([lastSeenAt])
 }

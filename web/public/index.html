@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AION2 角色查詢</title>
+    <link rel="icon" type="image/png" href="/site-icon.png" />
+    <link rel="apple-touch-icon" href="/site-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -13,7 +15,9 @@
     <div id="app" class="app-shell">
       <aside class="sidebar">
         <div class="brand">
-          <div class="brand-mark">A2</div>
+          <div class="brand-mark">
+            <img src="/site-icon.png" alt="" />
+          </div>
           <div>
             <h1>AION2</h1>
             <p>角色查詢控制台</p>
@@ -21,12 +25,25 @@
         </div>
 
         <nav class="side-nav">
-          <a class="active" href="/">角色查詢</a>
+          <a id="navCharacter" class="active" href="#characters">角色查詢</a>
+          <a id="navRanking" href="#ranking">排名</a>
+          <details id="navSimulationGroup" class="side-nav-group" open>
+            <summary>數據模擬</summary>
+            <div class="side-nav-sub">
+              <a id="navWings" href="#wings">翅膀</a>
+              <a id="navPetInsight" href="#pet-insight">寵物理解度</a>
+              <a id="navTitles" href="#titles">稱號</a>
+              <a id="navWardrobe" href="#wardrobe">衣櫃</a>
+            </div>
+          </details>
+        </nav>
+
+        <div class="sidebar-tools">
           <button id="themeToggle" class="icon-button" type="button" title="切換明暗主題">
             <span id="themeIcon">☾</span>
             <span id="themeLabel">深色</span>
           </button>
-        </nav>
+        </div>
 
         <div class="side-note">
           <strong>資料來源</strong>
@@ -35,15 +52,16 @@
       </aside>
 
       <main class="workspace">
+        <nav id="globalBreadcrumb" class="global-breadcrumb" aria-label="頁面路徑" hidden></nav>
         <header class="topbar">
           <div>
-            <p class="eyebrow">Character Search</p>
-            <h2>角色查詢</h2>
+            <p id="viewEyebrow" class="eyebrow">Character Search</p>
+            <h2 id="viewTitle">角色查詢</h2>
           </div>
           <div id="statusText" class="status-pill">待查詢</div>
         </header>
 
-        <section class="search-panel">
+        <section class="search-panel character-search-view">
           <div class="search-layout">
             <fieldset class="race-field">
               <legend>種族</legend>
@@ -67,34 +85,129 @@
               </div>
             </label>
 
+            <button id="resetSearchButton" class="secondary-button search-reset-button" type="button">重置</button>
             <button id="searchButton" class="primary-button" type="button">查詢角色</button>
           </div>
         </section>
 
-        <section class="content-grid">
+        <section class="content-grid query-results-grid character-search-view">
           <section class="results-panel" id="resultsPanel">
-            <div class="panel-head">
+            <div id="resultsPanelHead" class="panel-head" hidden>
               <h3>搜索結果</h3>
+              <button id="clearResultsBtn" class="inline-clear-button" type="button">清空</button>
               <span id="resultCount">0 筆</span>
               <button id="collapseResultsBtn" class="panel-collapse-btn" type="button" title="收起搜索結果">
                 <i data-lucide="panel-left-close" aria-hidden="true"></i>
               </button>
             </div>
+            <div id="resultsList" class="results-list"></div>
             <div id="historyPanel" class="history-panel"></div>
-            <div id="resultsList" class="results-list">
-              <div class="empty-state">
-                <div class="empty-mark">✦</div>
-                <p>輸入角色名稱後開始查詢</p>
-              </div>
-            </div>
           </section>
 
+        </section>
+
+        <section id="characterDetailView" class="character-detail-view" hidden>
           <section class="detail-panel" id="detailPanel">
             <div class="detail-placeholder">
               <div class="empty-mark">◇</div>
               <h3>尚未選擇角色</h3>
               <p>點擊搜索結果後，這裡會展示角色詳情、裝備與攻擊力分析。</p>
             </div>
+          </section>
+        </section>
+
+        <section id="rankingView" class="ranking-view" hidden>
+          <section class="ranking-panel">
+            <div class="ranking-toolbar">
+              <div class="ranking-tabs" id="rankingTabs"></div>
+              <div id="rankingStatus" class="status-pill">待載入</div>
+            </div>
+
+            <div class="ranking-filters">
+              <label>
+                <span>種族</span>
+                <select id="rankingRaceSelect">
+                  <option value="1">天族</option>
+                  <option value="2">魔族</option>
+                </select>
+              </label>
+              <label>
+                <span>伺服器</span>
+                <select id="rankingServerSelect"></select>
+              </label>
+              <label>
+                <span>職業</span>
+                <select id="rankingClassSelect"></select>
+              </label>
+              <label class="ranking-keyword">
+                <span>角色名</span>
+                <input id="rankingKeywordInput" type="search" placeholder="搜尋角色" autocomplete="off" />
+              </label>
+              <button id="rankingSearchButton" class="primary-button" type="button">查詢排名</button>
+            </div>
+
+            <div class="ranking-table-wrap">
+              <table class="ranking-table">
+                <thead>
+                  <tr>
+                    <th>名次</th>
+                    <th>角色名稱/所屬軍團</th>
+                    <th>職業</th>
+                    <th>排名點數</th>
+                    <th>戰績</th>
+                    <th>套用階級</th>
+                    <th>上一賽季</th>
+                  </tr>
+                </thead>
+                <tbody id="rankingTableBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="wingSimulatorView" class="wing-simulator-view" hidden>
+          <section class="wing-sim-panel">
+            <div class="wing-sim-head">
+              <div>
+                <h3>翅膀</h3>
+                <p>選擇已持有的翅膀；PVE 戰鬥面板開啟翅膀後，會套用這裡保存的持有效果與強化效果。</p>
+              </div>
+              <div class="wing-sim-actions">
+                <span id="wingSelectionCount" class="status-pill">0 / 0</span>
+                <button id="selectAllWingsBtn" type="button">全選</button>
+                <button id="clearWingsBtn" type="button">清空</button>
+              </div>
+            </div>
+            <div id="wingCatalogList" class="wing-catalog-list"></div>
+          </section>
+        </section>
+
+        <section id="petInsightView" class="wing-simulator-view" hidden>
+          <section class="wing-sim-panel">
+            <div id="petInsightContent"></div>
+          </section>
+        </section>
+
+
+        <section id="titleSimulatorView" class="wing-simulator-view" hidden>
+          <section class="wing-sim-panel">
+            <div class="wing-sim-head">
+              <div>
+                <h3>稱號</h3>
+                <p>選擇已持有與目前裝備的稱號；PVE 戰鬥面板開啟稱號後，會套用持有效果與裝備效果。</p>
+              </div>
+              <div class="wing-sim-actions">
+                <span id="titleSelectionCount" class="status-pill">0 / 0</span>
+                <button id="selectAllTitlesBtn" type="button">全選</button>
+                <button id="clearTitlesBtn" type="button">清空</button>
+              </div>
+            </div>
+            <div id="titleCatalogList" class="title-catalog-list"></div>
+          </section>
+        </section>
+        <section id="wardrobeView" class="wing-simulator-view" hidden>
+          <section class="wing-sim-panel">
+            <div id="wardrobeContent"></div>
           </section>
         </section>
       </main>
@@ -111,3 +224,5 @@
     </script>
   </body>
 </html>
+
+
