@@ -50,15 +50,16 @@ const CLASS_OPTIONS = [
   { id: "7", label: "魔道星", names: ["魔道星"] },
   { id: "8", label: "治癒星", names: ["治癒星"] },
   { id: "9", label: "護法星", names: ["護法星"] },
+  { id: "12", label: "拳星", names: ["拳星"] },
 ];
 
 const RANKING_TYPES = [
   { key: "abyss", label: "深淵", contentsType: 1 },
-  { key: "arenaOfSolitude", label: "孤獨競技場", contentsType: 2 },
-  { key: "arenaOfCooperation", label: "協力競技場", contentsType: 3 },
-  { key: "nightmare", label: "惡夢", contentsType: 4 },
-  { key: "transcendence", label: "超越", contentsType: 5 },
-  { key: "ascensionTrial", label: "覺醒戰", contentsType: 6 },
+  { key: "arenaOfSolitude", label: "孤獨競技場", contentsType: 5 },
+  { key: "arenaOfCooperation", label: "協力競技場", contentsType: 6 },
+  { key: "nightmare", label: "惡夢", contentsType: 3 },
+  { key: "transcendence", label: "超越", contentsType: 4 },
+  { key: "ascensionTrial", label: "覺醒戰", contentsType: 21 },
 ];
 
 const SLOT_CN = {
@@ -163,11 +164,16 @@ const ENV_COMBAT_AMP_STAT_DEFS = [
 const ABNORMAL_STAT_DEFS = [
   { key: "shockHit", label: "衝擊系擊中", names: ["衝擊系擊中", "冲击系击中"], ids: ["ShockHit", "ImpactHit"], isPct: true },
   { key: "shockResist", label: "衝擊系抵抗", names: ["衝擊系抵抗", "冲击系抵抗"], ids: ["ShockResist", "ImpactResist", "ShockPropertyResist"], isPct: true },
+  { key: "spiritHit", label: "精神系擊中", names: ["精神系擊中", "精神系击中"], ids: ["SpiritHit", "MentalHit"], isPct: true },
+  { key: "spiritResist", label: "精神系抵抗", names: ["精神系抵抗"], ids: ["SpiritResist", "MentalResist"], isPct: true },
+  { key: "bodyResist", label: "肉體系抵抗", names: ["肉體系抵抗", "肉体系抵抗"], ids: ["BodyResist", "PhysicalResist", "BodyPropertyResist"], isPct: true },
+  { key: "propertyHit", label: "屬性系擊中", names: ["屬性系擊中", "属性系击中", "肉體系及精神系擊中", "肉体系及精神系击中"], ids: ["PropertyHit", "BodySpiritHit"], isPct: true },
   { key: "statusHit", label: "異常狀態擊中", names: ["異常狀態擊中", "异常状态击中"], ids: ["AbnormalStatusHit", "AbnormalHit"], isPct: true },
   { key: "pStatusResist", label: "異常狀態抵抗增加", names: ["異常狀態抵抗增加", "异常状态抵抗增加", "異常狀態抵抗", "异常状态抵抗"], ids: ["AbnormalStatusResistRatio", "AbnormalResistRatio"], isPct: true },
 ];
 const OTHER_STAT_DEFS = [
   { key: "flightPower",       label: "飛行力",         names: ["飛行力", "飞行力"],                       ids: ["FP", "FPMax", "FlightPower"],              isPct: false },
+  { key: "maxAction",         label: "最大行動力",     names: ["最大行動力", "最大行动力"],               ids: ["MaxActionPoint", "ActionPointMax", "MaxActionPower"], isPct: false },
   { key: "flightRegen",        label: "飛行力自然恢復", names: ["飛行力自然恢復", "飞行力自然恢复"],       ids: ["SPRegen", "FlightPowerRegen"],              isPct: false },
   { key: "battleHpRegen",      label: "戰鬥中生命力自然恢復", names: ["戰鬥中生命力自然恢復", "战斗中生命力自然恢复"], ids: ["BattleHPRegen"], isPct: false },
   { key: "battleMpRegen",      label: "戰鬥中精神力自然恢復", names: ["戰鬥中精神力自然恢復", "战斗中精神力自然恢复"], ids: ["BattleMPRegen"], isPct: false },
@@ -196,13 +202,416 @@ const OTHER_STAT_DEFS = [
   { key: "backCritResist",    label: "後方暴擊抵抗",   names: ["後方暴擊抵抗", "后方暴击抵抗"],         ids: ["BackCriticalResist", "BackCritResist"],  isPct: true  },
   { key: "blockPen",          label: "格擋貫穿",       names: ["格擋貫穿", "格挡贯穿"],                 ids: ["BlockPenetration", "BlockBreak"],       isPct: false },
   { key: "block",             label: "格擋",           names: ["格擋", "格挡"],                         ids: ["Block", "BlockRate"],                  isPct: false },
+  { key: "maxRage",           label: "最大憤怒",       names: ["最大憤怒", "最大愤怒"],                 ids: ["MaxRage", "RageMax"],                  isPct: false },
+  { key: "spiritPveDamageAmp", label: "精靈PVE傷害增幅", names: ["精靈PVE傷害增幅", "精灵PVE伤害增幅"], ids: ["SpiritPveDamageAmp"], isPct: true },
+  { key: "spiritPvpDamageAmp", label: "精靈PVP傷害增幅", names: ["精靈PVP傷害增幅", "精灵PVP伤害增幅"], ids: ["SpiritPvpDamageAmp"], isPct: true },
+  { key: "spiritPerfect",      label: "精靈完美",       names: ["精靈完美", "精灵完美"],                 ids: ["SpiritPerfect"], isPct: true },
+  { key: "spiritDefensePct",   label: "精靈防禦力",     names: ["精靈防禦力", "精灵防御力"],             ids: ["SpiritDefensePct"], isPct: true },
+  { key: "spiritCritDamageAmp", label: "精靈暴擊傷害增幅", names: ["精靈暴擊傷害增幅", "精灵暴击伤害增幅"], ids: ["SpiritCritDamageAmp"], isPct: true },
 ];
 const CLASS_PASSIVE_CONFIGS = {
+  "劍星": {
+    className: "劍星",
+    skills: [
+      {
+        name: "生存姿態",
+        aliases: ["生存姿态"],
+        effects: [
+          { bucket: "primary", key: "hp", label: "生命力增加", base: 0, perLevel: 200 },
+          { bucket: "pct", key: "pHp", label: "最大生命力額外增加", base: 5, perLevel: 2 },
+          { bucket: "other", key: "hpRegen", label: "生命力自然恢復額外增加", base: 0, perLevel: 20, isPct: false },
+          { bucket: "envCombatAmp", key: "pveDamageResist", label: "PVE傷害耐性增加", base: 5, perLevel: 0.5 },
+          { bucket: "envCombatAmp", key: "pvpDamageResist", label: "PVP傷害耐性增加", base: 2.5, perLevel: 0.25 },
+        ],
+      },
+      {
+        name: "保護盔甲",
+        aliases: ["保护盔甲"],
+        notes: ["格擋成功時恢復生命力為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "other", key: "block", label: "格擋增加", fixed: 200, isPct: false },
+        ],
+      },
+      {
+        name: "掌握弱點",
+        aliases: ["掌握弱点"],
+        effects: [
+          { bucket: "primary", key: "critical", label: "暴擊增加", base: 90, perLevel: 10 },
+          { bucket: "other", key: "perfect", label: "完美增加", base: 0, perLevel: 0.5 },
+        ],
+      },
+      {
+        name: "攻擊準備",
+        aliases: ["攻击准备"],
+        effects: [
+          { bucket: "envCombatAmp", key: "pveDamageAmp", label: "PVE傷害增幅增加", base: 5, perLevel: 0.5 },
+          { bucket: "envCombatAmp", key: "pvpDamageAmp", label: "PVP傷害增幅增加", base: 2.5, perLevel: 0.25 },
+          { bucket: "pct", key: "pDefense", label: "防禦力增加", base: 0, perLevel: 2 },
+          { bucket: "primary", key: "hit", label: "命中增加", fixed: 100 },
+        ],
+      },
+      {
+        name: "衝擊擊中",
+        aliases: ["冲击击中"],
+        effects: [
+          { bucket: "abnormal", key: "shockHit", label: "衝擊系擊中", base: 10, perLevel: 1.2 },
+          { bucket: "other", key: "powerStrike", label: "強擊", base: 0, perLevel: 0.3 },
+        ],
+      },
+      {
+        name: "老練反擊",
+        aliases: ["老练反击"],
+        notes: [
+          "格擋成功後 20 秒內自己及小隊 PVE/PVP 傷害增幅為觸發效果，未計入常駐屬性。",
+          "觸發增幅效果不與守護星的激昂效果重複套用。",
+        ],
+        effects: [
+          { bucket: "basicCombatAmp", key: "frontDamageAmp", label: "前方傷害增幅增加", base: 0, perLevel: 0.4 },
+        ],
+      },
+      {
+        name: "生存意志",
+        aliases: ["生存意志"],
+        notes: ["受擊後 5 秒內異常狀態抵抗疊加為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "abnormal", key: "pStatusResist", label: "異常狀態抵抗增加", base: 15, perLevel: 2 },
+          { bucket: "envCombatAmp", key: "pveDamageResist", label: "PVE傷害耐性增加", base: 10, perLevel: 2 },
+          { bucket: "envCombatAmp", key: "pvpDamageResist", label: "PVP傷害耐性增加", base: 5, perLevel: 1 },
+        ],
+      },
+    ],
+  },
+  "守護星": {
+    className: "守護星",
+    skills: [
+      {
+        name: "體力強化",
+        aliases: ["体力强化"],
+        effects: [
+          { bucket: "primary", key: "hp", label: "生命力增加", base: 0, perLevel: 250 },
+          { bucket: "pct", key: "pHp", label: "最大生命力額外增加", base: 5, perLevel: 2.5 },
+          { bucket: "other", key: "healingReceived", label: "所受治療量額外增加", base: 5, perLevel: 1 },
+        ],
+      },
+      {
+        name: "庇護盾牌",
+        aliases: ["庇护盾牌"],
+        notes: ["格擋成功時恢復生命力為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "other", key: "block", label: "格擋增加", fixed: 200, isPct: false },
+        ],
+      },
+      {
+        name: "斷罪加護",
+        aliases: ["断罪加护"],
+        notes: [
+          "攻擊命中時 10 秒內獲得斷罪加護為觸發效果，未計入常駐屬性。",
+          "斷罪加護期間攻擊命中追加傷害為觸發效果，未計入常駐屬性。",
+        ],
+        effects: [
+          { bucket: "primary", key: "critical", label: "暴擊增加", base: 90, perLevel: 10 },
+        ],
+      },
+      {
+        name: "銅牆鐵壁",
+        aliases: ["铜墙铁壁"],
+        effects: [
+          { bucket: "pct", key: "pDefense", label: "防禦力增加", base: 5, perLevel: 2 },
+          { bucket: "other", key: "ironWall", label: "鐵壁增加", base: 0, perLevel: 1 },
+        ],
+      },
+      {
+        name: "衝擊擊中",
+        aliases: ["冲击击中"],
+        effects: [
+          { bucket: "abnormal", key: "shockHit", label: "衝擊系擊中", base: 10, perLevel: 1.2 },
+          { bucket: "other", key: "powerStrike", label: "強擊", base: 0, perLevel: 0.3 },
+        ],
+      },
+      {
+        name: "激昂",
+        aliases: ["激昂"],
+        notes: [
+          "格擋成功後 20 秒內自己及小隊 PVE/PVP 傷害增幅為觸發效果，未計入常駐屬性。",
+          "觸發增幅效果不與劍星老練反擊效果重複套用。",
+        ],
+        effects: [
+          { bucket: "basicCombatAmp", key: "frontDamageAmp", label: "前方傷害增幅增加", base: 0, perLevel: 0.3 },
+        ],
+      },
+      {
+        name: "生存意志",
+        aliases: ["生存意志"],
+        notes: ["受擊後 5 秒內異常狀態抵抗疊加為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "abnormal", key: "pStatusResist", label: "異常狀態抵抗增加", base: 15, perLevel: 2 },
+          { bucket: "envCombatAmp", key: "pveDamageResist", label: "PVE傷害耐性增加", base: 10, perLevel: 2 },
+          { bucket: "envCombatAmp", key: "pvpDamageResist", label: "PVP傷害耐性增加", base: 5, perLevel: 1 },
+        ],
+      },
+    ],
+  },
+  "弓星": {
+    className: "弓星",
+    skills: [
+      {
+        name: "警戒之眼",
+        aliases: ["警戒之眼"],
+        notes: ["迴避成功時立即恢復生命力為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "primary", key: "evasion", label: "迴避增加", fixed: 200 },
+          { bucket: "pct", key: "pHp", label: "最大生命力增加", base: 5, perLevel: 1 },
+        ],
+      },
+      {
+        name: "風之活力",
+        aliases: ["风之活力"],
+        notes: ["受到攻擊時短時間移動速度增加為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "other", key: "maxAction", label: "最大行動力增加", base: 0, perLevel: 15, isPct: false },
+        ],
+      },
+      {
+        name: "集中之眼",
+        aliases: ["集中之眼"],
+        effects: [
+          { bucket: "primary", key: "hit", label: "命中增加", fixed: 100 },
+          { bucket: "envCombatAmp", key: "pveDamageAmp", label: "PVE傷害增幅增加", base: 0, perLevel: 1 },
+          { bucket: "envCombatAmp", key: "pvpDamageAmp", label: "PVP傷害增幅增加", base: 0, perLevel: 0.5 },
+          { bucket: "other", key: "powerStrike", label: "強擊增加", base: 0, perLevel: 0.2 },
+        ],
+      },
+      {
+        name: "獵人決心",
+        aliases: ["猎人决心"],
+        effects: [
+          { bucket: "basicCombatAmp", key: "critDamageAmp", label: "暴擊傷害增幅增加", base: 5, perLevel: 1 },
+        ],
+      },
+      {
+        name: "抵抗決心",
+        aliases: ["抵抗决心"],
+        effects: [
+          { bucket: "abnormal", key: "bodyResist", label: "肉體系抵抗增加", base: 10, perLevel: 1.5 },
+          { bucket: "abnormal", key: "shockResist", label: "衝擊系抵抗增加", base: 10, perLevel: 1.5 },
+        ],
+      },
+      {
+        name: "回生契約",
+        aliases: ["回生契约"],
+        notes: ["受擊後 5 秒內異常狀態抵抗疊加與低生命力恢復為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "abnormal", key: "pStatusResist", label: "異常狀態抵抗增加", base: 15, perLevel: 2 },
+        ],
+      },
+    ],
+  },
+  "精靈星": {
+    className: "精靈星",
+    skills: [
+      {
+        name: "精靈打擊",
+        aliases: ["精灵打击"],
+        effects: [
+          { bucket: "envCombatAmp", key: "pveDamageAmp", label: "PVE傷害增幅增加", base: 5, perLevel: 1 },
+          { bucket: "envCombatAmp", key: "pvpDamageAmp", label: "PVP傷害增幅增加", base: 2.5, perLevel: 0.5 },
+          { bucket: "other", key: "perfect", label: "完美增加", base: 0, perLevel: 0.4 },
+          { bucket: "other", key: "spiritPveDamageAmp", label: "精靈PVE傷害增幅增加", base: 5, perLevel: 1 },
+          { bucket: "other", key: "spiritPvpDamageAmp", label: "精靈PVP傷害增幅增加", base: 2.5, perLevel: 0.5 },
+          { bucket: "other", key: "spiritPerfect", label: "精靈完美增加", base: 0, perLevel: 0.4 },
+        ],
+      },
+      {
+        name: "精靈保護",
+        aliases: ["精灵保护"],
+        effects: [
+          { bucket: "pct", key: "pDefense", label: "防禦力增加", base: 0, perLevel: 2 },
+          { bucket: "other", key: "spiritDefensePct", label: "精靈防禦力增加", base: 0, perLevel: 2 },
+        ],
+      },
+      {
+        name: "侵蝕",
+        aliases: ["侵蚀"],
+        notes: ["暴擊擊中時追加傷害為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "primary", key: "critical", label: "暴擊增加", base: 90, perLevel: 10 },
+        ],
+      },
+      {
+        name: "精神集中",
+        aliases: ["精神集中"],
+        effects: [
+          { bucket: "abnormal", key: "spiritHit", label: "精神系擊中增加", base: 10, perLevel: 1 },
+          { bucket: "other", key: "powerStrike", label: "強擊增加", base: 0, perLevel: 0.3 },
+        ],
+      },
+      {
+        name: "精靈交流",
+        aliases: ["精灵交流"],
+        notes: ["攻擊擊中時恢復自己和精靈生命力為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "primary", key: "hit", label: "命中增加", fixed: 100 },
+        ],
+      },
+      {
+        name: "元素集結",
+        aliases: ["元素集结"],
+        notes: ["每次精靈技能攻擊擊中會疊加暴擊傷害增幅；因持續時間覆蓋冷卻，本站按滿 5 層戰鬥常駐計入。"],
+        effects: [
+          { bucket: "basicCombatAmp", key: "critDamageAmp", label: "暴擊傷害增幅（元素集結滿層）", base: 5, perLevel: 0.5 },
+          { bucket: "other", key: "spiritCritDamageAmp", label: "精靈暴擊傷害增幅（元素集結滿層）", base: 5, perLevel: 0.5 },
+        ],
+      },
+      {
+        name: "回生契約",
+        aliases: ["回生契约"],
+        notes: ["受擊後 5 秒內異常狀態抵抗疊加與低生命力恢復為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "abnormal", key: "pStatusResist", label: "異常狀態抵抗增加", base: 15, perLevel: 2 },
+        ],
+      },
+    ],
+  },
+  "治癒星": {
+    className: "治癒星",
+    skills: [
+      {
+        name: "溫暖加護",
+        aliases: ["温暖加护"],
+        effects: [
+          { bucket: "pct", key: "pHp", label: "最大生命力增加", base: 5, perLevel: 1 },
+          { bucket: "pct", key: "pMp", label: "最大精神力增加", base: 5, perLevel: 2 },
+        ],
+      },
+      {
+        name: "主神加護",
+        aliases: ["主神加护"],
+        notes: ["格擋成功時恢復生命力為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "other", key: "block", label: "格擋增加", fixed: 200, isPct: false },
+        ],
+      },
+      {
+        name: "主神恩寵",
+        aliases: ["主神恩宠"],
+        notes: ["每次攻擊擊中目標時追加傷害為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "primary", key: "critical", label: "暴擊增加", base: 95, perLevel: 5 },
+          { bucket: "other", key: "powerStrike", label: "強擊增加", base: 0, perLevel: 0.2 },
+        ],
+      },
+      {
+        name: "治癒力強化",
+        aliases: ["治愈力强化"],
+        notes: ["根據攻擊力等比額外增加的治癒力為派生效果，暫未單獨折算。"],
+        effects: [
+          { bucket: "other", key: "healingReceived", label: "治癒增幅增加", base: 8, perLevel: 2 },
+        ],
+      },
+      {
+        name: "不死庇幕",
+        aliases: ["不死庇幕"],
+        effects: [
+          { bucket: "pct", key: "pDefense", label: "防禦力增加", base: 0, perLevel: 2 },
+          { bucket: "primary", key: "criticalResist", label: "暴擊抵抗增加", base: 90, perLevel: 10 },
+        ],
+      },
+      {
+        name: "大地恩寵",
+        aliases: ["大地恩宠"],
+        effects: [
+          { bucket: "basicCombatAmp", key: "critDamageAmp", label: "暴擊傷害增幅增加", base: 2.5, perLevel: 0.5 },
+          { bucket: "primary", key: "hit", label: "命中增加", fixed: 100 },
+        ],
+      },
+      {
+        name: "生存意志",
+        aliases: ["生存意志"],
+        notes: ["受擊後 5 秒內異常狀態抵抗疊加為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "abnormal", key: "pStatusResist", label: "異常狀態抵抗增加", base: 15, perLevel: 2 },
+          { bucket: "envCombatAmp", key: "pveDamageResist", label: "PVE傷害耐性增加", base: 10, perLevel: 2 },
+          { bucket: "envCombatAmp", key: "pvpDamageResist", label: "PVP傷害耐性增加", base: 5, perLevel: 1 },
+        ],
+      },
+    ],
+  },
+  "護法星": {
+    className: "護法星",
+    skills: [
+      {
+        name: "生命祝福",
+        aliases: ["生命祝福"],
+        effects: [
+          { bucket: "primary", key: "hp", label: "生命力增加", base: 0, perLevel: 150 },
+          { bucket: "pct", key: "pHp", label: "最大生命力額外增加", base: -1.25, perLevel: 1.75 },
+          { bucket: "other", key: "healingReceived", label: "治癒增幅額外增加", base: 4, perLevel: 1 },
+        ],
+      },
+      {
+        name: "十字防禦",
+        aliases: ["十字防御"],
+        notes: ["格擋成功時恢復生命力為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "other", key: "block", label: "格擋增加", fixed: 200, isPct: false },
+        ],
+      },
+      {
+        name: "鼓吹咒語",
+        aliases: ["鼓吹咒语"],
+        effects: [
+          { bucket: "primary", key: "critical", label: "暴擊增加", base: 90, perLevel: 10 },
+          { bucket: "other", key: "perfect", label: "完美增加", base: 0, perLevel: 0.5 },
+        ],
+      },
+      {
+        name: "攻擊準備",
+        aliases: ["攻击准备"],
+        effects: [
+          { bucket: "envCombatAmp", key: "pveDamageAmp", label: "PVE傷害增幅增加", base: 5, perLevel: 0.5 },
+          { bucket: "envCombatAmp", key: "pvpDamageAmp", label: "PVP傷害增幅增加", base: 2.5, perLevel: 0.25 },
+          { bucket: "pct", key: "pDefense", label: "防禦力增加", base: 0, perLevel: 2 },
+          { bucket: "primary", key: "hit", label: "命中增加", fixed: 100 },
+        ],
+      },
+      {
+        name: "衝擊擊中",
+        aliases: ["冲击击中"],
+        effects: [
+          { bucket: "abnormal", key: "shockHit", label: "衝擊系擊中", base: 10, perLevel: 1.2 },
+          { bucket: "other", key: "powerStrike", label: "強擊", base: 0, perLevel: 0.3 },
+        ],
+      },
+      {
+        name: "生存意志",
+        aliases: ["生存意志"],
+        notes: ["受擊後 5 秒內異常狀態抵抗疊加為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "abnormal", key: "pStatusResist", label: "異常狀態抵抗增加", base: 15, perLevel: 2 },
+          { bucket: "envCombatAmp", key: "pveDamageResist", label: "PVE傷害耐性增加", base: 10, perLevel: 2 },
+          { bucket: "envCombatAmp", key: "pvpDamageResist", label: "PVP傷害耐性增加", base: 5, perLevel: 1 },
+        ],
+      },
+      {
+        name: "風之約定",
+        aliases: ["风之约定"],
+        notes: [
+          "暴擊擊中時追加傷害為觸發效果，未計入常駐屬性。",
+          "暴擊傷害增幅按官方 10/20/30 級基準線性折算：Lv.1 為 5.7%，每級增加 0.7%。",
+        ],
+        effects: [
+          { bucket: "basicCombatAmp", key: "critDamageAmp", label: "暴擊傷害增幅（風之約定）", base: 5, perLevel: 0.7 },
+        ],
+      },
+    ],
+  },
   "殺星": {
     className: "殺星",
     skills: [
       {
         name: "第六感最大化",
+        aliases: ["第六感最大化"],
+        notes: ["迴避成功時恢復生命力為觸發效果，未計入常駐屬性。"],
         effects: [
           { bucket: "primary", key: "evasion", label: "回避", fixed: 200 },
           { bucket: "primary", key: "hp", label: "生命力", perLevel: 150 },
@@ -211,35 +620,42 @@ const CLASS_PASSIVE_CONFIGS = {
       },
       {
         name: "瞄準破綻",
+        aliases: ["瞄准破绽"],
+        notes: ["暴擊擊中時 10 秒內攻擊力增加為觸發效果，未計入常駐屬性。"],
         effects: [
-          { bucket: "primary", key: "critical", label: "暴擊增加", base: 100, perLevel: 10 },
+          { bucket: "primary", key: "critical", label: "暴擊增加", base: 90, perLevel: 10 },
         ],
       },
       {
         name: "背後強擊",
+        aliases: ["背后强击"],
         effects: [
-          { bucket: "basicCombatAmp", key: "backDamageAmp", label: "後方傷害增幅", base: 3, perLevel: 0.5 },
-          { bucket: "envCombatAmp", key: "pveDamageAmp", label: "PVE傷害增幅", base: 3, perLevel: 0.5 },
-          { bucket: "envCombatAmp", key: "pvpDamageAmp", label: "PVP傷害增幅", base: 1.5, perLevel: 0.25 },
+          { bucket: "basicCombatAmp", key: "backDamageAmp", label: "後方傷害增幅", base: 2.5, perLevel: 0.5 },
+          { bucket: "envCombatAmp", key: "pveDamageAmp", label: "PVE傷害增幅", base: 2.5, perLevel: 0.5 },
+          { bucket: "envCombatAmp", key: "pvpDamageAmp", label: "PVP傷害增幅", base: 1.25, perLevel: 0.25 },
         ],
       },
       {
         name: "衝擊擊中",
+        aliases: ["冲击击中"],
         effects: [
-          { bucket: "abnormal", key: "shockHit", label: "衝擊系擊中", base: 11.2, perLevel: 1.2 },
+          { bucket: "abnormal", key: "shockHit", label: "衝擊系擊中", base: 10, perLevel: 1.2 },
           { bucket: "other", key: "powerStrike", label: "強擊", base: 0, perLevel: 0.3 },
         ],
       },
       {
         name: "回生契約",
+        aliases: ["回生契约"],
+        notes: ["受擊疊加抵抗與低血恢復為觸發效果，未計入常駐屬性。"],
         effects: [
-          { bucket: "abnormal", key: "pStatusResist", label: "異常狀態抵抗增加", base: 17, perLevel: 2 },
+          { bucket: "abnormal", key: "pStatusResist", label: "異常狀態抵抗增加", base: 15, perLevel: 2 },
         ],
       },
       {
         name: "強襲姿態",
+        aliases: ["强袭姿态"],
         effects: [
-          { bucket: "basicCombatAmp", key: "critDamageAmp", label: "暴擊傷害增幅", base: 6, perLevel: 1 },
+          { bucket: "basicCombatAmp", key: "critDamageAmp", label: "暴擊傷害增幅", base: 5, perLevel: 1 },
         ],
       },
     ],
@@ -251,8 +667,148 @@ const CLASS_PASSIVE_CONFIGS = {
         name: "火花長袍",
         aliases: ["火花长袍"],
         effects: [
+          { bucket: "primary", key: "hit", label: "命中增加", fixed: 100 },
+          { bucket: "envCombatAmp", key: "pveDamageAmp", label: "PVE傷害增幅", base: 0, perLevel: 1 },
+          { bucket: "envCombatAmp", key: "pvpDamageAmp", label: "PVP傷害增幅", base: 0, perLevel: 0.5 },
           { bucket: "other", key: "powerStrike", label: "強擊", base: 0, perLevel: 0.2 },
         ],
+      },
+      {
+        name: "冷氣長袍",
+        aliases: ["冷气长袍"],
+        notes: ["受擊時賦予遲緩效果為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "pct", key: "pDefense", label: "防禦力增加", base: 0, perLevel: 1 },
+          { bucket: "primary", key: "criticalResist", label: "暴擊抵抗增加", base: 50, perLevel: 5 },
+        ],
+      },
+      {
+        name: "強化恩惠",
+        aliases: ["强化恩惠"],
+        notes: ["普攻追加傷害為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "envCombatAmp", key: "pveDamageAmp", label: "PVE傷害增幅（預設精神力25%以上常駐）", fixed: 20 },
+          { bucket: "envCombatAmp", key: "pvpDamageAmp", label: "PVP傷害增幅（預設精神力25%以上常駐）", fixed: 10 },
+        ],
+      },
+      {
+        name: "回生契約",
+        aliases: ["回生契约"],
+        notes: ["受擊疊加抵抗與低血恢復為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "abnormal", key: "pStatusResist", label: "異常狀態抵抗增加", base: 15, perLevel: 2 },
+        ],
+      },
+      {
+        name: "大地長袍",
+        aliases: ["大地长袍"],
+        effects: [
+          { bucket: "pct", key: "pMp", label: "最大精神力增加", base: 5, perLevel: 2 },
+          { bucket: "other", key: "mpRegen", label: "精神力自然恢復", base: 0, perLevel: 5 },
+          { bucket: "primary", key: "critical", label: "暴擊增加（預設精神力50%以上常駐）", base: 100, perLevel: 5 },
+        ],
+      },
+      {
+        name: "精氣吸收",
+        aliases: ["精气吸收"],
+        notes: ["普攻命中恢復精神力為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "abnormal", key: "propertyHit", label: "肉體系及精神系擊中增加", base: 11, perLevel: 1 },
+        ],
+      },
+      {
+        name: "抵抗恩惠",
+        aliases: ["抵抗恩惠"],
+        effects: [
+          { bucket: "abnormal", key: "spiritResist", label: "精神系抵抗增加", base: 10, perLevel: 1.5 },
+          { bucket: "abnormal", key: "shockResist", label: "衝擊系抵抗增加", base: 10, perLevel: 1.5 },
+        ],
+      },
+    ],
+  },
+  "拳星": {
+    className: "拳星",
+    skills: [
+      {
+        name: "維持戰線",
+        aliases: ["维持战线"],
+        notes: ["格擋成功時恢復生命力為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "other", key: "block", label: "格擋增加", fixed: 200, isPct: false },
+        ],
+      },
+      {
+        name: "正面突破",
+        aliases: ["正面突破"],
+        notes: ["前方攻擊時追加傷害為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "primary", key: "hit", label: "命中增加", fixed: 100 },
+          { bucket: "primary", key: "critical", label: "暴擊增加", base: 90, perLevel: 10 },
+        ],
+      },
+      {
+        name: "精神轉換",
+        aliases: ["精神转换"],
+        notes: ["按當前最大精神力與精神力自然恢復折算後計入常駐屬性。"],
+        effects: [],
+        conversions: [
+          { sourceBucket: "primary", sourceKey: "mp", targetBucket: "primary", targetKey: "hp", label: "最大精神力轉換最大生命力", base: 45, perLevel: 5 },
+          { sourceBucket: "other", sourceKey: "mpRegen", targetBucket: "other", targetKey: "hpRegen", label: "精神力自然恢復轉換生命力自然恢復", base: 9.5, perLevel: 0.5 },
+        ],
+      },
+      {
+        name: "威勢",
+        aliases: ["威势"],
+        effects: [
+          { bucket: "basicCombatAmp", key: "frontDamageAmp", label: "前方傷害增幅", base: 2.5, perLevel: 0.5 },
+          { bucket: "envCombatAmp", key: "pveDamageAmp", label: "PVE傷害增幅", base: 2.5, perLevel: 0.5 },
+          { bucket: "envCombatAmp", key: "pvpDamageAmp", label: "PVP傷害增幅", base: 1.25, perLevel: 0.25 },
+        ],
+      },
+      {
+        name: "暴走增幅",
+        aliases: ["暴走增幅"],
+        notes: ["日常按一般狀態計入；暴走狀態下攻擊力/防禦力加成互換為另一組數值。"],
+        effects: [
+          { bucket: "pct", key: "pAttack", label: "攻擊力增加（一般狀態；暴走狀態為 2+等級×0.5%）", base: 1.2, perLevel: 0.3 },
+          { bucket: "pct", key: "pDefense", label: "防禦力增加（一般狀態；暴走狀態為 1.2+等級×0.3%）", base: 2, perLevel: 0.5 },
+        ],
+      },
+      {
+        name: "衝擊擊中",
+        aliases: ["冲击击中"],
+        effects: [
+          { bucket: "abnormal", key: "shockHit", label: "衝擊系擊中", base: 10, perLevel: 1.2 },
+          { bucket: "other", key: "powerStrike", label: "強擊", base: 0, perLevel: 0.3 },
+        ],
+      },
+      {
+        name: "巨大憤怒",
+        aliases: ["巨大愤怒"],
+        notes: ["暴走狀態每秒消耗憤怒為狀態消耗提示，未計入常駐屬性。"],
+        effects: [
+          { bucket: "other", key: "maxRage", label: "最大憤怒增加", base: 0, perLevel: 25, isPct: false },
+        ],
+      },
+      {
+        name: "衝擊打",
+        aliases: ["冲击打"],
+        notes: ["目標為衝擊系或眩暈狀態時的追加傷害為觸發效果，未計入常駐屬性。"],
+        effects: [],
+      },
+      {
+        name: "回生契約",
+        aliases: ["回生契约"],
+        notes: ["受擊疊加抵抗與低血恢復為觸發效果，未計入常駐屬性。"],
+        effects: [
+          { bucket: "abnormal", key: "pStatusResist", label: "異常狀態抵抗增加", base: 15, perLevel: 2 },
+        ],
+      },
+      {
+        name: "輕量化",
+        aliases: ["轻量化"],
+        notes: ["命中生命力高於50%的目標時追加傷害為觸發效果，未計入常駐屬性。"],
+        effects: [],
       },
     ],
   },
@@ -355,6 +911,10 @@ const WING_BONUS_EFFECT_OPTIONS = {
   "異常狀態抵抗": { label: "異常狀態抵抗", bucket: "abnormalStats", statKey: "pStatusResist", isPct: true, scale: 0.01 },
   "衝擊系擊中": { label: "衝擊系擊中", bucket: "abnormalStats", statKey: "shockHit", isPct: true, scale: 0.01 },
   "衝擊系抵抗": { label: "衝擊系抵抗", bucket: "abnormalStats", statKey: "shockResist", isPct: true, scale: 0.01 },
+  "精神系擊中": { label: "精神系擊中", bucket: "abnormalStats", statKey: "spiritHit", isPct: true, scale: 0.01 },
+  "精神系抵抗": { label: "精神系抵抗", bucket: "abnormalStats", statKey: "spiritResist", isPct: true, scale: 0.01 },
+  "肉體系抵抗": { label: "肉體系抵抗", bucket: "abnormalStats", statKey: "bodyResist", isPct: true, scale: 0.01 },
+  "屬性系擊中": { label: "屬性系擊中", bucket: "abnormalStats", statKey: "propertyHit", isPct: true, scale: 0.01 },
   "最大攻擊力": { label: "最大攻擊力", bucket: "primaryStats", statKey: "attack", isPct: false, scale: 0.5, note: "按平均攻擊力折算 50%" },
   "格擋": { label: "格擋", bucket: "otherStats", statKey: "block", isPct: false },
   "格擋貫穿": { label: "格擋貫穿", bucket: "otherStats", statKey: "blockPen", isPct: false },
@@ -366,6 +926,7 @@ const WING_BONUS_EFFECT_OPTIONS = {
   "戰鬥速度": { label: "戰鬥速度", bucket: "primaryStats", statKey: "combatSpeed", isPct: true, scale: 0.01 },
   "移動速度": { label: "移動速度", bucket: "primaryStats", statKey: "moveSpeed", isPct: true, scale: 0.01 },
   "飛行力": { label: "飛行力", bucket: "otherStats", statKey: "flightPower", isPct: false, scale: 0.01 },
+  "最大行動力": { label: "最大行動力", bucket: "otherStats", statKey: "maxAction", isPct: false },
   "生命力自然恢復": { label: "生命力自然恢復", bucket: "otherStats", statKey: "hpRegen", isPct: false },
   "生命力藥水恢復率": { label: "生命力藥水恢復率", bucket: "otherStats", statKey: "hpPotionRate", isPct: true, scale: 0.01 },
   "生命力藥水恢復量": { label: "生命力藥水恢復量", bucket: "otherStats", statKey: "hpPotionRegen", isPct: false },
@@ -434,7 +995,10 @@ const TRAD_MAP = {
   头: "頭", 体: "體", 强: "強", 击: "擊", 净: "淨", 深: "深",
   渊: "淵", 装: "裝", 备: "備", 术: "術", 称: "稱", 号: "號",
   复: "復", 查: "查", 询: "詢", 结: "結", 果: "果",
+  绝: "絕", 孙: "孫", 劳: "勞",
 };
+let simpleToTraditionalMap = { ...TRAD_MAP };
+let traditionalToSimpleMap = Object.fromEntries(Object.entries(simpleToTraditionalMap).map(([simple, traditional]) => [traditional, simple]));
 
 const state = {
   race: 0,
@@ -467,11 +1031,12 @@ const state = {
   selectedTitleIds: loadSelectedTitleIds(),
   titleSelectionInitialized: hasSavedTitleSelection(),
   activeTitleCategory: "attack",
-  activeTitleRace: "all",
+  activeTitleRace: "light",
   titleSearchKeyword: "",
   titleSearchFocused: false,
   titleSearchCursor: 0,
   titleSearchComposing: false,
+  titleHoldingSummaryCollapsed: true,
   wingBonusCatalog: null,
   titleCatalog: null,
   view: viewFromHash(location.hash),
@@ -485,12 +1050,14 @@ const state = {
     season: null,
     loading: false,
     error: "",
+    officialEmpty: false,
   },
 };
 
 let wingEffectCatalogPromise = null;
 let wingBonusCatalogPromise = null;
 let titleCatalogPromise = null;
+let s2tMapPromise = null;
 let resultsCollapsed = false;
 let lastDetailLoadTime = 0;
 const DETAIL_COOLDOWN_MS = 5000;
@@ -498,6 +1065,51 @@ const DETAIL_COOLDOWN_MS = 5000;
 function refreshIcons() {
   if (!window.lucide || typeof window.lucide.createIcons !== "function") return;
   window.lucide.createIcons();
+}
+
+function hideFloatingTooltip() {
+  document.querySelector(".floating-tooltip")?.remove();
+}
+
+function showFloatingTooltip(anchor, text) {
+  hideFloatingTooltip();
+  const content = String(text || "").trim();
+  if (!anchor || !content) return;
+  const tooltip = document.createElement("div");
+  tooltip.className = "floating-tooltip";
+  const lines = content.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  if (lines.length > 18) {
+    const maxRows = Math.max(12, Math.floor((window.innerHeight - 48) / 22));
+    const columnCount = Math.min(4, Math.ceil(lines.length / maxRows));
+    const rowCount = Math.ceil(lines.length / columnCount);
+    tooltip.classList.add("is-long");
+    tooltip.style.setProperty("--tooltip-rows", String(rowCount));
+    tooltip.innerHTML = lines.map((line) => `<span>${html(line)}</span>`).join("");
+  } else {
+    tooltip.textContent = content;
+  }
+  document.body.appendChild(tooltip);
+
+  const gap = 8;
+  const margin = 10;
+  const anchorRect = anchor.getBoundingClientRect();
+  const tooltipRect = tooltip.getBoundingClientRect();
+  const availableTop = anchorRect.top - margin;
+  const availableBottom = window.innerHeight - anchorRect.bottom - margin;
+  const placeBottom = availableBottom >= tooltipRect.height || availableBottom > availableTop;
+  let top = placeBottom ? anchorRect.bottom + gap : anchorRect.top - tooltipRect.height - gap;
+  let left = anchorRect.left;
+  left = Math.min(Math.max(left, margin), window.innerWidth - tooltipRect.width - margin);
+  top = Math.min(Math.max(top, margin), window.innerHeight - tooltipRect.height - margin);
+  tooltip.style.left = `${Math.round(left)}px`;
+  tooltip.style.top = `${Math.round(top)}px`;
+  tooltip.dataset.placement = placeBottom ? "bottom" : "top";
+}
+
+function updateBackToTopVisibility() {
+  if (!els.backToTopBtn) return;
+  const show = window.scrollY > 360;
+  els.backToTopBtn.classList.toggle("visible", show);
 }
 
 function setCollapseButtonIcon() {
@@ -612,6 +1224,7 @@ const els = {
   rankingKeywordInput: document.querySelector("#rankingKeywordInput"),
   rankingSearchButton: document.querySelector("#rankingSearchButton"),
   rankingTableBody: document.querySelector("#rankingTableBody"),
+  backToTopBtn: document.querySelector("#backToTopBtn"),
 };
 
 function html(value) {
@@ -729,8 +1342,29 @@ function loadingMarkup(title, body = "") {
   `;
 }
 
+async function loadS2TMap() {
+  if (!s2tMapPromise) {
+    s2tMapPromise = fetch("/data/s2t-map.json", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        const map = data && data.simpleToTraditional && typeof data.simpleToTraditional === "object" ? data.simpleToTraditional : null;
+        if (map) {
+          simpleToTraditionalMap = { ...simpleToTraditionalMap, ...map };
+          traditionalToSimpleMap = Object.fromEntries(Object.entries(simpleToTraditionalMap).map(([simple, traditional]) => [traditional, simple]));
+        }
+        return simpleToTraditionalMap;
+      })
+      .catch(() => simpleToTraditionalMap);
+  }
+  return s2tMapPromise;
+}
+
 function toTraditional(value) {
-  return String(value || "").split("").map((char) => TRAD_MAP[char] || char).join("");
+  return String(value || "").split("").map((char) => simpleToTraditionalMap[char] || char).join("");
+}
+
+function toSimplified(value) {
+  return String(value || "").split("").map((char) => traditionalToSimpleMap[char] || char).join("");
 }
 
 function loadHistory() {
@@ -1273,6 +1907,16 @@ function titleVisibleByRace(row, race) {
   return rowRace === "all" || rowRace === filter;
 }
 
+function titleCountRaceScope(activeRace, selectedIds = selectedTitleSet()) {
+  const race = String(activeRace || "all").toLowerCase();
+  if (race === "light" || race === "dark") return race;
+  return selectedTitleRace(selectedIds) || "light";
+}
+
+function titleRowsForCountScope(rows, race) {
+  return rows.filter((row) => titleVisibleByRace(row, race));
+}
+
 function selectedTitleRace(selectedIds) {
   const ids = selectedIds || selectedTitleSet();
   const selectedRows = titleCatalogRows().filter((row) => ids.has(titleId(row)));
@@ -1300,9 +1944,67 @@ function clearSelectedTitleRace(ids, race) {
   return ids;
 }
 
+function clearCommonSelectedTitles(ids) {
+  titleCatalogRows().forEach((row) => {
+    if (titleRaceKey(row) === "all") ids.delete(titleId(row));
+  });
+  return ids;
+}
+
+function showAppConfirm({ title = "確認操作", message = "", confirmLabel = "繼續", cancelLabel = "取消" } = {}) {
+  return new Promise((resolve) => {
+    document.querySelector(".app-confirm-backdrop")?.remove();
+    const backdrop = document.createElement("div");
+    backdrop.className = "app-confirm-backdrop";
+    backdrop.innerHTML = `
+      <section class="app-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="appConfirmTitle">
+        <button type="button" class="app-confirm-close" data-confirm-cancel aria-label="關閉">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+        <div class="app-confirm-icon">
+          <i data-lucide="triangle-alert" aria-hidden="true"></i>
+        </div>
+        <div class="app-confirm-content">
+          <h3 id="appConfirmTitle">${html(title)}</h3>
+          <p>${html(message)}</p>
+        </div>
+        <div class="app-confirm-actions">
+          <button type="button" class="secondary-button app-confirm-cancel" data-confirm-cancel>${html(cancelLabel)}</button>
+          <button type="button" class="primary-button app-confirm-submit" data-confirm-ok>${html(confirmLabel)}</button>
+        </div>
+      </section>
+    `;
+
+    const finish = (result) => {
+      document.removeEventListener("keydown", onKeyDown);
+      backdrop.remove();
+      resolve(result);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") finish(false);
+      if (event.key === "Enter") finish(true);
+    };
+
+    backdrop.addEventListener("click", (event) => {
+      if (event.target === backdrop || event.target.closest("[data-confirm-cancel]")) finish(false);
+      if (event.target.closest("[data-confirm-ok]")) finish(true);
+    });
+
+    document.body.appendChild(backdrop);
+    refreshIcons();
+    document.addEventListener("keydown", onKeyDown);
+    backdrop.querySelector("[data-confirm-ok]")?.focus();
+  });
+}
+
 function confirmTitleRaceSwitch(nextRace, currentRace) {
-  if (!nextRace || !currentRace || nextRace === currentRace) return true;
-  return window.confirm(`當前已選中${titleRaceLabel(currentRace)}稱號，勾選${titleRaceLabel(nextRace)}稱號後會清空${titleRaceLabel(currentRace)}目前勾選內容。是否繼續？`);
+  if (!nextRace || !currentRace || nextRace === currentRace) return Promise.resolve(true);
+  return showAppConfirm({
+    title: "切換稱號陣營",
+    message: `當前已選中${titleRaceLabel(currentRace)}稱號，勾選${titleRaceLabel(nextRace)}稱號後會清空${titleRaceLabel(currentRace)}目前勾選內容。是否繼續？`,
+    confirmLabel: "繼續",
+    cancelLabel: "取消",
+  });
 }
 
 function titleCategoryLabelLocal(category) {
@@ -1359,24 +2061,125 @@ function titleStatText(stat) {
 }
 
 function normalizeTitleSearchText(value) {
-  return toTraditional(value).toLowerCase().replace(/\s+/g, "");
+  return toTraditional(String(value || "")).toLowerCase().replace(/\s+/g, "");
+}
+
+function titleSearchVariants(value) {
+  const raw = normalizeTitleSearchText(value);
+  return raw ? [raw] : [];
+}
+
+function highlightTitleSearchMatch(value, keyword) {
+  const text = String(value || "");
+  const query = titleSearchVariants(keyword)[0];
+  if (!text || !query) return html(text);
+  const chars = Array.from(text);
+  const normalizedChars = chars.map((char) => normalizeTitleSearchText(char));
+  let result = "";
+  for (let i = 0; i < chars.length; i += 1) {
+    let combined = "";
+    let end = i;
+    while (end < chars.length && combined.length < query.length) {
+      combined += normalizedChars[end];
+      end += 1;
+    }
+    if (combined === query) {
+      result += `<mark class="title-search-hit">${html(chars.slice(i, end).join(""))}</mark>`;
+      i = end - 1;
+    } else {
+      result += html(chars[i]);
+    }
+  }
+  return result;
+}
+
+function syncTitleSearchInput(search) {
+  if (!search) return "";
+  const cursor = search.selectionStart ?? search.value.length;
+  const traditional = toTraditional(search.value);
+  if (search.value !== traditional) {
+    search.value = traditional;
+    const nextCursor = Math.min(traditional.length, cursor);
+    try { search.setSelectionRange(nextCursor, nextCursor); } catch (_) {}
+  }
+  return traditional;
 }
 
 function titleMatchesSearch(row, keyword) {
-  const query = normalizeTitleSearchText(keyword);
-  if (!query) return true;
+  const queries = titleSearchVariants(keyword);
+  if (!queries.length) return true;
   const statText = [
     ...titleStatRows(row.holdingStats, "holding").map(titleStatText),
     ...titleStatRows(row.equipStats, "equip").map(titleStatText),
   ].join(" ");
-  const haystack = normalizeTitleSearchText([
+  const haystacks = titleSearchVariants([
     row.name,
     row.description,
     titleRaceLabel(row.race),
     titleCategoryLabelLocal(row.equipCategory),
     statText,
   ].join(" "));
-  return haystack.includes(query);
+  return queries.some((query) => haystacks.some((haystack) => haystack.includes(query)));
+}
+
+function titleStatSortIndex(key) {
+  const option = titleOptionForKey(key);
+  const label = option ? option.label : String(key || "");
+  const allDefs = [
+    ...PRIMARY_STAT_DEFS,
+    ...PCT_STAT_DEFS,
+    ...BASIC_COMBAT_STAT_DEFS,
+    ...BASIC_COMBAT_AMP_STAT_DEFS,
+    ...ENV_COMBAT_AMP_STAT_DEFS,
+    ...ABNORMAL_STAT_DEFS,
+    ...OTHER_STAT_DEFS,
+  ];
+  const index = allDefs.findIndex((def) => def.key === (option || {}).statKey || def.label === label);
+  return index < 0 ? 999 : index;
+}
+
+function titleStatSortKey(row) {
+  return [
+    ...titleStatRows(row.holdingStats, "holding"),
+    ...titleStatRows(row.equipStats, "equip"),
+  ]
+    .map((stat) => {
+      const option = titleOptionForKey(stat.key);
+      const value = option ? wingBonusValue(stat, option) : toNum(stat.value);
+      return {
+        group: stat.group === "holding" ? 0 : 1,
+        index: titleStatSortIndex(stat.key),
+        value: Math.abs(value),
+        label: stat.effect || stat.key,
+      };
+    })
+    .sort((a, b) => (
+      a.group - b.group
+      || a.index - b.index
+      || b.value - a.value
+      || String(a.label).localeCompare(String(b.label), "zh-Hant")
+    ));
+}
+
+function compareTitleRowsByStats(a, b) {
+  const left = titleStatSortKey(a);
+  const right = titleStatSortKey(b);
+  const length = Math.max(left.length, right.length);
+  for (let index = 0; index < length; index += 1) {
+    const l = left[index];
+    const r = right[index];
+    if (!l && r) return 1;
+    if (l && !r) return -1;
+    if (!l && !r) break;
+    const diff = l.group - r.group
+      || l.index - r.index
+      || r.value - l.value
+      || String(l.label).localeCompare(String(r.label), "zh-Hant");
+    if (diff) return diff;
+  }
+  return Number(a.grade || 0) - Number(b.grade || 0)
+    || String(a.name || "").localeCompare(String(b.name || ""), "zh-Hant")
+    || String(titleId(a)).localeCompare(String(titleId(b)));
 }
 
 function sameTitleEffectKey(row) {
@@ -1388,13 +2191,161 @@ function sameTitleEffectKey(row) {
   ].join("|");
 }
 
-function renderTitleStatRow(label, stats, className) {
-  const content = stats.length ? stats.map((stat) => `<span>${html(titleStatText(stat))}</span>`).join("") : `<span>-</span>`;
+function renderTitleStatRow(label, stats, className, keyword = "") {
+  const content = stats.length ? stats.map((stat) => `<span>${highlightTitleSearchMatch(titleStatText(stat), keyword)}</span>`).join("") : `<span>-</span>`;
   return `
     <div class="wing-stat-row ${className}">
-      <b>${html(label)}</b>
+      <b>${highlightTitleSearchMatch(label, keyword)}</b>
       <div>${content}</div>
     </div>
+  `;
+}
+
+function selectedTitleHoldingSummary(selectedIds = selectedTitleSet()) {
+  const totals = new Map();
+  titleCatalogRows()
+    .filter((row) => selectedIds.has(titleId(row)))
+    .forEach((row) => {
+      titleStatRows(row.holdingStats, "holding").forEach((stat) => {
+        const option = titleOptionForKey(stat.key);
+        const key = option ? option.statKey : stat.key;
+        const value = option ? wingBonusValue(stat, option) : toNum(stat.value);
+        const current = totals.get(key) || {
+          key,
+          label: (option && option.label) || stat.effect || stat.key,
+          isPct: !!(option && option.isPct),
+          value: 0,
+          count: 0,
+          sources: [],
+        };
+        current.value += value;
+        current.count += 1;
+        current.sources.push({ name: row.name || "稱號", value, isPct: !!(option && option.isPct) });
+        totals.set(key, current);
+      });
+    });
+  return Array.from(totals.values())
+    .filter((item) => Number(item.value) !== 0)
+    .sort(sortTitleHoldingSummary);
+}
+
+const TITLE_SUMMARY_GROUPS = [
+  {
+    key: "generalAttack",
+    label: "通用攻擊向",
+    keys: [
+      "attack", "extraAttack", "hit", "extraHit", "critical",
+      "penetration", "soulstoneDamage", "criticalAttack", "frontAttack", "backAttack",
+      "multiHit", "ironWallPen", "regenPen",
+      "damageAmp", "weaponDamageAmp", "critDamageAmp", "backDamageAmp", "frontDamageAmp",
+      "shockHit", "statusHit", "hardHit", "perfect",
+    ],
+  },
+  {
+    key: "generalDefense",
+    label: "通用防禦向",
+    keys: [
+      "defense", "extraDefense", "evasion", "extraEvasion", "criticalResist",
+      "hp", "mp", "damageResist", "weaponDamageResist", "critDamageResist", "backDamageResist", "frontDamageResist",
+      "frontDefense", "backDefense", "criticalDefense", "multiHitResist", "ironWall", "hardHitResist", "perfectResist",
+    ],
+  },
+  {
+    key: "pve",
+    label: "PVE",
+    keys: [
+      "pveAttack", "pveDefense", "pveHit", "pveEvasion", "pveCritical", "pveCriticalResist",
+      "pveDamageAmp", "pveDamageResist", "bossAttack", "bossDefense", "bossDamageAmp", "bossDamageResist",
+    ],
+  },
+  {
+    key: "pvp",
+    label: "PVP",
+    keys: [
+      "pvpAttack", "pvpDefense", "pvpHit", "pvpEvasion", "pvpCritical", "pvpCriticalResist",
+      "pvpDamageAmp", "pvpDamageResist",
+    ],
+  },
+  { key: "other", label: "其他類", keys: [] },
+];
+
+function titleSummaryGroupForKey(key) {
+  return TITLE_SUMMARY_GROUPS.find((group) => group.key !== "other" && group.keys.includes(key)) || TITLE_SUMMARY_GROUPS[TITLE_SUMMARY_GROUPS.length - 1];
+}
+
+function titleSummarySortRank(item) {
+  const groupIndex = TITLE_SUMMARY_GROUPS.findIndex((group) => group.key === titleSummaryGroupForKey(item.key).key);
+  const allDefs = [
+    ...PRIMARY_STAT_DEFS,
+    ...PCT_STAT_DEFS,
+    ...BASIC_COMBAT_STAT_DEFS,
+    ...BASIC_COMBAT_AMP_STAT_DEFS,
+    ...ENV_COMBAT_AMP_STAT_DEFS,
+    ...ABNORMAL_STAT_DEFS,
+    ...OTHER_STAT_DEFS,
+  ];
+  const defIndex = allDefs.findIndex((def) => def.key === item.key);
+  return [groupIndex < 0 ? 99 : groupIndex, defIndex < 0 ? 999 : defIndex, item.label];
+}
+
+function sortTitleHoldingSummary(a, b) {
+  const left = titleSummarySortRank(a);
+  const right = titleSummarySortRank(b);
+  if (left[0] !== right[0]) return left[0] - right[0];
+  if (left[1] !== right[1]) return left[1] - right[1];
+  return String(left[2]).localeCompare(String(right[2]), "zh-Hant");
+}
+
+function titleSummarySourceText(item) {
+  return item.sources
+    .map((source) => {
+      const value = Math.round(source.value * 10) / 10;
+      return `${source.name}：${value > 0 ? "+" : ""}${formatNumber(value)}${source.isPct ? "%" : ""}`;
+    })
+    .join("\n");
+}
+
+function renderSelectedTitleHoldingSummary(selectedIds) {
+  const summary = selectedTitleHoldingSummary(selectedIds);
+  const selectedCount = selectedIds.size;
+  const collapsed = !!state.titleHoldingSummaryCollapsed;
+  const grouped = TITLE_SUMMARY_GROUPS.map((group) => ({
+    ...group,
+    items: summary.filter((item) => titleSummaryGroupForKey(item.key).key === group.key),
+  })).filter((group) => group.items.length);
+  return `
+    <section class="title-selected-summary${collapsed ? " collapsed" : ""}">
+      <div class="title-selected-summary-head">
+        <div>
+          <strong>已選持有效果</strong>
+          <span>${selectedCount} 個稱號 · ${summary.length} 項效果</span>
+        </div>
+        <button type="button" data-title-summary-toggle aria-expanded="${collapsed ? "false" : "true"}">
+          <i data-lucide="${collapsed ? "chevron-down" : "chevron-up"}" aria-hidden="true"></i>
+          <span>${collapsed ? "展開" : "收起"}</span>
+        </button>
+      </div>
+      <div class="title-selected-summary-body">
+        ${summary.length ? grouped.map((group) => `
+          <div class="title-selected-summary-section">
+            <h5>${html(group.label)}</h5>
+            <div class="title-selected-summary-grid">
+              ${group.items.map((item) => {
+                const value = Math.round(item.value * 10) / 10;
+                const sourceText = titleSummarySourceText(item);
+                return `
+                  <div class="title-selected-summary-item has-tooltip" tabindex="0" data-tooltip="${html(sourceText)}">
+                    <span>${html(item.label)}</span>
+                    <strong>${value > 0 ? "+" : ""}${html(formatNumber(value))}${item.isPct ? "%" : ""}</strong>
+                    <small>${item.count} 個來源</small>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+        `).join("") : `<p>尚未選擇帶有持有效果的稱號。</p>`}
+      </div>
+    </section>
   `;
 }
 
@@ -1402,25 +2353,32 @@ function renderTitleSimulator() {
   if (!els.titleCatalogList) return;
   const rows = titleCatalogRows();
   const selected = selectedTitleSet();
-  if (els.titleSelectionCount) els.titleSelectionCount.textContent = `${selected.size} / ${rows.length}`;
   if (!rows.length) {
+    if (els.titleSelectionCount) els.titleSelectionCount.textContent = "0 / 0";
     els.titleCatalogList.innerHTML = loadingMarkup("稱號資料載入中", "正在讀取本地稱號資料表。");
     return;
   }
-  const activeRace = ["all", "light", "dark"].includes(state.activeTitleRace) ? state.activeTitleRace : "all";
+  const activeRace = ["light", "dark", "all"].includes(state.activeTitleRace) ? state.activeTitleRace : "light";
   state.activeTitleRace = activeRace;
+  const countRace = titleCountRaceScope(activeRace, selected);
+  const countRows = titleRowsForCountScope(rows, countRace);
+  const selectedInScope = countRows.filter((row) => selected.has(titleId(row))).length;
+  if (els.titleSelectionCount) els.titleSelectionCount.textContent = `${selectedInScope} / ${countRows.length}`;
   const keyword = String(state.titleSearchKeyword || "");
   const searchedRows = rows.filter((row) => titleMatchesSearch(row, keyword));
   const visibleRows = searchedRows.filter((row) => titleVisibleByRace(row, activeRace));
   const groups = ["attack", "defense", "utility", "special"].map((category) => ({
     category,
-    rows: visibleRows.filter((row) => String(row.equipCategory || "special").toLowerCase() === category),
+    rows: visibleRows
+      .filter((row) => String(row.equipCategory || "special").toLowerCase() === category)
+      .sort(compareTitleRowsByStats),
   }));
   const activeCategory = groups.some((group) => group.category === state.activeTitleCategory)
     ? state.activeTitleCategory
     : "attack";
   state.activeTitleCategory = activeCategory;
   const activeGroup = groups.find((group) => group.category === activeCategory) || groups[0];
+  const activeGroupAllSelected = activeGroup.rows.length > 0 && activeGroup.rows.every((row) => selected.has(titleId(row)));
   els.titleCatalogList.innerHTML = `
     <div class="title-search-bar">
       <label>
@@ -1429,8 +2387,9 @@ function renderTitleSimulator() {
       </label>
       ${keyword ? `<button type="button" data-title-search-clear>清空</button>` : ""}
     </div>
+    ${renderSelectedTitleHoldingSummary(selected)}
     <div class="title-race-filter">
-      ${["all", "light", "dark"].map((race) => `
+      ${["light", "dark", "all"].map((race) => `
         <button type="button" class="${race === activeRace ? "active" : ""}" data-title-race="${html(race)}">
           <span>${html(titleRaceFilterLabel(race))}</span>
           <b>${searchedRows.filter((row) => titleVisibleByRace(row, race)).length}</b>
@@ -1449,7 +2408,12 @@ function renderTitleSimulator() {
     <section class="title-group">
       <div class="title-group-head">
         <h4>${html(titleCategoryLabelLocal(activeGroup.category))}</h4>
-        <span>${activeGroup.rows.length} 個</span>
+        <div>
+          <span>${activeGroup.rows.length} 個</span>
+          <button type="button" class="${activeGroupAllSelected ? "selected" : ""}" data-title-toggle-category="${html(activeGroup.category)}" aria-pressed="${activeGroupAllSelected ? "true" : "false"}">
+            ${activeGroupAllSelected ? "取消本類" : "全選本類"}
+          </button>
+        </div>
       </div>
       <div class="title-card-grid">
         ${activeGroup.rows.map((row) => {
@@ -1465,13 +2429,14 @@ function renderTitleSimulator() {
               </label>
               <div class="title-card-main">
                 <div class="title-card-name">
-                    <strong class="grade-${html(row.grade || "")}">${html(row.name || "稱號")}</strong>
-                    <small>${html(titleRaceLabel(row.race))} · ${html(titleCategoryLabelLocal(row.equipCategory))}</small>
+                    <strong class="grade-${html(row.grade || "")}">${highlightTitleSearchMatch(row.name || "稱號", keyword)}</strong>
+                    <small>${highlightTitleSearchMatch(titleRaceLabel(row.race), keyword)} · ${highlightTitleSearchMatch(titleCategoryLabelLocal(row.equipCategory), keyword)}</small>
+                    ${row.description ? `<p class="title-card-description">${highlightTitleSearchMatch(row.description, keyword)}</p>` : ""}
                   </div>
                 </div>
                 <div class="wing-stats title-stats">
-                  ${renderTitleStatRow("持有效果", holdingStats, "wing-stat-row--base")}
-                  ${renderTitleStatRow("裝備效果", equipStats, "wing-stat-row--enchant")}
+                  ${renderTitleStatRow("持有效果", holdingStats, "wing-stat-row--base", keyword)}
+                  ${renderTitleStatRow("裝備效果", equipStats, "wing-stat-row--enchant", keyword)}
                 </div>
               </article>
             `;
@@ -1479,6 +2444,7 @@ function renderTitleSimulator() {
       </div>
     </section>
   `;
+  refreshIcons();
   if (state.titleSearchFocused) {
     const search = els.titleCatalogList.querySelector("[data-title-search]");
     if (search) {
@@ -1507,6 +2473,38 @@ function activeTitleRows() {
   return Array.from(deduped.values());
 }
 
+async function selectTitleRowsByScope({ category = "", mode = "select" } = {}) {
+  const race = state.activeTitleRace || "light";
+  const ids = selectedTitleSet();
+  const targetRows = titleCatalogRows()
+    .filter((row) => !category || String(row.equipCategory || "special").toLowerCase() === category)
+    .filter((row) => titleVisibleByRace(row, race))
+    .filter((row) => titleMatchesSearch(row, state.titleSearchKeyword));
+  const shouldClear = mode === "toggle" && targetRows.length > 0 && targetRows.every((row) => ids.has(titleId(row)));
+  const rowsToAdd = shouldClear ? [] : targetRows;
+  const targetRaces = new Set(rowsToAdd.map(titleRaceKey).filter((rowRace) => rowRace === "light" || rowRace === "dark"));
+  if (race === "all" && targetRaces.size > 1) {
+    window.alert("請先選擇天族或魔族篩選後再批量選擇稱號，避免同時勾選天魔稱號。");
+    return;
+  }
+  const nextRace = targetRaces.values().next().value || "";
+  const currentRace = selectedOppositeTitleRace(ids, nextRace) || selectedTitleRace(ids);
+  if (nextRace && currentRace && currentRace !== nextRace) {
+    if (!(await confirmTitleRaceSwitch(nextRace, currentRace))) return;
+    clearSelectedTitleRace(ids, currentRace);
+  }
+  targetRows.forEach((row) => {
+    const id = titleId(row);
+    if (shouldClear) ids.delete(id);
+    else ids.add(id);
+  });
+  state.selectedTitleIds = Array.from(ids);
+  state.titleSelectionInitialized = true;
+  saveSelectedTitleIds();
+  renderTitleSimulator();
+  if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+}
+
 function activeSimulationHref() {
   if (state.wardrobeBonusEnabled) return "#wardrobe";
   if (state.petSimulator.enabled) return "#pet-insight";
@@ -1522,6 +2520,9 @@ function normalizeRankingRows(data) {
   return Array.isArray(source) ? source.map((row, index) => {
     const record = row || {};
     const extra = record.extraDataMap || {};
+    const win = record.winCount ?? extra.winCount ?? "";
+    const lose = record.loseCount ?? extra.loseCount ?? "";
+    const winRate = record.winRate ?? extra.winRate ?? "";
     return {
       rank: record.rank ?? record.ranking ?? record.rankNo ?? index + 1,
       previousRank: record.previousRank ?? record.prevRank ?? record.lastSeasonRank ?? record.beforeRank ?? "-",
@@ -1530,9 +2531,13 @@ function normalizeRankingRows(data) {
       className: stripHtml(record.className || record.jobName || record.class || record.job || ""),
       score: record.rankingPoint ?? record.rankPoint ?? record.score ?? record.point ?? record.points ?? "",
       grade: record.gradeName || record.rankGradeName || record.grade || "",
+      gradeIcon: record.gradeIcon || record.rankGradeIcon || "",
       kill: record.killCount ?? extra.killCount ?? record.kills ?? record.k ?? "",
       death: record.deathCount ?? extra.deathCount ?? record.deaths ?? record.d ?? "",
       assist: record.assistCount ?? extra.assistCount ?? record.assists ?? record.a ?? "",
+      win,
+      lose,
+      winRate,
       characterId: record.characterId || record.encryptedCharacterId || "",
       serverId: record.serverId || state.ranking.serverId,
       raw: record,
@@ -1546,41 +2551,107 @@ function formatRankNumber(value) {
   return Number.isFinite(num) ? num.toLocaleString("en-US") : String(value);
 }
 
+function rankingRecordLabel(type = rankingTypeDef()) {
+  if (type.key === "abyss") return "戰績";
+  if (type.key === "arenaOfSolitude" || type.key === "arenaOfCooperation") return "勝率";
+  if (type.key === "ascensionTrial") return "";
+  return "最佳紀錄";
+}
+
+function rankingGradeLabel(type = rankingTypeDef()) {
+  return type.key === "abyss" ? "套用階級" : "賽季階級";
+}
+
+function rankingGradeMarkup(row) {
+  const label = row.grade || "-";
+  if (!row.gradeIcon) return html(label);
+  return `
+    <span class="ranking-grade">
+      <img src="${html(row.gradeIcon)}" alt="" loading="lazy" />
+      <span>${html(label)}</span>
+    </span>
+  `;
+}
+
+function rankingRecordMarkup(row, type = rankingTypeDef()) {
+  if (type.key === "abyss") {
+    return `
+      <span>K ${html(formatRankNumber(row.kill))}</span>
+      <span>D ${html(formatRankNumber(row.death))}</span>
+      <span>A ${html(formatRankNumber(row.assist))}</span>
+    `;
+  }
+  if (type.key === "arenaOfSolitude" || type.key === "arenaOfCooperation") {
+    const rate = row.winRate === "" || row.winRate === null || row.winRate === undefined ? "-" : `${formatRankNumber(row.winRate)}%`;
+    return `
+      <span>${html(rate)}</span>
+      <span>${html(formatRankNumber(row.win))}勝</span>
+      <span>${html(formatRankNumber(row.lose))}敗</span>
+    `;
+  }
+  const extra = (row.raw && row.raw.extraDataMap) || {};
+  if (Array.isArray(extra.dungeonGroupList) && extra.dungeonGroupList.length) {
+    return extra.dungeonGroupList.slice(0, 2).map((item) => `<span>${html(item.dungeonGroupName || "紀錄")} ${html(formatRankNumber(item.bestClearLevel))}</span>`).join("");
+  }
+  return Object.entries(extra)
+    .filter(([, value]) => value !== null && value !== undefined && value !== "")
+    .slice(0, 3)
+    .map(([key, value]) => `<span>${html(key)} ${html(formatRankNumber(value))}</span>`)
+    .join("") || "<span>-</span>";
+}
+
+function renderRankingHeader(type = rankingTypeDef()) {
+  const headRow = document.querySelector(".ranking-table thead tr");
+  if (!headRow) return;
+  const recordLabel = rankingRecordLabel(type);
+  headRow.innerHTML = `
+    <th>名次</th>
+    <th>角色名稱/所屬軍團</th>
+    <th>職業</th>
+    <th>排名點數</th>
+    ${recordLabel ? `<th>${html(recordLabel)}</th>` : ""}
+    <th>${html(rankingGradeLabel(type))}</th>
+    <th>上一賽季</th>
+  `;
+}
+
 function renderRankingRows() {
+  const type = rankingTypeDef();
+  const recordLabel = rankingRecordLabel(type);
+  renderRankingHeader(type);
   if (state.ranking.loading) {
-    els.rankingTableBody.innerHTML = `<tr><td colspan="7">${loadingMarkup("載入排名", "正在讀取官方排行資料。")}</td></tr>`;
+    els.rankingTableBody.innerHTML = `<tr><td colspan="${recordLabel ? 7 : 6}">${loadingMarkup("載入排名", "正在讀取官方排行資料。")}</td></tr>`;
     els.rankingStatus.textContent = "載入中...";
     return;
   }
   if (state.ranking.error) {
-    els.rankingTableBody.innerHTML = `<tr><td colspan="7"><div class="error-box">排名載入失敗：${html(state.ranking.error)}</div></td></tr>`;
+    els.rankingTableBody.innerHTML = `<tr><td colspan="${recordLabel ? 7 : 6}"><div class="error-box">排名載入失敗：${html(state.ranking.error)}</div></td></tr>`;
     els.rankingStatus.textContent = "載入失敗";
     return;
   }
   if (!state.ranking.rows.length) {
-    els.rankingTableBody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-mark">◇</div><p>暫無排名資料</p></div></td></tr>`;
+    const emptyText = state.ranking.officialEmpty
+      ? "官方排名接口暫無資料或已限制公開查詢。"
+      : "暫無排名資料";
+    els.rankingTableBody.innerHTML = `<tr><td colspan="${recordLabel ? 7 : 6}"><div class="empty-state"><div class="empty-mark">◇</div><p>${html(emptyText)}</p></div></td></tr>`;
     els.rankingStatus.textContent = "0 件";
     return;
   }
   els.rankingStatus.textContent = `${state.ranking.rows.length} 件`;
   els.rankingTableBody.innerHTML = state.ranking.rows.map((row) => `
     <tr>
-      <td><strong class="rank-num">${html(row.rank)}</strong></td>
-      <td>
+      <td data-label="名次"><strong class="rank-num">${html(row.rank)}</strong></td>
+      <td data-label="角色">
         <button type="button" class="ranking-char-link" data-ranking-character-id="${html(row.characterId)}" data-ranking-server-id="${html(row.serverId)}" ${row.characterId ? "" : "disabled"}>
           <strong>${html(row.name || "-")}</strong>
           ${row.guild ? `<small>${html(row.guild)}</small>` : ""}
         </button>
       </td>
-      <td>${html(row.className || "-")}</td>
-      <td><strong>${html(formatRankNumber(row.score))}</strong></td>
-      <td class="ranking-record">
-        <span>K ${html(formatRankNumber(row.kill))}</span>
-        <span>D ${html(formatRankNumber(row.death))}</span>
-        <span>A ${html(formatRankNumber(row.assist))}</span>
-      </td>
-      <td>${html(row.grade || "-")}</td>
-      <td>${html(row.previousRank || "-")}</td>
+      <td data-label="職業">${html(row.className || "-")}</td>
+      <td data-label="排名點數"><strong>${html(formatRankNumber(row.score))}</strong></td>
+      ${recordLabel ? `<td data-label="${html(recordLabel)}" class="ranking-record">${rankingRecordMarkup(row, type)}</td>` : ""}
+      <td data-label="${html(rankingGradeLabel(type))}">${rankingGradeMarkup(row)}</td>
+      <td data-label="上一賽季">${html(Number(row.previousRank) === 0 ? "-" : row.previousRank || "-")}</td>
     </tr>
   `).join("");
 }
@@ -1588,6 +2659,7 @@ function renderRankingRows() {
 async function loadRanking() {
   state.ranking.loading = true;
   state.ranking.error = "";
+  state.ranking.officialEmpty = false;
   renderRankingControls();
   renderRankingRows();
   const type = rankingTypeDef();
@@ -1603,9 +2675,11 @@ async function loadRanking() {
     const data = await getJson(`/api/ranking?${params.toString()}`, 30000);
     state.ranking.rows = normalizeRankingRows(data);
     state.ranking.season = data.season || null;
+    state.ranking.officialEmpty = !state.ranking.rows.length && !data.season && Array.isArray(data.rankingList) && data.rankingList.length === 0;
   } catch (error) {
     state.ranking.rows = [];
     state.ranking.error = error.message;
+    state.ranking.officialEmpty = false;
   } finally {
     state.ranking.loading = false;
     renderRankingRows();
@@ -2886,7 +3960,11 @@ function calcAttack(detail) {
 
   const charGroup = getGroup("char", "能力值");
   const characterLevel = toNum((detail.profile || {}).characterLevel);
-  addEntry(charGroup, "角色等級攻擊力", characterLevel >= 50 ? 66 : 61, false);
+  if (characterLevel >= 50) {
+    addEntry(charGroup, "角色等級額外攻擊力", 66, false);
+    addEntry(charGroup, "角色等級額外防禦力", 490, false);
+    addEntry(charGroup, "角色等級生命力", 5340, false);
+  }
   detail.detailStatBasic.concat(detail.detailStatSecondary).forEach((stat) => {
     (stat.statSecondList || []).forEach((desc) => parseDescToGroup(desc, charGroup));
   });
@@ -2965,9 +4043,53 @@ function calcAttributes(detail) {
 
   function configuredEffectValue(effect, level) {
     if (typeof effect.fixed !== "undefined") return toNum(effect.fixed);
+    if (Array.isArray(effect.levelTable) && effect.levelTable.length) {
+      const rows = effect.levelTable
+        .map((row) => ({ level: toNum(row.level), value: toNum(row.value) }))
+        .sort((a, b) => a.level - b.level);
+      let value = rows[0].value;
+      rows.forEach((row) => {
+        if (level >= row.level) value = row.value;
+      });
+      return value;
+    }
     const baseLevel = typeof effect.baseLevel === "undefined" ? 0 : toNum(effect.baseLevel);
     const growthLevel = Math.max(0, level - baseLevel);
     return toNum(effect.base) + toNum(effect.perLevel) * growthLevel;
+  }
+
+  function classEffectIsPct(effect, defs, fallback = true) {
+    if (typeof effect.isPct !== "undefined") return !!effect.isPct;
+    const def = defs.find((item) => item.key === effect.key);
+    return def ? !!def.isPct : fallback;
+  }
+
+  function passiveSourceValue(conversion) {
+    if (conversion.sourceBucket === "primary") {
+      const source = values[conversion.sourceKey];
+      if (!source) return 0;
+      const pctKey = conversion.sourceKey === "hp" ? "pHp" : conversion.sourceKey === "mp" ? "pMp" : "";
+      const pct = pctKey && pctValues[pctKey] ? pctValues[pctKey].pct : 0;
+      return source.flat * (1 + pct / 100);
+    }
+    if (conversion.sourceBucket === "other") {
+      const source = otherValues[conversion.sourceKey];
+      if (!source) return 0;
+      return source.flat * (1 + source.pct / 100);
+    }
+    return 0;
+  }
+
+  function applyPassiveConversion(conversion, level, sourceLabel) {
+    const ratio = configuredEffectValue(conversion, level);
+    const sourceValue = passiveSourceValue(conversion);
+    const converted = sourceValue * ratio / 100;
+    if (!Number.isFinite(converted) || converted === 0) return;
+    const roundedSource = Math.round(sourceValue * 10) / 10;
+    const roundedRatio = Math.round(ratio * 10) / 10;
+    const detailLabel = `職業配置：${conversion.label}（${formatNumber(roundedSource)} × ${formatNumber(roundedRatio)}%）`;
+    if (conversion.targetBucket === "primary") addValue(conversion.targetKey, converted, false, sourceLabel, detailLabel);
+    else if (conversion.targetBucket === "other") addConfiguredValue(otherValues, conversion.targetKey, converted, false, sourceLabel, detailLabel);
   }
 
   function applyClassPassiveEffects() {
@@ -2987,11 +4109,12 @@ function calcAttributes(detail) {
         const detailLabel = `職業配置：${effect.label}`;
         if (effect.bucket === "primary") addValue(effect.key, value, false, sourceLabel, detailLabel);
         else if (effect.bucket === "pct") addConfiguredValue(pctValues, effect.key, value, true, sourceLabel, detailLabel);
-        else if (effect.bucket === "basicCombatAmp") addConfiguredValue(basicCombatAmpValues, effect.key, value, true, sourceLabel, detailLabel);
-        else if (effect.bucket === "envCombatAmp") addConfiguredValue(envCombatAmpValues, effect.key, value, true, sourceLabel, detailLabel);
-        else if (effect.bucket === "abnormal") addConfiguredValue(abnormalValues, effect.key, value, true, sourceLabel, detailLabel);
-        else if (effect.bucket === "other") addConfiguredValue(otherValues, effect.key, value, true, sourceLabel, detailLabel);
+        else if (effect.bucket === "basicCombatAmp") addConfiguredValue(basicCombatAmpValues, effect.key, value, classEffectIsPct(effect, BASIC_COMBAT_AMP_STAT_DEFS), sourceLabel, detailLabel);
+        else if (effect.bucket === "envCombatAmp") addConfiguredValue(envCombatAmpValues, effect.key, value, classEffectIsPct(effect, ENV_COMBAT_AMP_STAT_DEFS), sourceLabel, detailLabel);
+        else if (effect.bucket === "abnormal") addConfiguredValue(abnormalValues, effect.key, value, classEffectIsPct(effect, ABNORMAL_STAT_DEFS), sourceLabel, detailLabel);
+        else if (effect.bucket === "other") addConfiguredValue(otherValues, effect.key, value, classEffectIsPct(effect, OTHER_STAT_DEFS, false), sourceLabel, detailLabel);
       });
+      (skillConfig.conversions || []).forEach((conversion) => applyPassiveConversion(conversion, level, sourceLabel));
     });
   }
 
@@ -3356,10 +4479,11 @@ function calcAttributes(detail) {
     addStat(stat, `翅膀 · ${wingName}`, "佩戴效果", "wing");
   });
   const level = toNum((detail.profile || {}).characterLevel);
-  if (level >= 50) addValue("extraAttack", 66, false, "角色等級", "基礎能力值 · Lv.50");
-  else if (level === 45) addValue("extraAttack", 61, false, "角色等級", "基礎能力值 · Lv.45");
-  if (level === 45) addValue("extraDefense", 450, false, "角色等級", "基礎能力值 · Lv.45");
-  if (level === 45) addValue("hp", 4702, false, "角色等級", "基礎能力值 · Lv.45");
+  if (level >= 50) {
+    addValue("extraAttack", 66, false, "角色等級", "基礎能力值 · Lv.50");
+    addValue("extraDefense", 490, false, "角色等級", "基礎能力值 · Lv.50");
+    addValue("hp", 5340, false, "角色等級", "基礎能力值 · Lv.50");
+  }
   applyClassPassiveEffects();
 
   return {
@@ -4155,7 +5279,9 @@ function renderAttributeAnalysis(analysis) {
     "pvpDamageAmp", "pvpDamageResist",
   ]);
   const otherStats = orderStatsForPairs(allOtherStats, [
-    "flightPower", "mpRegen",
+    "flightPower", "maxAction",
+    "mpRegen",
+    "maxRage",
     "mpCostReduce", "healingReceived",
     "multiHit", "multiHitResist",
     "ironWallPen", "ironWall",
@@ -4165,6 +5291,9 @@ function renderAttributeAnalysis(analysis) {
     "powerStrike", "powerStrikeResist",
     "backCrit", "backCritResist",
     "blockPen", "block",
+    "spiritPveDamageAmp", "spiritPvpDamageAmp",
+    "spiritPerfect", "spiritDefensePct",
+    "spiritCritDamageAmp",
   ]);
   return `
     <section class="detail-section">
@@ -4840,21 +5969,102 @@ function renderSkills(detail) {
 
 function getSkillGroups(detail) {
   if (!detail) return [];
+  const className = (detail.profile && detail.profile.className) || "";
   return [
     { title: "主動技能", items: detail.detailSkillActive },
     { title: "被動技能", items: detail.detailSkillPassive },
     { title: "烙印技能", items: detail.detailSkillDp },
-  ].filter((group) => group.items && group.items.length);
+  ]
+    .map((group) => ({
+      ...group,
+      items: (group.items || []).map((item) => ({ ...item, className })),
+    }))
+    .filter((group) => group.items && group.items.length);
+}
+
+function classPassiveSkillConfig(skill) {
+  const className = skill && skill.className;
+  const config = CLASS_PASSIVE_CONFIGS[className];
+  if (!config) return null;
+  const name = String((skill && skill.name) || "");
+  return (config.skills || []).find((item) => [item.name].concat(item.aliases || []).includes(name)) || null;
+}
+
+function skillEffectValue(effect, level) {
+  if (typeof effect.fixed !== "undefined") return toNum(effect.fixed);
+  if (Array.isArray(effect.levelTable) && effect.levelTable.length) {
+    const rows = effect.levelTable
+      .map((row) => ({ level: toNum(row.level), value: toNum(row.value) }))
+      .sort((a, b) => a.level - b.level);
+    let value = rows[0].value;
+    rows.forEach((row) => {
+      if (level >= row.level) value = row.value;
+    });
+    return value;
+  }
+  const baseLevel = typeof effect.baseLevel === "undefined" ? 0 : toNum(effect.baseLevel);
+  const growthLevel = Math.max(0, level - baseLevel);
+  return toNum(effect.base) + toNum(effect.perLevel) * growthLevel;
+}
+
+function skillConfigEffectIsPct(effect) {
+  if (typeof effect.isPct !== "undefined") return !!effect.isPct;
+  if (effect.bucket === "pct") return true;
+  const maps = {
+    basicCombatAmp: BASIC_COMBAT_AMP_STAT_DEFS,
+    envCombatAmp: ENV_COMBAT_AMP_STAT_DEFS,
+    abnormal: ABNORMAL_STAT_DEFS,
+    other: OTHER_STAT_DEFS,
+  };
+  const def = (maps[effect.bucket] || []).find((item) => item.key === effect.key);
+  return def ? !!def.isPct : ["basicCombatAmp", "envCombatAmp", "abnormal", "other"].includes(effect.bucket);
+}
+
+function renderSkillConfigDetail(skill) {
+  const config = classPassiveSkillConfig(skill);
+  if (!config) return "";
+  const level = Math.max(0, toNum(skill.skillLevel));
+  if (!level) return "";
+  const effectRows = (config.effects || []).map((effect) => {
+    const value = Math.round(skillEffectValue(effect, level) * 10) / 10;
+    const isPct = skillConfigEffectIsPct(effect);
+    return `
+      <div>
+        <span>${html(effect.label || effect.key)}</span>
+        <strong>${value > 0 ? "+" : ""}${html(formatNumber(value))}${isPct ? "%" : ""}</strong>
+      </div>
+    `;
+  }).join("");
+  const conversionRows = (config.conversions || []).map((conversion) => {
+    const value = Math.round(skillEffectValue(conversion, level) * 10) / 10;
+    return `
+      <div>
+        <span>${html(conversion.label || conversion.targetKey)}</span>
+        <strong>${value > 0 ? "+" : ""}${html(formatNumber(value))}%</strong>
+      </div>
+    `;
+  }).join("");
+  const rows = effectRows + conversionRows;
+  const notes = (config.notes || []).map((note) => `<p>${html(note)}</p>`).join("");
+  return rows || notes ? `
+    <div class="skill-config-popover">
+      <b>${html(config.name)} Lv.${html(level)}</b>
+      ${rows}
+      ${notes}
+    </div>
+  ` : "";
 }
 
 function renderSkillItem(skill) {
+  const detail = renderSkillConfigDetail(skill);
   return `
-    <article class="skill-item">
+    <article class="skill-item${detail ? " has-skill-detail" : ""}" tabindex="${detail ? "0" : "-1"}">
       ${skill.icon ? `<img class="skill-icon" src="${html(skill.icon)}" alt="" />` : `<div class="skill-icon"></div>`}
       <div>
         <strong>${html(skill.name || "未知技能")}</strong>
         <span>Lv.${html(skill.skillLevel ?? "-")}</span>
       </div>
+      ${detail}
     </article>
   `;
 }
@@ -5075,8 +6285,24 @@ function bindEvents() {
       if (undoWardrobeConfig()) event.preventDefault();
     }
   });
+  window.addEventListener("scroll", () => {
+    hideFloatingTooltip();
+    updateBackToTopVisibility();
+  }, { passive: true });
+  window.addEventListener("resize", hideFloatingTooltip);
+  els.backToTopBtn?.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    els.backToTopBtn.blur();
+  });
 
   els.titleCatalogList?.addEventListener("click", (event) => {
+    const summaryToggle = event.target.closest("[data-title-summary-toggle]");
+    if (summaryToggle) {
+      state.titleHoldingSummaryCollapsed = !state.titleHoldingSummaryCollapsed;
+      renderTitleSimulator();
+      return;
+    }
+
     const clearSearch = event.target.closest("[data-title-search-clear]");
     if (clearSearch) {
       state.titleSearchKeyword = "";
@@ -5087,8 +6313,23 @@ function bindEvents() {
     }
     const raceTab = event.target.closest("[data-title-race]");
     if (raceTab) {
-      state.activeTitleRace = String(raceTab.dataset.titleRace || "all");
+      const previousRace = state.activeTitleRace || "light";
+      const nextRace = String(raceTab.dataset.titleRace || "all");
+      if ((previousRace === "light" || previousRace === "dark") && (nextRace === "light" || nextRace === "dark") && previousRace !== nextRace) {
+        const ids = clearCommonSelectedTitles(selectedTitleSet());
+        state.selectedTitleIds = Array.from(ids);
+        state.titleSelectionInitialized = true;
+        saveSelectedTitleIds();
+        if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+      }
+      state.activeTitleRace = nextRace;
       renderTitleSimulator();
+      return;
+    }
+    const categoryToggle = event.target.closest("[data-title-toggle-category]");
+    if (categoryToggle) {
+      const category = String(categoryToggle.dataset.titleToggleCategory || state.activeTitleCategory || "attack");
+      selectTitleRowsByScope({ category, mode: "toggle" });
       return;
     }
     const tab = event.target.closest("[data-title-category]");
@@ -5097,11 +6338,34 @@ function bindEvents() {
     renderTitleSimulator();
   });
 
+  els.titleCatalogList?.addEventListener("pointerover", (event) => {
+    const item = event.target.closest(".title-selected-summary-item.has-tooltip");
+    if (!item || !els.titleCatalogList.contains(item)) return;
+    showFloatingTooltip(item, item.dataset.tooltip);
+  });
+
+  els.titleCatalogList?.addEventListener("pointerout", (event) => {
+    const item = event.target.closest(".title-selected-summary-item.has-tooltip");
+    if (!item) return;
+    if (event.relatedTarget && item.contains(event.relatedTarget)) return;
+    hideFloatingTooltip();
+  });
+
+  els.titleCatalogList?.addEventListener("focusin", (event) => {
+    const item = event.target.closest(".title-selected-summary-item.has-tooltip");
+    if (!item || !els.titleCatalogList.contains(item)) return;
+    showFloatingTooltip(item, item.dataset.tooltip);
+  });
+
+  els.titleCatalogList?.addEventListener("focusout", (event) => {
+    if (event.target.closest(".title-selected-summary-item.has-tooltip")) hideFloatingTooltip();
+  });
+
   els.titleCatalogList?.addEventListener("input", (event) => {
     const search = event.target.closest("[data-title-search]");
     if (!search) return;
     if (state.titleSearchComposing) return;
-    state.titleSearchKeyword = search.value;
+    state.titleSearchKeyword = syncTitleSearchInput(search);
     state.titleSearchFocused = true;
     state.titleSearchCursor = search.selectionStart ?? search.value.length;
     renderTitleSimulator();
@@ -5116,13 +6380,13 @@ function bindEvents() {
     const search = event.target.closest("[data-title-search]");
     if (!search) return;
     state.titleSearchComposing = false;
-    state.titleSearchKeyword = search.value;
+    state.titleSearchKeyword = syncTitleSearchInput(search);
     state.titleSearchFocused = true;
     state.titleSearchCursor = search.selectionStart ?? search.value.length;
     renderTitleSimulator();
   });
 
-  els.titleCatalogList?.addEventListener("change", (event) => {
+  els.titleCatalogList?.addEventListener("change", async (event) => {
     const selectedInput = event.target.closest("[data-title-select]");
     if (selectedInput) {
       const ids = selectedTitleSet();
@@ -5134,7 +6398,7 @@ function bindEvents() {
         if (nextRace === "light" || nextRace === "dark") {
           const currentRace = selectedOppositeTitleRace(ids, nextRace) || selectedTitleRace(ids);
           if (currentRace && currentRace !== nextRace) {
-            if (!confirmTitleRaceSwitch(nextRace, currentRace)) {
+            if (!(await confirmTitleRaceSwitch(nextRace, currentRace))) {
               selectedInput.checked = false;
               return;
             }
@@ -5151,39 +6415,14 @@ function bindEvents() {
     }
   });
 
-  els.selectAllTitlesBtn?.addEventListener("click", () => {
-    const category = state.activeTitleCategory || "attack";
-    const race = state.activeTitleRace || "all";
-    const ids = selectedTitleSet();
-    const targetRows = titleCatalogRows()
-      .filter((row) => String(row.equipCategory || "special").toLowerCase() === category)
-      .filter((row) => titleVisibleByRace(row, race))
-      .filter((row) => titleMatchesSearch(row, state.titleSearchKeyword));
-    const targetRaces = new Set(targetRows.map(titleRaceKey).filter((rowRace) => rowRace === "light" || rowRace === "dark"));
-    if (race === "all" && targetRaces.size > 1) {
-      window.alert("請先選擇天族或魔族篩選後再全選稱號，避免同時勾選天魔稱號。");
-      return;
-    }
-    const nextRace = targetRaces.values().next().value || "";
-    const currentRace = selectedOppositeTitleRace(ids, nextRace) || selectedTitleRace(ids);
-    if (nextRace && currentRace && currentRace !== nextRace) {
-      if (!confirmTitleRaceSwitch(nextRace, currentRace)) return;
-      clearSelectedTitleRace(ids, currentRace);
-    }
-    targetRows.forEach((row) => ids.add(titleId(row)));
-    state.selectedTitleIds = Array.from(ids);
-    state.titleSelectionInitialized = true;
-    saveSelectedTitleIds();
-    renderTitleSimulator();
-    if (state.selectedDetail) renderDetail(currentViewDetail(), currentViewAnalysis());
+  els.selectAllTitlesBtn?.addEventListener("click", async () => {
+    await selectTitleRowsByScope();
   });
 
   els.clearTitlesBtn?.addEventListener("click", () => {
-    const category = state.activeTitleCategory || "attack";
     const race = state.activeTitleRace || "all";
     const ids = selectedTitleSet();
     titleCatalogRows()
-      .filter((row) => String(row.equipCategory || "special").toLowerCase() === category)
       .filter((row) => titleVisibleByRace(row, race))
       .filter((row) => titleMatchesSearch(row, state.titleSearchKeyword))
       .forEach((row) => {
@@ -5551,16 +6790,19 @@ renderHistory();
 setCollapseButtonIcon();
 applyTheme(localStorage.getItem("aion2-theme") || "dark");
 bindEvents();
-setView(state.view);
-loadPetSimulatorFromCloud();
-loadWingBonusCatalog().then(() => {
-  if (state.selectedDetail && state.selectedAttack) renderDetail(currentViewDetail(), currentViewAnalysis());
-});
-if (state.titleBonusEnabled) {
-  loadTitleCatalog().then(() => {
+loadS2TMap().finally(() => {
+  setView(state.view);
+  updateBackToTopVisibility();
+  loadPetSimulatorFromCloud();
+  loadWingBonusCatalog().then(() => {
     if (state.selectedDetail && state.selectedAttack) renderDetail(currentViewDetail(), currentViewAnalysis());
   });
-}
+  if (state.titleBonusEnabled) {
+    loadTitleCatalog().then(() => {
+      if (state.selectedDetail && state.selectedAttack) renderDetail(currentViewDetail(), currentViewAnalysis());
+    });
+  }
+});
 
 
 

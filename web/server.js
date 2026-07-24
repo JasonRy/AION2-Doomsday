@@ -566,8 +566,8 @@ function rankingCandidatePaths(qs) {
 
   const query = params.toString();
   return [
-    `/aion2/api/ranking?${query}`,
     `/aion2/api/ranking/list?${query}`,
+    `/aion2/api/ranking?${query}`,
     `/aion2/api/character/ranking?${query}`,
     `/aion2/api/character/ranking/list?${query}`,
   ];
